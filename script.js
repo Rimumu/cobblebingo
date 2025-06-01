@@ -170,7 +170,7 @@ setTimeout(() => {
 }, 5000); // 5 seconds maximum loading time
 
 // API Configuration
-const API_BASE_URL = "protestant-marybelle-greatrimu-e3e70b14.koyeb.app/"; // Use same origin in production
+const API_BASE_URL = "protestant-marybelle-greatrimu-e3e70b14.koyeb.app"; // Use same origin in production
 
 // Utility functions for API calls
 async function apiCall(endpoint, options = {}) {
