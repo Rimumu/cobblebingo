@@ -169,34 +169,14 @@ setTimeout(() => {
   }
 }, 5000); // 5 seconds maximum loading time
 
-// API Configuration - FIXED: Added https:// protocol
+// Updated API Configuration for Frontend
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8000'  // Local development
-  : 'https://cobblebingobackend-kc0vt2i3.b4a.run';  // FIXED: Added https://
+  : 'https://cobblebingobackend-kc0vt2i3.b4a.run';  // Replace with your actual Back4App URL
 
 console.log('Using API Base URL:', API_BASE_URL);
 
-// Test API connection with better error handling
-async function testApiConnection() {
-  try {
-    console.log('Testing API connection to:', `${API_BASE_URL}/health`);
-    const response = await fetch(`${API_BASE_URL}/health`);
-    if (response.ok) {
-      console.log('✅ API connection successful');
-      const data = await response.json();
-      console.log('API health response:', data);
-      return true;
-    } else {
-      console.warn('⚠️ API health check failed:', response.status, response.statusText);
-      return false;
-    }
-  } catch (error) {
-    console.error('❌ API connection failed:', error);
-    return false;
-  }
-}
-
-// Enhanced API call function with better debugging
+// Enhanced API call function with better error handling and CORS support
 async function apiCall(endpoint, options = {}) {
   try {
     const url = `${API_BASE_URL}/api/${endpoint}`;
@@ -208,6 +188,8 @@ async function apiCall(endpoint, options = {}) {
         "Content-Type": "application/json",
         ...options.headers,
       },
+      mode: 'cors', // Explicitly set CORS mode
+      credentials: 'include', // Include credentials if needed
       ...options,
     });
 
@@ -239,27 +221,46 @@ async function apiCall(endpoint, options = {}) {
       throw new Error('Unable to connect to server. Please check your internet connection and try again.');
     }
     
+    // Handle CORS errors specifically
+    if (error.message.includes('CORS') || error.message.includes('Access-Control')) {
+      throw new Error('Server configuration error. Please contact support.');
+    }
+    
     throw error;
   }
 }
 
-// Test API connection
+// Test API connection with proper error handling
 async function testApiConnection() {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`);
+    console.log('Testing API connection to:', `${API_BASE_URL}/health`);
+    const response = await fetch(`${API_BASE_URL}/health`, {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
     if (response.ok) {
       console.log('✅ API connection successful');
+      const data = await response.json();
+      console.log('API health response:', data);
       return true;
     } else {
-      console.warn('⚠️ API health check failed');
+      console.warn('⚠️ API health check failed:', response.status, response.statusText);
       return false;
     }
   } catch (error) {
     console.error('❌ API connection failed:', error);
+    
+    if (error.message.includes('CORS')) {
+      console.error('❌ CORS Error: Backend CORS configuration issue');
+    }
+    
     return false;
   }
 }
-
 // Generate and store card on server
 async function generateAndStoreCard(selectedPokemon, selectedRarity) {
   try {
