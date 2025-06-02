@@ -172,7 +172,7 @@ setTimeout(() => {
 // Updated API Configuration for Frontend
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8000'  // Local development
-  : 'cobblebingo-backend-production.up.railway.app';  // Replace with your actual Back4App URL
+  : 'https://cobblebingo-backend-production.up.railway.app';  // Fixed: Added https://
 
 console.log('Using API Base URL:', API_BASE_URL);
 
@@ -196,19 +196,47 @@ async function apiCall(endpoint, options = {}) {
     console.log('Response status:', response.status);
     console.log('Response headers:', [...response.headers.entries()]);
 
-    let data;
-    try {
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-      data = responseText ? JSON.parse(responseText) : {};
-    } catch (e) {
-      console.error('Failed to parse JSON response:', e);
-      throw new Error(`Invalid JSON response from ${endpoint}: ${e.message}`);
+    // Get the response text first
+    const responseText = await response.text();
+    console.log('Raw response:', responseText);
+
+    // Check if response is ok first
+    if (!response.ok) {
+      // Try to parse as JSON for error details, but handle HTML responses
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.error || errorMessage;
+      } catch (parseError) {
+        // If JSON parsing fails, check if it's HTML
+        if (responseText.toLowerCase().includes('<html>') || 
+            responseText.toLowerCase().includes('<!doctype')) {
+          errorMessage = `Server returned HTML instead of JSON. This usually means the API endpoint doesn't exist or there's a server configuration issue.`;
+        } else {
+          errorMessage = `Server error: ${responseText.substring(0, 100)}...`;
+        }
+      }
+      
+      console.error('API error response:', errorMessage);
+      throw new Error(errorMessage);
     }
 
-    if (!response.ok) {
-      console.error('API error response:', data);
-      throw new Error(data.error || `HTTP error! status: ${response.status}`);
+    // Try to parse as JSON
+    let data;
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch (parseError) {
+      console.error('Failed to parse JSON response:', parseError);
+      console.error('Response text was:', responseText);
+      
+      // Check if we got HTML instead of JSON
+      if (responseText.toLowerCase().includes('<html>') || 
+          responseText.toLowerCase().includes('<!doctype')) {
+        throw new Error('Server returned an HTML page instead of JSON. The API endpoint may not exist or be configured correctly.');
+      } else {
+        throw new Error(`Invalid JSON response from ${endpoint}: ${parseError.message}`);
+      }
     }
 
     console.log('API call successful:', data);
@@ -223,14 +251,19 @@ async function apiCall(endpoint, options = {}) {
     
     // Handle CORS errors specifically
     if (error.message.includes('CORS') || error.message.includes('Access-Control')) {
-      throw new Error('Server configuration error. Please contact support.');
+      throw new Error('Server configuration error (CORS). Please contact support.');
+    }
+
+    // Handle HTML response errors
+    if (error.message.includes('HTML page instead of JSON')) {
+      throw new Error('API endpoint not found. Please verify the server is running and the endpoint exists.');
     }
     
     throw error;
   }
 }
 
-// Test API connection with proper error handling
+// Enhanced test API connection with better error handling
 async function testApiConnection() {
   try {
     console.log('Testing API connection to:', `${API_BASE_URL}/health`);
@@ -242,13 +275,22 @@ async function testApiConnection() {
       }
     });
     
+    const responseText = await response.text();
+    console.log('Health check raw response:', responseText);
+    
     if (response.ok) {
-      console.log('✅ API connection successful');
-      const data = await response.json();
-      console.log('API health response:', data);
-      return true;
+      try {
+        const data = JSON.parse(responseText);
+        console.log('✅ API connection successful');
+        console.log('API health response:', data);
+        return true;
+      } catch (parseError) {
+        console.warn('⚠️ API responded but with non-JSON:', responseText);
+        return false;
+      }
     } else {
       console.warn('⚠️ API health check failed:', response.status, response.statusText);
+      console.warn('Response body:', responseText);
       return false;
     }
   } catch (error) {
@@ -261,9 +303,12 @@ async function testApiConnection() {
     return false;
   }
 }
-// Generate and store card on server
+
+// Generate and store card on server with better error handling
 async function generateAndStoreCard(selectedPokemon, selectedRarity) {
   try {
+    console.log('Generating card with:', { rarity: selectedRarity, pokemon: selectedPokemon });
+    
     const response = await apiCall("generate-card", {
       method: "POST",
       body: JSON.stringify({
@@ -272,32 +317,101 @@ async function generateAndStoreCard(selectedPokemon, selectedRarity) {
       }),
     });
 
+    if (!response.code) {
+      throw new Error('Server did not return a card code');
+    }
+
     return response.code;
   } catch (error) {
     console.error("Error generating card:", error);
-    throw error;
+    
+    // Provide specific error messages based on the error type
+    if (error.message.includes('API endpoint not found')) {
+      throw new Error('The card generation service is not available. Please check if the server is running.');
+    } else if (error.message.includes('HTML page instead of JSON')) {
+      throw new Error('Server configuration error: API endpoint not properly configured.');
+    } else {
+      throw new Error(`Failed to generate card: ${error.message}`);
+    }
   }
 }
 
-// Retrieve card from server
+// Retrieve card from server with better error handling
 async function retrieveCard(code) {
   try {
+    console.log('Retrieving card with code:', code);
+    
     const response = await apiCall(`get-card/${code}`);
+    
+    if (!response.cardData) {
+      throw new Error('Invalid card data received from server');
+    }
+    
     return response;
   } catch (error) {
     console.error("Error retrieving card:", error);
-    throw error;
+    
+    if (error.message.includes('API endpoint not found')) {
+      throw new Error('The card retrieval service is not available. Please check if the server is running.');
+    } else if (error.message.includes('HTML page instead of JSON')) {
+      throw new Error('Server configuration error: API endpoint not properly configured.');
+    } else {
+      throw new Error(`Failed to retrieve card: ${error.message}`);
+    }
   }
 }
 
-// Validate code exists
+// Validate code exists with better error handling
 async function validateCode(code) {
   try {
+    console.log('Validating code:', code);
+    
     const response = await apiCall(`validate-code/${code}`);
     return response.exists;
   } catch (error) {
     console.error("Error validating code:", error);
+    
+    // For validation, we can be more lenient and just return false
+    if (error.message.includes('API endpoint not found') || 
+        error.message.includes('HTML page instead of JSON')) {
+      console.warn('Code validation service unavailable, assuming code is invalid');
+      return false;
+    }
+    
     return false;
+  }
+}
+
+// Add a function to test all API endpoints
+async function testAllEndpoints() {
+  console.log('🔍 Testing all API endpoints...');
+  
+  const endpoints = [
+    { name: 'Health Check', url: `${API_BASE_URL}/health` },
+    { name: 'Generate Card', url: `${API_BASE_URL}/api/generate-card` },
+    { name: 'Get Card', url: `${API_BASE_URL}/api/get-card/test` },
+    { name: 'Validate Code', url: `${API_BASE_URL}/api/validate-code/test` }
+  ];
+  
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint.url, {
+        method: endpoint.name === 'Generate Card' ? 'POST' : 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: endpoint.name === 'Generate Card' ? JSON.stringify({
+          rarity: 'normal',
+          pokemon: []
+        }) : undefined
+      });
+      
+      const text = await response.text();
+      console.log(`${endpoint.name}: ${response.status} - ${text.substring(0, 100)}...`);
+    } catch (error) {
+      console.error(`${endpoint.name}: Failed -`, error.message);
+    }
   }
 }
 
