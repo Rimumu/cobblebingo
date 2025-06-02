@@ -405,9 +405,9 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
     );
   } else if (difficulty === "normal") {
     selected = selected.concat(
-      selectFromCategory("common", 6),
-      selectFromCategory("uncommon", 6),
-      selectFromCategory("rare", 6),
+      selectFromCategory("common", 2),
+      selectFromCategory("uncommon", 8),
+      selectFromCategory("rare", 8),
       selectFromCategory("ultra-rare", 6),
     );
   } else if (difficulty === "hard") {
@@ -445,9 +445,9 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
   } else {
     console.warn("Unknown difficulty, defaulting to normal");
     selected = selected.concat(
-      selectFromCategory("common", 6),
-      selectFromCategory("uncommon", 6),
-      selectFromCategory("rare", 6),
+      selectFromCategory("common", 2),
+      selectFromCategory("uncommon", 8),
+      selectFromCategory("rare", 8),
       selectFromCategory("ultra-rare", 6),
     );
   }
