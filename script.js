@@ -169,13 +169,20 @@ setTimeout(() => {
   }
 }, 5000); // 5 seconds maximum loading time
 
-// API Configuration
-const API_BASE_URL = "protestant-marybelle-greatrimu-e3e70b14.koyeb.app"; // Use same origin in production
+// API Configuration - Updated for production deployment
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:8000'  // Local development
+  : 'protestant-marybelle-greatrimu-e3e70b14.koyeb.app';  // Replace with your actual Koyeb URL
+
+console.log('Using API Base URL:', API_BASE_URL);
 
 // Utility functions for API calls
 async function apiCall(endpoint, options = {}) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/${endpoint}`, {
+    const url = `${API_BASE_URL}/api/${endpoint}`;
+    console.log('Making API call to:', url);
+    
+    const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
         ...options.headers,
@@ -183,7 +190,12 @@ async function apiCall(endpoint, options = {}) {
       ...options,
     });
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      throw new Error(`Invalid JSON response from ${endpoint}`);
+    }
 
     if (!response.ok) {
       throw new Error(data.error || `HTTP error! status: ${response.status}`);
@@ -192,7 +204,30 @@ async function apiCall(endpoint, options = {}) {
     return data;
   } catch (error) {
     console.error(`API call failed for ${endpoint}:`, error);
+    
+    // Show user-friendly error messages
+    if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+      throw new Error('Unable to connect to server. Please check your internet connection and try again.');
+    }
+    
     throw error;
+  }
+}
+
+// Test API connection
+async function testApiConnection() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`);
+    if (response.ok) {
+      console.log('✅ API connection successful');
+      return true;
+    } else {
+      console.warn('⚠️ API health check failed');
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ API connection failed:', error);
+    return false;
   }
 }
 
