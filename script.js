@@ -169,18 +169,39 @@ setTimeout(() => {
   }
 }, 5000); // 5 seconds maximum loading time
 
-// API Configuration - Updated for production deployment
+// API Configuration - FIXED: Added https:// protocol
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8000'  // Local development
-  : 'protestant-marybelle-greatrimu-e3e70b14.koyeb.app';  // Replace with your actual Koyeb URL
+  : 'https://protestant-marybelle-greatrimu-e3e70b14.koyeb.app';  // FIXED: Added https://
 
 console.log('Using API Base URL:', API_BASE_URL);
 
-// Utility functions for API calls
+// Test API connection with better error handling
+async function testApiConnection() {
+  try {
+    console.log('Testing API connection to:', `${API_BASE_URL}/health`);
+    const response = await fetch(`${API_BASE_URL}/health`);
+    if (response.ok) {
+      console.log('✅ API connection successful');
+      const data = await response.json();
+      console.log('API health response:', data);
+      return true;
+    } else {
+      console.warn('⚠️ API health check failed:', response.status, response.statusText);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ API connection failed:', error);
+    return false;
+  }
+}
+
+// Enhanced API call function with better debugging
 async function apiCall(endpoint, options = {}) {
   try {
     const url = `${API_BASE_URL}/api/${endpoint}`;
     console.log('Making API call to:', url);
+    console.log('Request options:', options);
     
     const response = await fetch(url, {
       headers: {
@@ -190,17 +211,25 @@ async function apiCall(endpoint, options = {}) {
       ...options,
     });
 
+    console.log('Response status:', response.status);
+    console.log('Response headers:', [...response.headers.entries()]);
+
     let data;
     try {
-      data = await response.json();
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      data = responseText ? JSON.parse(responseText) : {};
     } catch (e) {
-      throw new Error(`Invalid JSON response from ${endpoint}`);
+      console.error('Failed to parse JSON response:', e);
+      throw new Error(`Invalid JSON response from ${endpoint}: ${e.message}`);
     }
 
     if (!response.ok) {
+      console.error('API error response:', data);
       throw new Error(data.error || `HTTP error! status: ${response.status}`);
     }
 
+    console.log('API call successful:', data);
     return data;
   } catch (error) {
     console.error(`API call failed for ${endpoint}:`, error);
