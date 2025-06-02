@@ -172,7 +172,7 @@ setTimeout(() => {
 // Updated API Configuration for Frontend
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8000'  // Local development
-  : 'https://cobblebingobackend-kc0vt2i3.b4a.run';  // Replace with your actual Back4App URL
+  : 'cobblebingo-backend-production.up.railway.app';  // Replace with your actual Back4App URL
 
 console.log('Using API Base URL:', API_BASE_URL);
 
