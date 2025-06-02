@@ -172,7 +172,7 @@ setTimeout(() => {
 // API Configuration - FIXED: Added https:// protocol
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8000'  // Local development
-  : 'https://protestant-marybelle-greatrimu-e3e70b14.koyeb.app';  // FIXED: Added https://
+  : 'https://cobblebingobackend-kc0vt2i3.b4a.run';  // FIXED: Added https://
 
 console.log('Using API Base URL:', API_BASE_URL);
 
