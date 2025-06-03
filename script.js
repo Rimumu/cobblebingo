@@ -1369,10 +1369,10 @@ function toggleCellCompletion(index) {
   }
 
   // Add a little bounce effect when marking/unmarking
-  cell.style.transform = "scale(0.95)";
-  setTimeout(() => {
-    cell.style.transform = "";
-  }, 150);
+  cell.classList.remove("bounce"); // Remove if already bouncing
+  // Force reflow to restart the animation
+  void cell.offsetWidth;
+  cell.classList.add("bounce");
 
   // Check for bingo with a slight delay for smooth animation
   setTimeout(() => {
