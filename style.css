@@ -1494,27 +1494,32 @@ body {
 /* Grid entrance animation */
 #bingoGrid {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.9) translateZ(0);
     transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
 }
 
 #bingoGrid.grid-generated {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
 }
 
-/* Individual cell staggered entrance animation */
+/* Individual cell optimized entrance animation */
 .bingo-cell {
     opacity: 0;
     transform: scale(0.3) translateY(50px) rotateX(45deg);
     transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform-origin: center;
     perspective: 1000px;
+    will-change: transform, opacity, background-color, box-shadow;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
 }
 
 .bingo-cell.cell-generated {
     opacity: 1;
     transform: scale(1) translateY(0) rotateX(0deg);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Staggered delay for each cell (row by row) */
@@ -1566,13 +1571,47 @@ body {
     transform: scale(0.2) translateY(80px) rotateY(180deg);
     transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     transition-delay: 0.7s;
+    will-change: transform, opacity;
+    transform-origin: center center;
 }
 
 .bingo-cell:nth-child(13).legendary-center.cell-generated {
     transform: scale(1.05) translateY(0) rotateY(0deg);
 }
 
-/* Subtle bounce effect after generation completes */
+/* Smooth hover effects */
+.bingo-cell:hover {
+    transform: translateY(-3px) scale(1.02);
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.legendary-center:hover {
+    transform: translateY(-3px) scale(1.02);
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Completion state transitions */
+.bingo-cell.completed {
+    transform: scale(0.95);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bingo-cell.completed:hover {
+    transform: translateY(-3px) scale(0.97);
+}
+
+/* Unified bounce animation */
+.bingo-cell.bounce {
+    animation: smoothBounce 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes smoothBounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Generation complete animation */
 @keyframes generationComplete {
     0% { transform: scale(1); }
     50% { transform: scale(1.02); }
@@ -1602,128 +1641,55 @@ body {
     pointer-events: none;
 }
 
-@keyframes cell-bounce {
-  0%   { transform: scale(0.95); }
-  60%  { transform: scale(1.03); }
-  100% { transform: scale(1.0); }
-}
-.bingo-cell.bounce {
-  animation: cell-bounce 0.22s cubic-bezier(0.42,0,0.58,1);
-}
-
-/* Optimize cell transitions for smoother animations */
-.bingo-cell {
-  /* Enable hardware acceleration */
-  will-change: transform, opacity, background-color, box-shadow;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
-  
-  /* Smoother transitions with better timing */
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Smooth hover effects */
-.bingo-cell:hover {
-  /* Use transform instead of margin changes for better performance */
-  transform: translateY(-3px) scale(1.02);
-  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Optimize completion state transitions */
-.bingo-cell.completed {
-  transform: scale(0.95);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.bingo-cell.completed:hover {
-  transform: translateY(-3px) scale(0.97);
-}
-
-/* Smooth bounce animation */
-.bounce {
-  animation: smoothBounce 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes smoothBounce {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* Optimize legendary cell animations */
-.legendary-center {
-  will-change: transform, opacity;
-  transform-origin: center center;
-}
-
-.legendary-center:hover {
-  transform: translateY(-3px) scale(1.02);
-  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Smoother checkmark appearance */
+/* Smooth checkmark appearance */
 .manual-checkmark {
-  animation: checkmarkAppear 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: checkmarkAppear 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes checkmarkAppear {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
-/* Optimize bingo line animations */
+/* Bingo line animations */
 .bingo-line {
-  will-change: transform, opacity;
-  animation: bingoLineAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity;
+    animation: bingoLineAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes bingoLineAppear {
-  0% {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-  100% {
-    transform: scaleX(1);
-    opacity: 1;
-  }
+    0% {
+        transform: scaleX(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
 }
 
-/* Optimize celebration animations */
+/* Celebration animations */
 .bingo-celebration .bingo-cell {
-  animation: celebrationPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: celebrationPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes celebrationPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
 }
 
-/* Remove any conflicting CSS that might cause jank */
+/* Global optimizations */
 * {
-  /* Ensure smooth scrolling and rendering */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Optimize the grid container */
-#bingoGrid {
-  /* Enable GPU acceleration for the grid */
-  will-change: transform;
-  transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
