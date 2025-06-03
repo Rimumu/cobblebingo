@@ -1610,3 +1610,120 @@ body {
 .bingo-cell.bounce {
   animation: cell-bounce 0.22s cubic-bezier(0.42,0,0.58,1);
 }
+
+/* Optimize cell transitions for smoother animations */
+.bingo-cell {
+  /* Enable hardware acceleration */
+  will-change: transform, opacity, background-color, box-shadow;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  
+  /* Smoother transitions with better timing */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth hover effects */
+.bingo-cell:hover {
+  /* Use transform instead of margin changes for better performance */
+  transform: translateY(-3px) scale(1.02);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Optimize completion state transitions */
+.bingo-cell.completed {
+  transform: scale(0.95);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bingo-cell.completed:hover {
+  transform: translateY(-3px) scale(0.97);
+}
+
+/* Smooth bounce animation */
+.bounce {
+  animation: smoothBounce 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes smoothBounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Optimize legendary cell animations */
+.legendary-center {
+  will-change: transform, opacity;
+  transform-origin: center center;
+}
+
+.legendary-center:hover {
+  transform: translateY(-3px) scale(1.02);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smoother checkmark appearance */
+.manual-checkmark {
+  animation: checkmarkAppear 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes checkmarkAppear {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Optimize bingo line animations */
+.bingo-line {
+  will-change: transform, opacity;
+  animation: bingoLineAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes bingoLineAppear {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* Optimize celebration animations */
+.bingo-celebration .bingo-cell {
+  animation: celebrationPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes celebrationPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+/* Remove any conflicting CSS that might cause jank */
+* {
+  /* Ensure smooth scrolling and rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize the grid container */
+#bingoGrid {
+  /* Enable GPU acceleration for the grid */
+  will-change: transform;
+  transform: translateZ(0);
+}
