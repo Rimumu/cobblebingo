@@ -493,15 +493,23 @@ body {
     background: linear-gradient(135deg, #9c27b0, #7b1fa2);
 }
 
-/* FREE space styling - enhanced for dark theme */
+/* FREE space styling - enhanced for dark theme with green glow */
 .bingo-cell:nth-child(13) {
-    background: linear-gradient(135deg, #ffd700, #ffb300);
-    border-color: #ff8f00;
-    color: #333;
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    border-color: #4caf50;
+    color: white;
     font-weight: bold;
     font-size: 16px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+/* Legendary FREE space - keep gold styling */
+.bingo-cell:nth-child(13).legendary-center {
+    background: linear-gradient(135deg, #ffd700, #ffb300) !important;
+    border-color: #ff8f00 !important;
+    color: #333 !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4) !important;
 }
 
 #loadingSpinner {
