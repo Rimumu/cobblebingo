@@ -839,15 +839,28 @@ function generateNewCard() {
   generateBingo();
 }
 
-// Updated renderBingoCard function with fixed tooltip positioning
 async function renderBingoCard(selected) {
-  const bingoCard = document.getElementById("bingoGrid");
+  const bingoCard = document.getElementById("bingoCard");
+  const bingoGrid = document.getElementById("bingoGrid");
+  const bingoLogo = document.getElementById("bingoLogo");
+  const postGenerationControls = document.getElementById("postGenerationControls");
+  const loadingSpinner = document.getElementById("loadingSpinner");
   const imageLoadPromises = [];
 
+  // Clear existing grid content
+  bingoGrid.innerHTML = '';
+
+  // Start with hidden states (ensure CSS initial states are applied)
+  bingoCard.classList.remove("card-generated", "generation-complete");
+  bingoGrid.classList.remove("grid-generated");
+  if (bingoLogo) bingoLogo.classList.remove("logo-generated");
+  if (postGenerationControls) postGenerationControls.classList.remove("controls-generated");
+
+  // Create all cells first (they start hidden via CSS)
   selected.forEach((pokemon, index) => {
     const name = pokemon.name;
     const cell = document.createElement("div");
-    cell.className = "bingo-cell";
+    cell.className = "bingo-cell"; // Starts hidden via CSS
 
     if (index === 12) {
       if (pokemon.rarity?.toLowerCase() === "legendary") {
@@ -1127,12 +1140,60 @@ async function renderBingoCard(selected) {
       }
     }
 
-    bingoCard.appendChild(cell);
+    bingoGrid.appendChild(cell);
   });
 
   // Wait for all images to load
   await Promise.all(imageLoadPromises);
-  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // ANIMATION SEQUENCE STARTS HERE
+  // Small delay to ensure DOM is ready
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // Step 1: Hide loading spinner
+  if (loadingSpinner) {
+    loadingSpinner.classList.add("spinner-hidden");
+  }
+
+  // Step 2: Start card container animation (immediate)
+  bingoCard.classList.add("card-generated");
+
+  // Step 3: Logo animation (slight delay)
+  setTimeout(() => {
+    if (bingoLogo) {
+      bingoLogo.classList.add("logo-generated");
+    }
+  }, 200);
+
+  // Step 4: Grid container animation
+  setTimeout(() => {
+    bingoGrid.classList.add("grid-generated");
+  }, 400);
+
+  // Step 5: Trigger individual cell animations (staggered via CSS delays)
+  setTimeout(() => {
+    const cells = bingoGrid.querySelectorAll('.bingo-cell');
+    cells.forEach(cell => {
+      cell.classList.add('cell-generated');
+    });
+  }, 600);
+
+  // Step 6: Show controls after all cell animations complete
+  setTimeout(() => {
+    if (postGenerationControls) {
+      postGenerationControls.classList.add("controls-generated");
+    }
+  }, 1800);
+
+  // Step 7: Final bounce animation
+  setTimeout(() => {
+    bingoCard.classList.add("generation-complete");
+  }, 2000);
+
+  // Clean up bounce animation class after it completes
+  setTimeout(() => {
+    bingoCard.classList.remove("generation-complete");
+  }, 3000);
 }
 
 // Check for code in URL on page load
