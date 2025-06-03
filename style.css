@@ -213,21 +213,21 @@ body.loading {
     transition: opacity 0.5s ease 0.3s, visibility 0.5s ease 0.3s;
 }
 
-/* Modern Background with Dot Grid Pattern - Updated to white theme default */
+/* Modern Background with Dot Grid Pattern */
 body {
     font-family: 'Arial', sans-serif;
     text-align: center;
     margin: 0;
-    background-color: #f5f5f5;
+    background-color: #0a0a0a;
     background-image: 
-        radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.1) 1px, transparent 0);
+        radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
     background-size: 20px 20px;
     padding: 20px 0;
     min-height: 100vh;
-    color: #333333;
+    color: #ffffff;
 }
 
-/* Enhanced filters section - Updated for white theme default */
+/* Enhanced filters section for dark theme */
 #filters {
     display: flex;
     align-items: center;
@@ -235,28 +235,28 @@ body {
     gap: 10px;
     margin: 20px 0;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     padding: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 #filters label {
     margin-right: 5px;
     font-weight: 600;
-    color: #333333;
-    text-shadow: none;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 #filters select {
     margin-right: 15px;
     padding: 8px 12px;
     border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    background: rgba(255, 255, 255, 0.9);
-    color: #333333;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
     backdrop-filter: blur(5px);
     transition: all 0.3s ease;
 }
@@ -265,33 +265,33 @@ body {
     outline: none;
     border-color: #4caf50;
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
-    background: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 #filters select option {
-    background: #ffffff;
-    color: #333333;
+    background: #1a1a1a;
+    color: #ffffff;
 }
 
 #filters input {
     padding: 8px 12px;
     border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    background: rgba(255, 255, 255, 0.9);
-    color: #333333;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
     backdrop-filter: blur(5px);
     transition: all 0.3s ease;
 }
 
 #filters input::placeholder {
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 #filters input:focus {
     outline: none;
     border-color: #4caf50;
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
-    background: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 #filters button {
@@ -320,20 +320,20 @@ body {
     min-height: 400px;
 }
 
-/* Enhanced bingo card with glassmorphism effect - Updated for white theme default */
+/* Enhanced bingo card with glassmorphism effect */
 #bingoCard {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
     padding: 30px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 20px;
     box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     width: max-content;
     margin: 0 auto;
     max-width: 90vw;
@@ -361,7 +361,7 @@ body {
     margin: 0 auto;
     object-fit: contain;
     max-height: 100px;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
 
 #bingoGrid {
@@ -373,9 +373,9 @@ body {
     position: relative;
 }
 
-/* Enhanced bingo cells - Updated for white theme default */
+/* Enhanced bingo cells */
 .bingo-cell {
-    border: 2px solid rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 8px;
     width: 100px;
@@ -384,7 +384,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     box-sizing: border-box;
     transition: all 0.3s ease;
@@ -411,7 +411,7 @@ body {
 
 .pokemon-img {
     border-radius: 4px;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .pokemon-name {
@@ -423,7 +423,7 @@ body {
     margin: 0;
     word-wrap: break-word;
     hyphens: auto;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .image-wrapper {
@@ -496,7 +496,7 @@ body {
     background: linear-gradient(135deg, #9c27b0, #7b1fa2);
 }
 
-/* FREE space styling - enhanced for white theme */
+/* FREE space styling - enhanced for dark theme */
 .bingo-cell:nth-child(13) {
     background: linear-gradient(135deg, #ffd700, #ffb300);
     border-color: #ff8f00;
@@ -531,7 +531,7 @@ body {
 
 #loadingSpinner p {
     font-size: 16px;
-    color: #333333;
+    color: #ffffff;
     font-weight: bold;
     margin: 0;
 }
@@ -558,111 +558,42 @@ body {
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
 }
 
-/* Color Themes - Updated with white Pokemon text for all themes */
-/* White Theme (Default) */
+/* Color Themes - Updated for dark background */
+/* White Theme */
 .theme-white #bingoCard {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .theme-white .bingo-cell {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: rgba(0, 0, 0, 0.2);
-    color: #333;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
 }
 
 .theme-white .pokemon-name {
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.theme-white body {
-    background-color: #f5f5f5;
-    background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.1) 1px, transparent 0);
-    color: #333333;
-}
-
-.theme-white #filters {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.theme-white #filters label {
-    color: #333333;
-}
-
-.theme-white #filters select,
-.theme-white #filters input {
-    background: rgba(255, 255, 255, 0.9);
-    color: #333333;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-.theme-white #loadingSpinner p {
-    color: #333333;
-}
-
-/* Dark Midnight Theme */
-.theme-midnight #bingoCard {
-    background: linear-gradient(135deg, rgba(10, 25, 47, 0.95), rgba(25, 42, 86, 0.95));
-    border-color: rgba(100, 149, 237, 0.4);
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.8),
-        inset 0 1px 0 rgba(100, 149, 237, 0.2),
-        0 0 50px rgba(25, 42, 86, 0.3);
-}
-
-.theme-midnight .bingo-cell {
-    background: linear-gradient(135deg, rgba(15, 30, 60, 0.8), rgba(25, 42, 86, 0.6));
-    border-color: rgba(100, 149, 237, 0.3);
     color: #fff;
-    box-shadow: inset 0 1px 0 rgba(100, 149, 237, 0.1);
 }
 
-.theme-midnight .pokemon-name {
-    color: #ffffff;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+/* Black/Midnight Theme */
+.theme-black #bingoCard {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
-.theme-midnight .bingo-cell:hover {
-    border-color: rgba(100, 149, 237, 0.8);
-    background: linear-gradient(135deg, rgba(25, 42, 86, 0.9), rgba(47, 79, 79, 0.7));
-    box-shadow: 0 8px 25px rgba(100, 149, 237, 0.4);
+.theme-black .bingo-cell {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
 }
 
-.theme-midnight body {
-    background-color: #0a1929;
-    background-image: 
-        radial-gradient(circle at 1px 1px, rgba(100, 149, 237, 0.15) 1px, transparent 0),
-        linear-gradient(135deg, #0a1929 0%, #1a2332 50%, #0a1929 100%);
-    color: #e3f2fd;
+.theme-black .pokemon-name {
+    color: #fff !important;
 }
 
-.theme-midnight #filters {
-    background: linear-gradient(135deg, rgba(10, 25, 47, 0.9), rgba(25, 42, 86, 0.8));
-    border: 1px solid rgba(100, 149, 237, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-}
-
-.theme-midnight #filters label {
-    color: #e3f2fd;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.theme-midnight #filters select,
-.theme-midnight #filters input {
-    background: rgba(25, 42, 86, 0.7);
-    color: #e3f2fd;
-    border: 1px solid rgba(100, 149, 237, 0.4);
-}
-
-.theme-midnight #filters select option {
-    background: #1a2332;
-    color: #e3f2fd;
-}
-
-.theme-midnight #loadingSpinner p {
-    color: #e3f2fd;
+.theme-black .bingo-cell:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.4);
 }
 
 /* Blue Theme */
@@ -678,8 +609,7 @@ body {
 }
 
 .theme-blue .pokemon-name {
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    color: #e3f2fd;
 }
 
 /* Pink Theme */
@@ -695,8 +625,7 @@ body {
 }
 
 .theme-pink .pokemon-name {
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    color: #fce4ec;
 }
 
 /* Purple Theme */
@@ -712,8 +641,7 @@ body {
 }
 
 .theme-purple .pokemon-name {
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    color: #f3e5f5;
 }
 
 /* Red Theme */
@@ -729,8 +657,7 @@ body {
 }
 
 .theme-red .pokemon-name {
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    color: #ffebee;
 }
 
 /* Yellow Theme */
@@ -746,8 +673,7 @@ body {
 }
 
 .theme-yellow .pokemon-name {
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    color: #1a1a1a;
 }
 
 /* Responsive design */
@@ -796,7 +722,7 @@ body {
     }
 }
 
-/* Enhanced controls container */
+/* Enhanced controls container for dark theme */
 .color-scheme-selector {
     display: flex;
     gap: 8px;
@@ -808,7 +734,7 @@ body {
     display: inline-block;
     height: 24px;
     width: 1px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.3);
     margin-right: 10px;
 }
 
@@ -824,22 +750,22 @@ body {
 
 .color-option:hover {
     transform: scale(1.1);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .color-option.active {
-    border-color: #333;
+    border-color: #fff;
     transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
 }
 
-/* Color scheme previews - Updated */
+/* Color scheme previews */
 .color-option.theme-white {
     background: linear-gradient(135deg, #ffffff, #f0f0f0);
 }
 
-.color-option.theme-midnight {
-    background: linear-gradient(135deg, #0a1929, #1a2332);
+.color-option.theme-black {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
 }
 
 .color-option.theme-blue {
@@ -869,16 +795,16 @@ body {
     margin: 20px 0;
 }
 
-/* Enhanced controls */
+/* Enhanced controls for dark theme */
 #postGenerationControls {
     display: inline-flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(15px);
-    border: 1px solid rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     padding: 15px 20px;
     border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     gap: 15px;
 }
 
