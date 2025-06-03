@@ -52,12 +52,11 @@
           <option value="rare">Rare</option>
           <option value="ultra-rare">Ultra-Rare</option>
         </select>
+        <button onclick="generateNewCard()" style="background-color: #4caf50; margin-left: 10px; margin-right: 20px;">Generate New Card</button>
 
-        <label for="cardCode" style="margin-left: 15px;">Card Code:</label>
-        <input type="text" id="cardCode" placeholder="CBXXXXXX" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; margin-right: 15px;">
-
-        <button onclick="generateNewCard()" style="background-color: #4caf50; margin-right: 10px;">Generate New Card</button>
-        <button onclick="generateBingo()" style="background-color: #2196f3;">Load Card</button>
+        <label for="cardCode">Card Code:</label>
+        <input type="text" id="cardCode" placeholder="CBXXXXXX" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; margin-left: 10px;">
+        <button onclick="generateBingo()" style="background-color: #2196f3; margin-left: 10px;">Load Card</button>
       </div>
 
       <div class="bingo-wrapper">
