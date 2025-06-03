@@ -217,6 +217,14 @@
     }
 }
 
+/* Replace the existing .particle styles with this enhanced version */
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: particleFloat 6s linear infinite;
+    opacity: 0;
+}
+
 /* Make particles more visible with varied sizes and stronger colors */
 .particle:nth-child(1n) {
     width: 6px;
