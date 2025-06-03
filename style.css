@@ -396,9 +396,6 @@ body {
 
 .bingo-cell:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
-    border-color: #4caf50;
-    background: rgba(76, 175, 80, 0.1);
     z-index: 100;
 }
 
@@ -589,11 +586,6 @@ body {
 
 .theme-black .pokemon-name {
     color: #fff !important;
-}
-
-.theme-black .bingo-cell:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(0, 0, 0, 0.4);
 }
 
 /* Blue Theme */
@@ -1214,4 +1206,47 @@ body {
 
 .bingo-cell.completed[style*="background-color: rgb(255, 215, 0)"]::after {
   display: none; /* Hide checkmark for FREE space since the whole cell changes color */
+}
+
+/* Theme-specific hover effects */
+.theme-white .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.theme-black .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.theme-blue .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+    border-color: #2196f3;
+    background: rgba(33, 150, 243, 0.2);
+}
+
+.theme-pink .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
+    border-color: #e91e63;
+    background: rgba(233, 30, 99, 0.2);
+}
+
+.theme-purple .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4);
+    border-color: #9c27b0;
+    background: rgba(156, 39, 176, 0.2);
+}
+
+.theme-red .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+    border-color: #f44336;
+    background: rgba(244, 67, 54, 0.2);
+}
+
+.theme-yellow .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(255, 235, 59, 0.4);
+    border-color: #ffeb3b;
+    background: rgba(255, 235, 59, 0.2);
 }
