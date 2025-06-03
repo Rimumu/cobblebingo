@@ -1473,3 +1473,38 @@ function cleanupTooltips() {
     }
   });
 }
+
+// Enhanced particle generator - add this to the end of script.js
+function createEnhancedParticles() {
+    const particlesContainer = document.querySelector('.particles');
+    if (!particlesContainer) return;
+
+    // Clear existing particles
+    particlesContainer.innerHTML = '';
+
+    // Create 15 particles for better visibility
+    for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+
+        // Random horizontal position
+        const leftPosition = Math.random() * 100;
+        particle.style.left = leftPosition + '%';
+
+        // Random animation delay for staggered effect
+        const delay = Math.random() * 6;
+        particle.style.animationDelay = `-${delay}s`;
+
+        // Random animation duration for variety
+        const duration = 5 + Math.random() * 3; // 5-8 seconds
+        particle.style.animationDuration = `${duration}s`;
+
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Initialize particles when page loads
+document.addEventListener('DOMContentLoaded', createEnhancedParticles);
+
+// Refresh particles every 30 seconds to keep them active
+setInterval(createEnhancedParticles, 30000);
