@@ -217,69 +217,89 @@
     }
 }
 
-.particles {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    pointer-events: none;
+/* Make particles more visible with varied sizes and stronger colors */
+.particle:nth-child(1n) {
+    width: 6px;
+    height: 6px;
+    background: rgba(174, 76, 76, 0.8);
+    box-shadow: 0 0 12px rgba(174, 76, 76, 0.6);
+    animation-delay: 0s;
+    left: 10%;
 }
 
-/* Enhanced particles with multiple types */
-.particles {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.particle {
-    position: absolute;
-    border-radius: 50%;
-    animation: particleFloat 8s linear infinite;
-}
-
-.particle:nth-child(odd) {
-    width: 4px;
-    height: 4px;
-    background: rgb(174, 76, 76, 0.4);
-    box-shadow: 0 0 10px rgb(174, 76, 76, 0.3);
-}
-
-.particle:nth-child(even) {
-    width: 3px;
-    height: 3px;
-    background: rgba(33, 150, 243, 0.4);
-    box-shadow: 0 0 8px rgba(33, 150, 243, 0.3);
+.particle:nth-child(2n) {
+    width: 8px;
+    height: 8px;
+    background: rgba(33, 150, 243, 0.8);
+    box-shadow: 0 0 15px rgba(33, 150, 243, 0.6);
+    animation-delay: -1s;
+    left: 25%;
 }
 
 .particle:nth-child(3n) {
-    width: 2px;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    animation-delay: -2s;
+    left: 40%;
 }
 
+.particle:nth-child(4n) {
+    width: 7px;
+    height: 7px;
+    background: rgb(174, 76, 76, 0.8);
+    box-shadow: 0 0 14px rgb(174, 76, 76, 0.6);
+    animation-delay: -3s;
+    left: 55%;
+}
+
+.particle:nth-child(5n) {
+    width: 9px;
+    height: 9px;
+    background: rgb(5, 134, 255, 0.8);
+    box-shadow: 0 0 16px rgb(5, 126, 255, 0.6);
+    animation-delay: -4s;
+    left: 70%;
+}
+
+.particle:nth-child(6n) {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    animation-delay: -5s;
+    left: 85%;
+}
+
+/* Enhanced animation with more visible movement */
 @keyframes particleFloat {
     0% {
-        transform: translateY(100vh) rotate(0deg) scale(0);
+        transform: translateY(100vh) translateX(0px) rotate(0deg) scale(0.5);
         opacity: 0;
     }
-    10% {
+    5% {
         opacity: 1;
-        transform: translateY(90vh) rotate(45deg) scale(1);
+        transform: translateY(95vh) translateX(10px) rotate(45deg) scale(1);
     }
-    90% {
+    25% {
         opacity: 1;
-        transform: translateY(-5vh) rotate(315deg) scale(1);
+        transform: translateY(75vh) translateX(-15px) rotate(135deg) scale(1.1);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(50vh) translateX(20px) rotate(225deg) scale(1);
+    }
+    75% {
+        opacity: 1;
+        transform: translateY(25vh) translateX(-10px) rotate(315deg) scale(1.1);
+    }
+    95% {
+        opacity: 1;
+        transform: translateY(5vh) translateX(5px) rotate(405deg) scale(1);
     }
     100% {
-        transform: translateY(-10vh) rotate(360deg) scale(0);
+        transform: translateY(-5vh) translateX(0px) rotate(450deg) scale(0.5);
         opacity: 0;
     }
 }
