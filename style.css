@@ -1601,3 +1601,32 @@ body {
     transform: scale(0.8);
     pointer-events: none;
 }
+
+/* Optimized animations */
+.bingo-cell {
+  will-change: transform, filter; /* Hint browser for optimized animations */
+  transform: translateZ(0); /* Enable GPU acceleration */
+}
+
+/* Simplified animation for cell completion */
+@keyframes completeCell {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.bingo-cell.completed {
+  animation: completeCell 0.3s ease-out !important;
+}
+
+/* Simplified bingo line animation */
+@keyframes bingoLineGlow {
+  0% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+.bingo-line {
+  will-change: opacity;
+  animation: bingoLineGlow 1s ease-in-out infinite alternate;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); /* Simplified shadow */
+}
