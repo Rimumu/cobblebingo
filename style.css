@@ -1463,3 +1463,141 @@ body {
     border-color: #ffeb3b;
     background: rgba(255, 235, 59, 0.2);
 }
+
+/* Smooth Card Generation Animations */
+
+/* Initial state - card container hidden */
+#bingoCard {
+    opacity: 0;
+    transform: scale(0.8) translateY(30px);
+    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Card container entrance animation */
+#bingoCard.card-generated {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Logo entrance animation */
+#bingoLogo {
+    opacity: 0;
+    transform: scale(0.5) translateY(-20px);
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+#bingoLogo.logo-generated {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Grid entrance animation */
+#bingoGrid {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#bingoGrid.grid-generated {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Individual cell staggered entrance animation */
+.bingo-cell {
+    opacity: 0;
+    transform: scale(0.3) translateY(50px) rotateX(45deg);
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-origin: center;
+    perspective: 1000px;
+}
+
+.bingo-cell.cell-generated {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotateX(0deg);
+}
+
+/* Staggered delay for each cell (row by row) */
+.bingo-cell:nth-child(1) { transition-delay: 0.1s; }
+.bingo-cell:nth-child(2) { transition-delay: 0.15s; }
+.bingo-cell:nth-child(3) { transition-delay: 0.2s; }
+.bingo-cell:nth-child(4) { transition-delay: 0.25s; }
+.bingo-cell:nth-child(5) { transition-delay: 0.3s; }
+
+.bingo-cell:nth-child(6) { transition-delay: 0.35s; }
+.bingo-cell:nth-child(7) { transition-delay: 0.4s; }
+.bingo-cell:nth-child(8) { transition-delay: 0.45s; }
+.bingo-cell:nth-child(9) { transition-delay: 0.5s; }
+.bingo-cell:nth-child(10) { transition-delay: 0.55s; }
+
+.bingo-cell:nth-child(11) { transition-delay: 0.6s; }
+.bingo-cell:nth-child(12) { transition-delay: 0.65s; }
+.bingo-cell:nth-child(13) { transition-delay: 0.7s; } /* FREE space */
+.bingo-cell:nth-child(14) { transition-delay: 0.75s; }
+.bingo-cell:nth-child(15) { transition-delay: 0.8s; }
+
+.bingo-cell:nth-child(16) { transition-delay: 0.85s; }
+.bingo-cell:nth-child(17) { transition-delay: 0.9s; }
+.bingo-cell:nth-child(18) { transition-delay: 0.95s; }
+.bingo-cell:nth-child(19) { transition-delay: 1.0s; }
+.bingo-cell:nth-child(20) { transition-delay: 1.05s; }
+
+.bingo-cell:nth-child(21) { transition-delay: 1.1s; }
+.bingo-cell:nth-child(22) { transition-delay: 1.15s; }
+.bingo-cell:nth-child(23) { transition-delay: 1.2s; }
+.bingo-cell:nth-child(24) { transition-delay: 1.25s; }
+.bingo-cell:nth-child(25) { transition-delay: 1.3s; }
+
+/* Controls entrance animation */
+#postGenerationControls {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition-delay: 1.5s;
+}
+
+#postGenerationControls.controls-generated {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Special animation for legendary center cell */
+.bingo-cell:nth-child(13).legendary-center {
+    transform: scale(0.2) translateY(80px) rotateY(180deg);
+    transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transition-delay: 0.7s;
+}
+
+.bingo-cell:nth-child(13).legendary-center.cell-generated {
+    transform: scale(1.05) translateY(0) rotateY(0deg);
+}
+
+/* Subtle bounce effect after generation completes */
+@keyframes generationComplete {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.generation-complete {
+    animation: generationComplete 0.6s ease-out;
+    animation-delay: 1.8s;
+}
+
+/* Loading state improvements */
+#bingoCard:not(.card-generated) {
+    pointer-events: none;
+}
+
+/* Smooth fade for loading spinner */
+#loadingSpinner {
+    opacity: 1;
+    transform: scale(1);
+    transition: all 0.5s ease-out;
+}
+
+#loadingSpinner.spinner-hidden {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
