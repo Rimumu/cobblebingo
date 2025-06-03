@@ -1601,3 +1601,12 @@ body {
     transform: scale(0.8);
     pointer-events: none;
 }
+
+@keyframes cell-bounce {
+  0%   { transform: scale(0.95); }
+  60%  { transform: scale(1.03); }
+  100% { transform: scale(1.0); }
+}
+.bingo-cell.bounce {
+  animation: cell-bounce 0.22s cubic-bezier(0.42,0,0.58,1);
+}
