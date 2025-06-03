@@ -839,28 +839,15 @@ function generateNewCard() {
   generateBingo();
 }
 
+// Updated renderBingoCard function with fixed tooltip positioning
 async function renderBingoCard(selected) {
-  const bingoCard = document.getElementById("bingoCard");
-  const bingoGrid = document.getElementById("bingoGrid");
-  const bingoLogo = document.getElementById("bingoLogo");
-  const postGenerationControls = document.getElementById("postGenerationControls");
-  const loadingSpinner = document.getElementById("loadingSpinner");
+  const bingoCard = document.getElementById("bingoGrid");
   const imageLoadPromises = [];
 
-  // Clear existing grid content
-  bingoGrid.innerHTML = '';
-
-  // Start with hidden states (ensure CSS initial states are applied)
-  bingoCard.classList.remove("card-generated", "generation-complete");
-  bingoGrid.classList.remove("grid-generated");
-  if (bingoLogo) bingoLogo.classList.remove("logo-generated");
-  if (postGenerationControls) postGenerationControls.classList.remove("controls-generated");
-
-  // Create all cells first (they start hidden via CSS)
   selected.forEach((pokemon, index) => {
     const name = pokemon.name;
     const cell = document.createElement("div");
-    cell.className = "bingo-cell"; // Starts hidden via CSS
+    cell.className = "bingo-cell";
 
     if (index === 12) {
       if (pokemon.rarity?.toLowerCase() === "legendary") {
@@ -899,15 +886,11 @@ async function renderBingoCard(selected) {
 
         // Add hover transform effects
         cell.addEventListener("mouseenter", () => {
-          requestAnimationFrame(() => {
-            cell.style.transform = "translateY(-3px) scale(1.02)";
-          });
+          cell.style.transform = "translateY(-3px) scale(1.02)";
         });
 
         cell.addEventListener("mouseleave", () => {
-          requestAnimationFrame(() => {
-            cell.style.transform = "";
-          });
+          cell.style.transform = "";
         });
 
         const wrapper = document.createElement("div");
@@ -1036,15 +1019,11 @@ async function renderBingoCard(selected) {
 
       // Add hover transform effects
       cell.addEventListener("mouseenter", () => {
-        requestAnimationFrame(() => {
-          cell.style.transform = "translateY(-3px) scale(1.02)";
-        });
+        cell.style.transform = "translateY(-3px) scale(1.02)";
       });
 
       cell.addEventListener("mouseleave", () => {
-        requestAnimationFrame(() => {
-          cell.style.transform = "";
-        });
+        cell.style.transform = "";
       });
 
       const wrapper = document.createElement("div");
@@ -1148,60 +1127,12 @@ async function renderBingoCard(selected) {
       }
     }
 
-    bingoGrid.appendChild(cell);
+    bingoCard.appendChild(cell);
   });
 
   // Wait for all images to load
   await Promise.all(imageLoadPromises);
-
-  // ANIMATION SEQUENCE STARTS HERE
-  // Small delay to ensure DOM is ready
-  await new Promise((resolve) => setTimeout(resolve, 100));
-
-  // Step 1: Hide loading spinner
-  if (loadingSpinner) {
-    loadingSpinner.classList.add("spinner-hidden");
-  }
-
-  // Step 2: Start card container animation (immediate)
-  bingoCard.classList.add("card-generated");
-
-  // Step 3: Logo animation (slight delay)
-  setTimeout(() => {
-    if (bingoLogo) {
-      bingoLogo.classList.add("logo-generated");
-    }
-  }, 200);
-
-  // Step 4: Grid container animation
-  setTimeout(() => {
-    bingoGrid.classList.add("grid-generated");
-  }, 400);
-
-  // Step 5: Trigger individual cell animations (staggered via CSS delays)
-  setTimeout(() => {
-    const cells = bingoGrid.querySelectorAll('.bingo-cell');
-    cells.forEach(cell => {
-      cell.classList.add('cell-generated');
-    });
-  }, 600);
-
-  // Step 6: Show controls after all cell animations complete
-  setTimeout(() => {
-    if (postGenerationControls) {
-      postGenerationControls.classList.add("controls-generated");
-    }
-  }, 1800);
-
-  // Step 7: Final bounce animation
-  setTimeout(() => {
-    bingoCard.classList.add("generation-complete");
-  }, 2000);
-
-  // Clean up bounce animation class after it completes
-  setTimeout(() => {
-    bingoCard.classList.remove("generation-complete");
-  }, 3000);
+  await new Promise((resolve) => setTimeout(resolve, 500));
 }
 
 // Check for code in URL on page load
@@ -1215,35 +1146,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Optimize the bingo line drawing function
+// Improved bingo line drawing
 function drawBingoLine(cellIndices, lineType) {
   const grid = document.getElementById("bingoGrid");
   const line = document.createElement("div");
   line.className = "bingo-line";
-  
-  // Enable hardware acceleration
-  line.style.willChange = "transform, opacity";
-  line.style.backfaceVisibility = "hidden";
 
   // Add specific line type class
   if (lineType === "horizontal") {
     line.classList.add("horizontal");
     const row = Math.floor(cellIndices[0] / 5);
-    line.style.top = `${row * (130 + 8) + 65 - 3}px`;
+    line.style.top = `${row * (130 + 8) + 65 - 3}px`; // 130px cell height + 8px gap
   } else if (lineType === "vertical") {
     line.classList.add("vertical");
     const col = cellIndices[0] % 5;
-    line.style.left = `${col * (100 + 8) + 50 - 3}px`;
+    line.style.left = `${col * (100 + 8) + 50 - 3}px`; // 100px cell width + 8px gap
   } else if (lineType === "diagonal-main") {
     line.classList.add("diagonal", "diagonal-main");
   } else if (lineType === "diagonal-anti") {
     line.classList.add("diagonal", "diagonal-anti");
   }
 
-  // Use requestAnimationFrame for smooth insertion
-  requestAnimationFrame(() => {
-    grid.appendChild(line);
-  });
+  grid.appendChild(line);
 }
 
 // New function to show bingo messages
@@ -1342,65 +1266,57 @@ function toggleCellCompletion(index) {
   const cells = document.querySelectorAll(".bingo-cell");
   const cell = cells[index];
 
+  // REMOVED: Skip restriction for legendary cells - now they can be toggled like any other cell
   // Only skip if it's a regular FREE space (not legendary)
   if (index === 12 && cell.textContent === "FREE") return;
 
-  // Toggle state immediately without delay
   completedCells[index] = !completedCells[index];
-  
-  // Use requestAnimationFrame for smoother transitions
-  requestAnimationFrame(() => {
-    cell.classList.toggle("completed", completedCells[index]);
+  cell.classList.toggle("completed", completedCells[index]);
 
-    // For legendary cells, handle checkmark more efficiently
-    if (cell.classList.contains("legendary-center")) {
-      const existingCheckmark = cell.querySelector(".manual-checkmark");
+  // For legendary cells, manually add/remove checkmark since CSS might not work reliably
+  if (cell.classList.contains("legendary-center")) {
+    const existingCheckmark = cell.querySelector(".manual-checkmark");
 
-      if (completedCells[index] && !existingCheckmark) {
-        const checkmark = document.createElement("div");
-        checkmark.className = "manual-checkmark";
-        checkmark.innerHTML = "✓";
-        checkmark.style.cssText = `
-          position: absolute;
-          top: 5px;
-          right: 5px;
-          background: #FFD700;
-          color: #000;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 16px;
-          font-weight: bold;
-          z-index: 100;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-          pointer-events: none;
-          will-change: transform, opacity;
-        `;
-        cell.appendChild(checkmark);
-      } else if (!completedCells[index] && existingCheckmark) {
-        existingCheckmark.remove();
-      }
+    if (completedCells[index] && !existingCheckmark) {
+      // Add checkmark
+      const checkmark = document.createElement("div");
+      checkmark.className = "manual-checkmark";
+      checkmark.innerHTML = "✓";
+      checkmark.style.cssText = `
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: #FFD700;
+        color: #000;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+        z-index: 100;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        pointer-events: none;
+      `;
+      cell.appendChild(checkmark);
+    } else if (!completedCells[index] && existingCheckmark) {
+      // Remove checkmark
+      existingCheckmark.remove();
     }
+  }
 
-    // Add bounce effect more efficiently
-    if (cell.classList.contains("bounce")) {
-      cell.classList.remove("bounce");
-    }
-    
-    // Use requestAnimationFrame for the bounce effect
-    requestAnimationFrame(() => {
-      cell.classList.add("bounce");
-    });
-  });
+  // Add a little bounce effect when marking/unmarking
+  cell.style.transform = "scale(0.95)";
+  setTimeout(() => {
+    cell.style.transform = "";
+  }, 150);
 
-  // Check for bingo without delay but throttled
-  clearTimeout(toggleCellCompletion.bingoTimeout);
-  toggleCellCompletion.bingoTimeout = setTimeout(() => {
-    checkForBingoThrottled();
-  }, 100); // Reduced from 200ms to 100ms
+  // Check for bingo with a slight delay for smooth animation
+  setTimeout(() => {
+    checkForBingo();
+  }, 200);
 }
 
 // Updated initialization of completed cells - FIXED: Don't pre-mark legendary cells
@@ -1489,39 +1405,42 @@ document.getElementById("exportBtn").addEventListener("click", async () => {
   }
 });
 
-// Optimize the clearCompleted function
+// Enhanced clear function
 function clearCompleted() {
   completedCells = Array(25).fill(false);
+
+  // Reset bingo count
   currentBingoCount = 0;
 
-  // Use requestAnimationFrame for smooth updates
-  requestAnimationFrame(() => {
-    document.querySelectorAll(".bingo-cell").forEach((cell, index) => {
-      if (index === 12 && cell.textContent === "FREE") {
-        completedCells[12] = true;
-        cell.classList.add("completed");
-      } else {
-        cell.classList.remove("completed");
-        
-        const existingCheckmark = cell.querySelector(".manual-checkmark");
-        if (existingCheckmark) {
-          existingCheckmark.remove();
-        }
+  document.querySelectorAll(".bingo-cell").forEach((cell, index) => {
+    if (index === 12 && cell.textContent === "FREE") {
+      // Only auto-complete regular FREE space, not legendary
+      completedCells[12] = true;
+      cell.classList.add("completed");
+    } else {
+      // Clear completion for all other cells (including legendary)
+      cell.classList.remove("completed");
+
+      // Remove manual checkmarks from legendary cells
+      const existingCheckmark = cell.querySelector(".manual-checkmark");
+      if (existingCheckmark) {
+        existingCheckmark.remove();
       }
-    });
-
-  // Clear all bingo lines
-    document.querySelectorAll(".bingo-line").forEach((el) => el.remove());
-
-    // Remove celebration effects
-    const grid = document.getElementById("bingoGrid");
-    grid.classList.remove("bingo-celebration");
-
-    const existingMessage = document.querySelector(".bingo-message");
-    if (existingMessage) {
-      existingMessage.remove();
     }
   });
+
+  // Clear all bingo lines
+  document.querySelectorAll(".bingo-line").forEach((el) => el.remove());
+
+  // Remove celebration effects
+  const grid = document.getElementById("bingoGrid");
+  grid.classList.remove("bingo-celebration");
+
+  // Remove any existing bingo message
+  const existingMessage = document.querySelector(".bingo-message");
+  if (existingMessage) {
+    existingMessage.remove();
+  }
 }
 
 // Add this function to properly initialize completed cells after card generation
@@ -1589,15 +1508,3 @@ document.addEventListener('DOMContentLoaded', createEnhancedParticles);
 
 // Refresh particles every 30 seconds to keep them active
 setInterval(createEnhancedParticles, 30000);
-
-// Throttle the checkForBingo function to prevent excessive calls
-let bingoCheckThrottled = false;
-function checkForBingoThrottled() {
-  if (bingoCheckThrottled) return;
-  
-  bingoCheckThrottled = true;
-  requestAnimationFrame(() => {
-    checkForBingo();
-    bingoCheckThrottled = false;
-  });
-}
