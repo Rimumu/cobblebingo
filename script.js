@@ -833,8 +833,9 @@ async function generateBingo() {
       }
       if (finalPokemonSelection.length !== 25) throw new Error(`Expected 25 items but got ${finalPokemonSelection.length}`);
 
-      const newCardResponse = await generateAndStoreCard(finalPokemonSelection, selectedDifficulty);
-      currentCardCode = newCardResponse.code;
+      const newCardCodeString = await generateAndStoreCard(finalPokemonSelection, selectedDifficulty); // Use a more descriptive variable name
+      currentCardCode = newCardCodeString; // CORRECTED ASSIGNMENT
+      
       if (cardCodeElement) cardCodeElement.value = currentCardCode;
 
       // Card data for rendering (mimicking structure from retrieveCard)
@@ -847,9 +848,21 @@ async function generateBingo() {
         lastAccessed: new Date().toISOString()
       };
 
-      console.log(`New card ${currentCardCode} generated. Initializing session.`);
-      sessionDataFromServer = await initializeSession(currentCardCode);
-      currentSessionId = sessionDataFromServer.sessionId;
+       console.log(`New card ${currentCardCode} generated. Initializing session.`); //
+      if (!currentCardCode) { // Add a defensive check just in case
+          console.error("[generateBingo] CRITICAL ERROR: currentCardCode is not set after generating new card.");
+          alert("Critical error: New card code is missing after generation. Cannot initialize session.");
+          // Reset UI states
+          loadingSpinner.style.display = "none";
+          document.querySelector(".controls-container").style.display = "flex";
+          bingoCardWrapper.style.display = "none";
+          logoContainer.style.display = "none";
+          exportBtn.style.display = "none";
+          document.getElementById("postGenerationControls").style.display = "none";
+          return;
+      }
+      sessionDataFromServer = await initializeSession(currentCardCode); //
+      currentSessionId = sessionDataFromServer.sessionId; //
     }
 
     // At this point, we must have currentCardCode and currentSessionId
