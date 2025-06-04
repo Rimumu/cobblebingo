@@ -183,7 +183,7 @@ function initializeDOMElements() {
     mainLoadingSpinner = document.getElementById("loadingSpinnerMain");
     bingoCardGridElement = document.getElementById("bingoGrid");
     bingoCardWrapperElement = document.getElementById("bingoCard");
-    bingoCardLogoContainerElement = document.getElementById("bingoCard #bingoCardLogoContainer"); // More specific
+    bingoCardLogoContainerElement = document.getElementById("bingoCardLogoContainer");
     exportButton = document.getElementById("exportBtn");
     postGenerationControlsElement = document.getElementById("postGenerationControls");
     controlsContainerElement = document.querySelector(".controls-container");
