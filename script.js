@@ -176,6 +176,10 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
 
 console.log('Using API Base URL:', API_BASE_URL);
 
+// Global variable for current session ID
+let currentSessionId = null;
+let currentCardCode = null; // Keep track of the card code associated with the session
+
 // Enhanced API call function with better error handling and CORS support
 async function apiCall(endpoint, options = {}) {
   try {
@@ -379,6 +383,72 @@ async function validateCode(code) {
     }
     
     return false;
+  }
+}
+
+// New API call functions for sessions
+async function initializeSession(cardCode) {
+  try {
+    console.log('Initializing session for card code:', cardCode);
+    const response = await apiCall("session/init", {
+      method: "POST",
+      body: JSON.stringify({ cardCode }),
+    });
+    if (!response.sessionId) {
+      throw new Error('Server did not return a session ID');
+    }
+    console.log('Session initialized:', response);
+    return response; // Contains sessionId, cardCode, completedCells
+  } catch (error) {
+    console.error("Error initializing session:", error);
+    // Potentially show a user-friendly error message
+    throw new Error(`Failed to initialize session: ${error.message}`);
+  }
+}
+
+async function getSessionData(sessionId) {
+  try {
+    console.log('Retrieving session data for session ID:', sessionId);
+    const response = await apiCall(`session/${sessionId}`);
+    if (!response.cardCode || !response.completedCells) { // Check for essential data
+      throw new Error('Invalid session data received from server');
+    }
+    console.log('Session data retrieved:', response);
+    return response;
+  } catch (error) {
+    console.error("Error retrieving session data:", error);
+    // If session not found (404), this error will be caught here.
+    // The calling function can then decide to create a new session.
+    throw new Error(`Failed to retrieve session data: ${error.message}`);
+  }
+}
+
+async function updateSessionCompletedCells(sessionId, cells) {
+  try {
+    console.log('Updating completed cells for session ID:', sessionId, 'Cells:', cells);
+    await apiCall(`session/${sessionId}/update`, {
+      method: "PUT",
+      body: JSON.stringify({ completedCells: cells }),
+    });
+    console.log('Session cells updated successfully.');
+  } catch (error) {
+    console.error("Error updating session completed cells:", error);
+    // Potentially show a subtle error to the user that save failed
+    // Do not re-throw if you want the game to continue client-side
+  }
+}
+
+// Function to update URL with card code and session ID
+function updateUrlWithSession(cardCode, sessionId) {
+  if (!cardCode || !sessionId) return;
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set('code', cardCode);
+    url.searchParams.set('sessionid', sessionId);
+    history.pushState({ cardCode, sessionId }, '', url.toString());
+    console.log('URL updated:', url.toString());
+  } catch (error) {
+    console.error('Error updating URL:', error);
   }
 }
 
@@ -648,6 +718,7 @@ async function imageToBase64(imgElement) {
 }
 
 // Updated generateBingo function with proper new card generation
+// Modify generateBingo to handle sessions
 async function generateBingo() {
   const selectedDifficulty = document.getElementById("difficulty").value;
   console.log("Selected Difficulty:", selectedDifficulty);
@@ -656,7 +727,7 @@ async function generateBingo() {
     ? cardCodeElement.value.trim().toUpperCase()
     : "";
   const loadingSpinner = document.getElementById("loadingSpinner");
-  const bingoCard = document.getElementById("bingoGrid");
+  const bingoCardGrid = document.getElementById("bingoGrid"); // Changed variable name for clarity
   const bingoCardWrapper = document.getElementById("bingoCard");
   const logoContainer = document.getElementById("logoContainer");
   const exportBtn = document.getElementById("exportBtn");
@@ -666,176 +737,205 @@ async function generateBingo() {
   logoContainer.style.display = "none";
   exportBtn.style.display = "none";
   document.querySelector(".controls-container").style.display = "none";
-  bingoCard.innerHTML = "";
+  bingoCardGrid.innerHTML = ""; // Clear previous grid
+
+  // Clear previous tooltips
+  cleanupTooltips();
+  // Reset bingo lines and messages
+  document.querySelectorAll(".bingo-line, .bingo-message").forEach(el => el.remove());
+  currentBingoCount = 0;
+
 
   await new Promise((resolve) => setTimeout(resolve, 300));
 
-  let selected = [];
-  let cardCode = "";
+  let cardDataFromServer;
+  let sessionDataFromServer;
+  let loadedCardCode = null;
+  let loadedSessionId = null;
 
-  // Check if we have a code in the URL (only on initial page load)
   const urlParams = new URLSearchParams(window.location.search);
-  const urlCode = urlParams.get("code");
-
-  // Only use URL code if there's no input code AND this appears to be an initial load
-  const shouldLoadExistingCard =
-    cardCodeInput || (urlCode && !document.body.hasAttribute("data-generated"));
-  const codeToUse = cardCodeInput || (shouldLoadExistingCard ? urlCode : "");
+  const urlCode = urlParams.get("code") ? urlParams.get("code").toUpperCase() : null;
+  const urlSessionId = urlParams.get("sessionid");
 
   try {
-    if (codeToUse) {
-      // Load existing card from server
-      console.log("Loading existing card with code:", codeToUse);
-
-      const cardData = await retrieveCard(codeToUse);
-      selected = cardData.cardData.pokemon;
-      cardCode = cardData.code;
-
-      // Update the input field with the retrieved code
-      if (cardCodeElement) {
-        cardCodeElement.value = cardCode;
+    // Determine if loading existing card or generating new
+    if (cardCodeInput) { // User entered a code
+      loadedCardCode = cardCodeInput;
+      if (urlSessionId && urlCode === loadedCardCode) { // If URL session matches input code
+        loadedSessionId = urlSessionId;
       }
+    } else if (urlCode) { // Code from URL
+      loadedCardCode = urlCode;
+      loadedSessionId = urlSessionId; // May be null, handled later
+    }
 
-      // Update difficulty filter to match the retrieved card
-      if (cardData.cardData.difficulty) {
-        document.getElementById("difficulty").value =
-          cardData.cardData.difficulty;
-      }
-    } else {
-      // Generate new card
-      console.log("Generating new card...");
+    if (loadedCardCode) {
+      console.log(`Attempting to load card: ${loadedCardCode}`);
+      try {
+        cardDataFromServer = await retrieveCard(loadedCardCode);
+        currentCardCode = cardDataFromServer.code; // Set currentCardCode
+        if (cardCodeElement) cardCodeElement.value = currentCardCode;
+        if (cardDataFromServer.cardData.difficulty) {
+          document.getElementById("difficulty").value = cardDataFromServer.cardData.difficulty;
+        }
 
-      // Clear any existing code from input and URL
-      if (cardCodeElement) {
-        cardCodeElement.value = "";
-      }
-
-      // Clear URL parameter for new generation
-      if (urlCode) {
-        history.replaceState(null, null, window.location.pathname);
-      }
-
-      // Get 24 Pokémon based on difficulty (not 25!)
-      let pokemonForCard = selectPokemonByDifficulty(
-        pokemonData,
-        selectedDifficulty,
-      );
-
-      // For 'insane' difficulty, we already handle the legendary in the selection function
-      if (selectedDifficulty === "insane") {
-        // selectPokemonByDifficulty already returns 25 items (24 ultra-rare + 1 legendary at position 12)
-        // Shuffle all positions except the center (legendary)
-        const centerPokemon = pokemonForCard[12]; // Save the legendary
-        const otherPokemon = [
-          ...pokemonForCard.slice(0, 12),
-          ...pokemonForCard.slice(13),
-        ]; // Get all except center
-        const shuffledOther = shuffle(otherPokemon); // Shuffle the other 24
-
-        // Rebuild array with shuffled positions but keep legendary in center
-        selected = [];
-        for (let i = 0; i < 25; i++) {
-          if (i === 12) {
-            selected.push(centerPokemon); // Keep legendary in center
-          } else {
-            const otherIndex = i < 12 ? i : i - 1;
-            selected.push(shuffledOther[otherIndex]);
+        if (loadedSessionId) {
+          console.log(`Attempting to load session: ${loadedSessionId} for card: ${currentCardCode}`);
+          try {
+            sessionDataFromServer = await getSessionData(loadedSessionId);
+            if (sessionDataFromServer.cardCode !== currentCardCode) {
+              console.warn(`Session ${loadedSessionId} is for card ${sessionDataFromServer.cardCode}, but current card is ${currentCardCode}. Creating new session.`);
+              sessionDataFromServer = null; // Invalidate session data
+              currentSessionId = null; // Reset currentSessionId
+            } else {
+              currentSessionId = sessionDataFromServer.sessionId;
+            }
+          } catch (sessionError) {
+            console.warn(`Failed to load session ${loadedSessionId} or it's invalid:`, sessionError.message);
+            sessionDataFromServer = null; // Ensure it's null if error
+            currentSessionId = null;
           }
+        }
+
+        if (!currentSessionId) { // If no valid session ID yet (not from URL or mismatch)
+          console.log(`No valid session for ${currentCardCode}. Initializing new session.`);
+          sessionDataFromServer = await initializeSession(currentCardCode);
+          currentSessionId = sessionDataFromServer.sessionId;
+        }
+      } catch (cardError) {
+        alert(`Error loading card ${loadedCardCode}: ${cardError.message}. Please check the code or generate a new card.`);
+        loadingSpinner.style.display = "none";
+        document.querySelector(".controls-container").style.display = "flex"; // Show controls again
+        return;
+      }
+    } else { // Generate new card
+      console.log("Generating new card...");
+      if (cardCodeElement) cardCodeElement.value = ""; // Clear any old code
+      history.replaceState(null, null, window.location.pathname); // Clear URL params
+
+      let pokemonForCard = selectPokemonByDifficulty(pokemonData, selectedDifficulty);
+      let finalPokemonSelection = [];
+
+      if (selectedDifficulty === "insane") {
+        const centerPokemon = pokemonForCard[12];
+        const otherPokemon = [...pokemonForCard.slice(0, 12), ...pokemonForCard.slice(13)];
+        const shuffledOther = shuffle(otherPokemon);
+        for (let i = 0; i < 25; i++) {
+          if (i === 12) finalPokemonSelection.push(centerPokemon);
+          else finalPokemonSelection.push(shuffledOther[i < 12 ? i : i - 1]);
         }
       } else {
-        // For other difficulties, shuffle the 24 Pokémon and add FREE space at center
-        if (pokemonForCard.length > 24) {
-          pokemonForCard = pokemonForCard.slice(0, 24);
-        }
-
-        // Shuffle the Pokémon before placing them
-        const shuffledPokemon = shuffle(pokemonForCard);
-
-        // Create array with FREE space at position 12
-        selected = [];
+        const shuffledPokemon = shuffle(pokemonForCard.slice(0, 24)); // Ensure 24 for non-insane
         for (let i = 0; i < 25; i++) {
-          if (i === 12) {
-            selected.push({
-              name: "Free Space",
-              rarity: "",
-              biome: "",
-              id: "",
-            });
-          } else {
-            const pokemonIndex = i < 12 ? i : i - 1;
-            selected.push(shuffledPokemon[pokemonIndex]);
-          }
+          if (i === 12) finalPokemonSelection.push({ name: "Free Space", rarity: "", biome: "", id: "" });
+          else finalPokemonSelection.push(shuffledPokemon[i < 12 ? i : i - 1]);
         }
       }
+      if (finalPokemonSelection.length !== 25) throw new Error(`Expected 25 items but got ${finalPokemonSelection.length}`);
 
-      console.log("Selected Pokémon for storage:", selected);
+      const newCardResponse = await generateAndStoreCard(finalPokemonSelection, selectedDifficulty);
+      currentCardCode = newCardResponse.code;
+      if (cardCodeElement) cardCodeElement.value = currentCardCode;
 
-      // Verify we have exactly 25 items
-      if (selected.length !== 25) {
-        throw new Error(`Expected 25 items but got ${selected.length}`);
-      }
+      // Card data for rendering (mimicking structure from retrieveCard)
+      cardDataFromServer = {
+        code: currentCardCode,
+        cardData: { pokemon: finalPokemonSelection, difficulty: selectedDifficulty },
+        // Add other fields if your renderBingoCard expects them from a newly generated card context
+        createdAt: new Date().toISOString(),
+        usageCount: 0,
+        lastAccessed: new Date().toISOString()
+      };
 
-      // Store card on server and get code
-      cardCode = await generateAndStoreCard(selected, selectedDifficulty);
-
-      // Update the input field
-      if (cardCodeElement) {
-        cardCodeElement.value = cardCode;
-      }
+      console.log(`New card ${currentCardCode} generated. Initializing session.`);
+      sessionDataFromServer = await initializeSession(currentCardCode);
+      currentSessionId = sessionDataFromServer.sessionId;
     }
 
-    // Update URL with the code
-    const currentUrl = new URL(window.location);
-    if (currentUrl.searchParams.get("code") !== cardCode) {
-      history.pushState(null, null, `?code=${encodeURIComponent(cardCode)}`);
+    // At this point, we must have currentCardCode and currentSessionId
+    if (!currentCardCode || !currentSessionId) {
+        throw new Error("Failed to establish a valid card code and session ID.");
     }
-
-    // Mark that we've generated a card
+    updateUrlWithSession(currentCardCode, currentSessionId);
     document.body.setAttribute("data-generated", "true");
-    console.log("Final Selected for Rendering:", selected);
 
-    if (selected.length === 0) {
-      console.error("No Pokémon selected, cannot render card!");
-      return;
-    }
+    // Apply completed cells from session data or default
+    completedCells = sessionDataFromServer ? [...sessionDataFromServer.completedCells] : Array(25).fill(false);
+    
+    // The `initializeCompletedCells` function should run *after* `completedCells` is set from the server
+    // or defaulted, and *after* the card is rendered. It specifically checks the 12th cell's text content.
+    
+    console.log("Final Pokemon for Rendering:", cardDataFromServer.cardData.pokemon);
+    console.log("Initial completedCells state for rendering:", completedCells);
 
-    await renderBingoCard(selected);
-    initializeCompletedCells();
-    console.log(
-      "Rendered cells:",
-      document.querySelectorAll(".bingo-cell").length,
-    );
+    await renderBingoCard(cardDataFromServer.cardData.pokemon); // Pass only pokemon array
+    initializeCompletedCells(); // This will mark FREE space if applicable, AFTER cells are on DOM
+                                // And will respect legendary center not being auto-completed.
+    
+    // Re-apply the loaded completed status to the DOM elements correctly *after* rendering
+    // and after initializeCompletedCells might have marked the free space.
+    const cells = document.querySelectorAll(".bingo-cell");
+    completedCells.forEach((isCompleted, index) => {
+        if (cells[index]) {
+            cells[index].classList.toggle("completed", isCompleted);
+            // Special handling for checkmark on legendary if it was loaded as completed
+            if (isCompleted && cells[index].classList.contains('legendary-center')) {
+                const existingCheckmark = cells[index].querySelector(".manual-checkmark");
+                if (!existingCheckmark) {
+                    const checkmark = document.createElement("div");
+                    checkmark.className = "manual-checkmark";
+                    checkmark.innerHTML = "✓";
+                    // ... (style the checkmark as in toggleCellCompletion)
+                    checkmark.style.cssText = `
+                        position: absolute; top: 5px; right: 5px; background: #FFD700; color: #000;
+                        width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center;
+                        justify-content: center; font-size: 16px; font-weight: bold; z-index: 100;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.3); pointer-events: none;
+                    `;
+                    cells[index].appendChild(checkmark);
+                }
+            }
+        }
+    });
+
+    checkForBingo(); // Check for any initial bingos based on loaded state
+    console.log("Rendered cells:", document.querySelectorAll(".bingo-cell").length);
+
   } catch (error) {
-    console.error("Error in generateBingo:", error);
-    alert(`Error: ${error.message || "Failed to generate/load bingo card"}`);
+    console.error("Error in generateBingo (session handling):", error);
+    alert(`Error: ${error.message || "Failed to generate/load bingo card and session"}`);
+    // Reset UI states
     loadingSpinner.style.display = "none";
+    document.querySelector(".controls-container").style.display = "flex"; // Show controls
+    bingoCardWrapper.style.display = "none"; // Hide card
+    logoContainer.style.display = "none";
+    exportBtn.style.display = "none";
+    document.getElementById("postGenerationControls").style.display = "none";
+    currentSessionId = null; // Reset session ID on error
+    currentCardCode = null; // Reset card code
     return;
   }
 
+  // UI updates for success
   loadingSpinner.style.display = "none";
   bingoCardWrapper.style.display = "flex";
   logoContainer.style.display = "block";
   exportBtn.style.display = "inline-block";
-  document.getElementById("postGenerationControls").style.display =
-    "inline-flex";
+  document.getElementById("postGenerationControls").style.display = "inline-flex";
   document.querySelector(".controls-container").style.display = "flex";
 }
 
-// Add a function to explicitly generate a new card
+// Update generateNewCard to clear session info
 function generateNewCard() {
-  // Clear the input field and URL
   const cardCodeElement = document.getElementById("cardCode");
   if (cardCodeElement) {
     cardCodeElement.value = "";
   }
+  currentSessionId = null; // Clear current session ID
+  currentCardCode = null;  // Clear current card code
 
-  // Clear URL parameter
-  history.replaceState(null, null, window.location.pathname);
-
-  // Remove the generated flag so we definitely create a new card
+  history.replaceState(null, null, window.location.pathname); // Clear URL params
   document.body.removeAttribute("data-generated");
-
-  // Generate the bingo card
   generateBingo();
 }
 
@@ -1135,15 +1235,28 @@ async function renderBingoCard(selected) {
   await new Promise((resolve) => setTimeout(resolve, 500));
 }
 
-// Check for code in URL on page load
+// DOMContentLoaded listener: Ensure it correctly tries to load or start flow
 document.addEventListener("DOMContentLoaded", () => {
   setupColorSchemeSelector();
+  createEnhancedParticles(); // Or your original createParticles()
 
   const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get("code");
-  if (code && document.getElementById("cardCode")) {
-    document.getElementById("cardCode").value = code;
+  const codeFromUrl = urlParams.get("code");
+  const sessionIdFromUrl = urlParams.get("sessionid"); // Will be used by generateBingo
+
+  const cardCodeInput = document.getElementById("cardCode");
+
+  if (codeFromUrl && cardCodeInput) {
+    cardCodeInput.value = codeFromUrl.toUpperCase();
+    // No need to explicitly call generateBingo here if you have a "Load from Code" button
+    // or if generateBingo is called by a main "Start/Generate" button that respects the input field.
+    // If you want to auto-load on page visit with code/session in URL:
+    // generateBingo(); // This will pick up cardCodeInput value and URL session
   }
+  // If you have an explicit "Generate/Load" button, the user clicking it will trigger generateBingo.
+  // If you want auto-load, uncomment generateBingo() call above,
+  // but ensure it doesn't conflict with manual button clicks.
+  // For now, let's assume a manual "Generate" or "Load code" button click initiates generateBingo.
 });
 
 // Improved bingo line drawing
@@ -1261,63 +1374,52 @@ function checkForBingo() {
 let completedCells = Array(25).fill(false); // 5x5 grid
 completedCells[12] = true; // FREE space is always completed*/
 
-// Enhanced toggle function with better feedback
+// Update toggleCellCompletion to save to backend
 function toggleCellCompletion(index) {
   const cells = document.querySelectorAll(".bingo-cell");
   const cell = cells[index];
 
-  // REMOVED: Skip restriction for legendary cells - now they can be toggled like any other cell
-  // Only skip if it's a regular FREE space (not legendary)
-  if (index === 12 && cell.textContent === "FREE") return;
+  if (index === 12 && cell.textContent === "FREE") return; // Standard FREE space cannot be toggled off
 
   completedCells[index] = !completedCells[index];
   cell.classList.toggle("completed", completedCells[index]);
 
-  // For legendary cells, manually add/remove checkmark since CSS might not work reliably
   if (cell.classList.contains("legendary-center")) {
     const existingCheckmark = cell.querySelector(".manual-checkmark");
-
     if (completedCells[index] && !existingCheckmark) {
-      // Add checkmark
       const checkmark = document.createElement("div");
       checkmark.className = "manual-checkmark";
       checkmark.innerHTML = "✓";
       checkmark.style.cssText = `
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        background: #FFD700;
-        color: #000;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        font-weight: bold;
-        z-index: 100;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        pointer-events: none;
+        position: absolute; top: 5px; right: 5px; background: #FFD700; color: #000;
+        width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center;
+        justify-content: center; font-size: 16px; font-weight: bold; z-index: 100;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3); pointer-events: none;
       `;
       cell.appendChild(checkmark);
     } else if (!completedCells[index] && existingCheckmark) {
-      // Remove checkmark
       existingCheckmark.remove();
     }
   }
 
-  // Add a little bounce effect when marking/unmarking
   cell.style.transform = "scale(0.95)";
   setTimeout(() => {
     cell.style.transform = "";
   }, 150);
 
-  // Check for bingo with a slight delay for smooth animation
   setTimeout(() => {
     checkForBingo();
   }, 200);
+
+  // Save to backend
+  if (currentSessionId) {
+    console.log("Saving completed cells to backend:", completedCells);
+    updateSessionCompletedCells(currentSessionId, completedCells);
+  } else {
+    console.warn("No currentSessionId found, cannot save cell completion state to backend.");
+  }
 }
+
 
 // Updated initialization of completed cells - FIXED: Don't pre-mark legendary cells
 let completedCells = Array(25).fill(false); // 5x5 grid
@@ -1405,53 +1507,59 @@ document.getElementById("exportBtn").addEventListener("click", async () => {
   }
 });
 
-// Enhanced clear function
+// Update clearCompleted to also update backend
 function clearCompleted() {
+  // Reset local state first
   completedCells = Array(25).fill(false);
-
-  // Reset bingo count
   currentBingoCount = 0;
 
   document.querySelectorAll(".bingo-cell").forEach((cell, index) => {
+    // Reset visual state for all cells
+    cell.classList.remove("completed");
+    const existingCheckmark = cell.querySelector(".manual-checkmark");
+    if (existingCheckmark) {
+      existingCheckmark.remove();
+    }
+    // Then, if it's a true FREE space, mark it as completed locally and visually
     if (index === 12 && cell.textContent === "FREE") {
-      // Only auto-complete regular FREE space, not legendary
       completedCells[12] = true;
       cell.classList.add("completed");
-    } else {
-      // Clear completion for all other cells (including legendary)
-      cell.classList.remove("completed");
-
-      // Remove manual checkmarks from legendary cells
-      const existingCheckmark = cell.querySelector(".manual-checkmark");
-      if (existingCheckmark) {
-        existingCheckmark.remove();
-      }
     }
   });
 
-  // Clear all bingo lines
   document.querySelectorAll(".bingo-line").forEach((el) => el.remove());
-
-  // Remove celebration effects
   const grid = document.getElementById("bingoGrid");
   grid.classList.remove("bingo-celebration");
-
-  // Remove any existing bingo message
   const existingMessage = document.querySelector(".bingo-message");
-  if (existingMessage) {
-    existingMessage.remove();
+  if (existingMessage) existingMessage.remove();
+
+  // Update backend with the cleared state (which will have the free space correctly set if applicable)
+  if (currentSessionId) {
+    console.log("Clearing completed cells on backend:", completedCells);
+    updateSessionCompletedCells(currentSessionId, completedCells);
   }
 }
 
 // Add this function to properly initialize completed cells after card generation
 function initializeCompletedCells() {
-  const centerCell = document.querySelector(".bingo-cell:nth-child(13)");
-  if (centerCell && centerCell.textContent === "FREE") {
-    // Only mark regular FREE space as completed
-    completedCells[12] = true;
-    centerCell.classList.add("completed");
+  const cells = document.querySelectorAll(".bingo-cell");
+  if (cells.length !== 25) {
+    // console.warn("Bingo grid not fully rendered yet for initializeCompletedCells.");
+    return;
   }
-  // Legendary cells start uncompleted and can be clicked to complete
+
+  // This function correctly handles the default state of the FREE space.
+  // If `completedCells` was loaded from a session, this function primarily ensures
+  // the visual representation of the FREE space (if it is a standard FREE space)
+  // is correctly marked, without overriding other loaded states.
+  const centerCell = cells[12]; // querySelector(".bingo-cell:nth-child(13)");
+  if (centerCell && centerCell.textContent === "FREE") {
+      if (!completedCells[12]) { // Only mark it if not already marked by loaded session state (though it should be)
+          completedCells[12] = true;
+      }
+      centerCell.classList.add("completed"); // Ensure visual update
+  }
+  // Legendary cells and other cells rely on the `completedCells` array state.
 }
 
 // UPDATED cleanup function - Replace your existing cleanupTooltips function
