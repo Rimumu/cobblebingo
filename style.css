@@ -399,7 +399,11 @@ body {
     position: relative;
     gap: 3px;
     z-index: 1;
-    cursor: pointer;
+    cursor: default; /* Default cursor, pointer set by JS for clickable cells */
+}
+.bingo-cell:hover:not(.free-space-cell) { /* Hover for non-free space */
+    transform: translateY(-3px);
+    z-index: 100;
 }
 .bingo-cell:hover { transform: translateY(-3px); z-index: 100; /* z-index on hover for tooltip overlap */ }
 .bingo-cell img { width: 50px; height: 50px; object-fit: contain; flex-shrink: 0; }
@@ -419,28 +423,31 @@ body {
 
 /* Standard FREE space cell (not legendary) */
 .bingo-cell.free-space-cell {
-    background: linear-gradient(135deg, #ffd700, #ffb300);
+    background: linear-gradient(135deg, #ffd700, #ffb300); /* Gold */
     border-color: #ff8f00;
-    color: #333; /* Darker text for gold background */
+    color: #333;
     font-weight: bold;
-    font-size: 16px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Lighter shadow for light background */
+    font-size: 18px; /* Slightly larger for FREE text */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    cursor: default; /* Not clickable */
 }
 
 /* Completed standard FREE space cell */
-.bingo-cell.free-space-cell.completed {
-    background: linear-gradient(135deg, #4caf50, #45a049); /* Green */
-    border-color: #4caf50;
-    color: white;
-    filter: none; /* Override generic .completed filter */
-    opacity: 1;   /* Override generic .completed opacity */
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+.bingo-cell.free-space-cell.completed { /* This is its default and only state */
+    /* Styles should be same as above, or explicitly define completed look if it could differ */
+    /* If it's always green as 'completed', then the above is its 'uncompleted' look which it never is */
+    /* Let's assume FREE space is always "completed" visually with its gold look by default.
+       If you want it to turn green like other completed cells, then that's different.
+       The JS makes completedCells[12] = true.
+       The CSS here should reflect that 'true' state.
+       If gold IS the 'completed' look for FREE space: */
+    filter: none;
+    opacity: 1;
 }
 /* No ::after checkmark for standard free space as the whole cell changes */
 .bingo-cell.free-space-cell.completed::after {
-    display: none;
+    display: none; /* No checkmark for standard FREE space */
 }
 
 
@@ -460,6 +467,7 @@ body {
   position: relative;
   overflow: hidden;
   transform: scale(1.05); /* Initial slight zoom */
+  cursor: pointer; /* It is clickable */
 }
 .bingo-cell.legendary-center::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient( 45deg, transparent, rgba(255, 255, 255, 0.15), transparent ); transform: rotate(45deg); animation: legendaryShine 3s linear infinite; }
 @keyframes legendaryPulse { 0%, 100% { transform: scale(1.05); box-shadow: 0 0 25px rgba(218, 165, 32, 0.8), inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 0 -2px 0 rgba(184, 134, 11, 0.3); } 50% { transform: scale(1.08); box-shadow: 0 0 35px rgba(218, 165, 32, 1.0), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 0 rgba(184, 134, 11, 0.4); } }
@@ -471,15 +479,14 @@ body {
 
 /* Completed legendary center cell */
 .bingo-cell.legendary-center.completed {
-  filter: grayscale(20%) brightness(0.9); /* Less dramatic filter than regular completed */
+  filter: grayscale(30%) brightness(0.85); /* Subtler filter */
   opacity: 0.9;
-  /* Retain most of its legendary flair, perhaps a slightly subdued shimmer or pulse if desired */
+  /* The manual checkmark is added by JS, no ::after needed */
 }
 /* The manual checkmark for legendary is added by JS, styled by .manual-checkmark */
 .bingo-cell.legendary-center.completed::after {
-    display: none; /* Ensure no default checkmark appears */
+    display: none;
 }
-
 
 #loadingSpinnerMain { display: none; justify-content: center; align-items: center; margin: 40px auto; flex-direction: column; }
 #loadingSpinnerMain .spinner-content { display: flex; flex-direction: column; align-items: center; gap: 15px; }
@@ -542,7 +549,7 @@ body {
 .bingo-cell.completed:not(.free-space-cell):not(.legendary-center) {
     filter: grayscale(60%) brightness(0.6);
     opacity: 0.7;
-    background: rgba(76, 175, 80, 0.2); /* Default green tint for completed */
+    background: rgba(76, 175, 80, 0.2); /* Greenish tint */
 }
 .bingo-cell.completed:not(.free-space-cell):not(.legendary-center)::after {
     content: "✓";
@@ -559,7 +566,7 @@ body {
     justify-content: center;
     font-size: 16px;
     font-weight: bold;
-    z-index: 10;
+    z-index: 10; /* Above image wrapper */
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
 }
 
@@ -574,7 +581,27 @@ body {
 @keyframes legendaryGlow { 0% { box-shadow: 0 0 12px rgba(255, 215, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4); } 100% { box-shadow: 0 0 18px rgba(255, 215, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.6); } }
 
 
-.manual-checkmark { animation: checkmarkAppear 0.3s ease-out; /* Styles are applied by JS */ }
+/* Manual checkmark (added by JS to legendary.completed) */
+.manual-checkmark {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #FFD700; /* Gold checkmark for legendary */
+  color: #000;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 100; /* Above everything in the cell */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  pointer-events: none; /* So it doesn't interfere with cell click */
+  animation: checkmarkAppear 0.3s ease-out;
+}
+
 @keyframes checkmarkAppear { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
 .bingo-cell.completed { animation: completeCell 0.3s ease-out; } /* General animation for completion */
