@@ -117,7 +117,7 @@ function setupTooltipEvents(cell, contentFactory, isLegendary = false) {
     tooltip = null;
   });
   // Cleanup function to be called if cell is removed from DOM
-  cell.tooltipCleanup = () = {
+  cell.tooltipCleanup = () => {
     if (tooltip) tooltip.remove();
     tooltip = null;
   };
