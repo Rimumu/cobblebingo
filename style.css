@@ -1,466 +1,1465 @@
-/* Enhanced Loading Screen Styles */
+/* Enhanced Loading Screen Styles - Premium Version */
 #loadingScreen {
-   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-   background-color: #0a0a0a;
-   background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
-   background-size: 20px 20px;
-   display: flex; flex-direction: column; justify-content: center; align-items: center;
-   z-index: 9999;
-   transition: opacity 0.8s ease, visibility 0.8s ease;
-   overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0a0a0a;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
+    background-size: 20px 20px, 800px 800px, 600px 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+    overflow: hidden;
 }
-#loadingScreen.fade-out { opacity: 0; visibility: hidden; }
+
+#loadingScreen.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
 
 .loading-container {
-   display: flex; flex-direction: column; align-items: center; gap: 30px;
-   background: rgba(30, 30, 30, 0.5); /* Slightly more opaque */
-   backdrop-filter: blur(15px);
-   border: 1px solid rgba(255, 255, 255, 0.1);
-   border-radius: 20px; padding: 40px 30px;
-   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-   animation: containerPulse 4s ease-in-out infinite alternate; /* Added alternate */
-   max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 35px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 50px 40px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 60px rgba(255, 255, 255, 0.05);
+    position: relative;
+    z-index: 2;
+    max-width: 90vw;
+    animation: containerPulse 4s ease-in-out infinite;
 }
+
 @keyframes containerPulse {
-   from { box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), 0 0 60px rgba(174,76,76,0.05); }
-   to   { box-shadow: 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 80px rgba(33,150,243,0.08); }
+    0%, 100% {
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+            0 0 60px rgba(255, 255, 255, 0.05);
+    }
+    50% {
+        box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15),
+            0 0 80px rgba(255, 255, 255, 0.08);
+    }
 }
 
-.loading-container .logo-container { animation: logoFloat 3s ease-in-out infinite; }
-.loading-logo { max-width: 600px; width: 70vw; height: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); animation: logoGlow 3s ease-in-out infinite alternate; }
-@keyframes logoFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+.logo-container {
+    position: relative;
+    animation: logoFloat 3s ease-in-out infinite;
+}
+
+.loading-logo {
+    max-width: 1000px;
+    width: 80vw;
+    height: auto;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    animation: logoGlow 4s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+/* Enhanced logo glow with color cycling */
+@keyframes logoFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-12px);
+    }
+}
+
 @keyframes logoGlow {
-    from { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) brightness(1); transform: scale(1); }
-    to   { filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)) brightness(1.05); transform: scale(1.02); }
+    0%, 100% {
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) brightness(1);
+        transform: scale(1);
+    }
+    50% {
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4)) brightness(1.05);
+        transform: scale(1.02);
+    }
 }
 
-.loading-spinner { position: relative; width: 70px; height: 70px; }
-.spinner-ring { position: absolute; border: 3px solid transparent; border-radius: 50%; animation: spin 1.2s linear infinite; }
-.spinner-ring:nth-child(1) { width: 100%; height: 100%; border-top-color: #ae4c4c; border-right-color: rgba(174,76,76,0.3); animation-duration: 1.5s; }
-.spinner-ring:nth-child(2) { width: 70%; height: 70%; top: 15%; left: 15%; border-top-color: #2196f3; border-right-color: rgba(33,150,243,0.3); animation-delay: -0.4s; animation-duration: 1.8s; animation-direction: reverse; }
-.spinner-ring:nth-child(3) { width: 40%; height: 40%; top: 30%; left: 30%; border-top-color: #ffffff; border-right-color: rgba(255,255,255,0.3); animation-delay: -0.8s; }
-@keyframes spin { to { transform: rotate(360deg); } }
+/* Enhanced spinner with multiple rings and colors */
+.loading-spinner {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
 
-.loading-text { color: white; font-family: 'Arial', sans-serif; font-size: 18px; font-weight: 600; text-align: center; margin-top: 5px; animation: textPulse 2s ease-in-out infinite alternate; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
-@keyframes textPulse { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.02); } }
+.spinner-ring {
+    position: absolute;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 1.2s linear infinite;
+}
 
-.loading-dots { display: inline-flex; gap: 5px; margin-left: 8px; }
-.loading-dot { width: 5px; height: 5px; border-radius: 50%; animation: dotBounce 1.4s ease-in-out infinite both; }
-.loading-dot:nth-child(1) { background: #ae4c4c; animation-delay: -0.32s; box-shadow: 0 0 8px rgba(174,76,76,0.5); }
-.loading-dot:nth-child(2) { background: #2196f3; animation-delay: -0.16s; box-shadow: 0 0 8px rgba(33,150,243,0.5); }
-.loading-dot:nth-child(3) { background: #ffffff; animation-delay: 0s; box-shadow: 0 0 8px rgba(255,255,255,0.5); }
-@keyframes dotBounce { 0%, 80%, 100% { transform: scale(0.7) translateY(0); opacity: 0.5; } 40% { transform: scale(1.2) translateY(-6px); opacity: 1; } }
+.spinner-ring:nth-child(1) {
+    width: 100%;
+    height: 100%;
+    border-top: 3px solid #ae4c4c;
+    border-right: 3px solid rgb(174, 76, 76, 0.3);
+    animation-duration: 1.5s;
+}
 
-.particles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -1; /* Behind loading container */ }
+.spinner-ring:nth-child(2) {
+    width: 70%;
+    height: 70%;
+    top: 15%;
+    left: 15%;
+    border-top: 3px solid #2196f3;
+    border-right: 3px solid rgba(33, 150, 243, 0.3);
+    animation-delay: -0.4s;
+    animation-duration: 1.8s;
+    animation-direction: reverse;
+}
+
+.spinner-ring:nth-child(3) {
+    width: 40%;
+    height: 40%;
+    top: 30%;
+    left: 30%;
+    border-top: 3px solid #ffffff;
+    border-right: 3px solid rgba(255, 255, 255, 0.3);
+    animation-delay: -0.8s;
+    animation-duration: 1.2s;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Enhanced loading text with typing effect */
+.loading-text {
+    color: white;
+    font-family: 'Arial', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 10px;
+    opacity: 0.9;
+    animation: textPulse 2s ease-in-out infinite;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    animation: textPulse 2s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+    0%, 100% {
+        opacity: 0.9;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+@keyframes textGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Enhanced loading dots with staggered colors */
+.loading-dots {
+    display: inline-flex;
+    gap: 6px;
+    margin-left: 10px;
+}
+
+.loading-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: dotBounce 1.4s ease-in-out infinite both;
+}
+
+.loading-dot:nth-child(1) {
+    background: #ae4c4c;
+    animation-delay: -0.32s;
+    box-shadow: 0 0 10px rgb(174, 76, 76, 0.5);
+}
+
+.loading-dot:nth-child(2) {
+    background: #2196f3;
+    animation-delay: -0.16s;
+    box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+}
+
+.loading-dot:nth-child(3) {
+    background: #ffffff;
+    animation-delay: 0s;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes dotBounce {
+    0%, 80%, 100% {
+        transform: scale(0.8) translateY(0);
+        opacity: 0.6;
+    }
+    40% {
+        transform: scale(1.3) translateY(-8px);
+        opacity: 1;
+    }
+}
+
+/* Replace the existing .particle styles with this enhanced version */
 .particle {
-    position: absolute; border-radius: 50%;
-    animation-name: particleFloat;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
+    position: absolute;
+    border-radius: 50%;
+    animation: particleFloat 6s linear infinite;
     opacity: 0;
 }
-/* Define particle variations for loading screen */
-.particle:nth-child(6n+1) { width: 6px; height: 6px; background: rgba(174,76,76,0.7); box-shadow: 0 0 10px rgba(174,76,76,0.5); animation-duration: 8s; }
-.particle:nth-child(6n+2) { width: 8px; height: 8px; background: rgba(33,150,243,0.7); box-shadow: 0 0 12px rgba(33,150,243,0.5); animation-duration: 7s; }
-.particle:nth-child(6n+3) { width: 5px; height: 5px; background: rgba(255,255,255,0.8); box-shadow: 0 0 8px rgba(255,255,255,0.6); animation-duration: 9s; }
-.particle:nth-child(6n+4) { width: 7px; height: 7px; background: rgba(174,76,76,0.6); box-shadow: 0 0 11px rgba(174,76,76,0.5); animation-duration: 6s; }
-.particle:nth-child(6n+5) { width: 9px; height: 9px; background: rgba(5,134,255,0.7); box-shadow: 0 0 13px rgba(5,126,255,0.5); animation-duration: 7.5s; }
-.particle:nth-child(6n+6) { width: 6px; height: 6px; background: rgba(255,255,255,0.7); box-shadow: 0 0 9px rgba(255,255,255,0.6); animation-duration: 8.5s; }
 
+/* Make particles more visible with varied sizes and stronger colors */
+.particle:nth-child(1n) {
+    width: 6px;
+    height: 6px;
+    background: rgba(174, 76, 76, 0.8);
+    box-shadow: 0 0 12px rgba(174, 76, 76, 0.6);
+    animation-delay: 0s;
+    left: 10%;
+}
+
+.particle:nth-child(2n) {
+    width: 8px;
+    height: 8px;
+    background: rgba(33, 150, 243, 0.8);
+    box-shadow: 0 0 15px rgba(33, 150, 243, 0.6);
+    animation-delay: -1s;
+    left: 25%;
+}
+
+.particle:nth-child(3n) {
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    animation-delay: -2s;
+    left: 40%;
+}
+
+.particle:nth-child(4n) {
+    width: 7px;
+    height: 7px;
+    background: rgb(174, 76, 76, 0.8);
+    box-shadow: 0 0 14px rgb(174, 76, 76, 0.6);
+    animation-delay: -3s;
+    left: 55%;
+}
+
+.particle:nth-child(5n) {
+    width: 9px;
+    height: 9px;
+    background: rgb(5, 134, 255, 0.8);
+    box-shadow: 0 0 16px rgb(5, 126, 255, 0.6);
+    animation-delay: -4s;
+    left: 70%;
+}
+
+.particle:nth-child(6n) {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    animation-delay: -5s;
+    left: 85%;
+}
+
+/* Enhanced animation with more visible movement */
 @keyframes particleFloat {
-   0% { transform: translateY(100vh) translateX(0px) scale(0.5); opacity: 0; }
-   10% { opacity: 0.8; transform: translateY(90vh) translateX(calc(var(--i,0) * 5px - 10px)) scale(1); } /* Use CSS var for variation */
-   50% { opacity: 1; transform: translateY(50vh) translateX(calc(var(--i,0) * -5px + 10px)) scale(1.1); }
-   90% { opacity: 0.8; transform: translateY(10vh) translateX(calc(var(--i,0) * 5px - 5px)) scale(1); }
-   100% { transform: translateY(-5vh) translateX(0px) scale(0.5); opacity: 0; }
+    0% {
+        transform: translateY(100vh) translateX(0px) rotate(0deg) scale(0.5);
+        opacity: 0;
+    }
+    5% {
+        opacity: 1;
+        transform: translateY(95vh) translateX(10px) rotate(45deg) scale(1);
+    }
+    25% {
+        opacity: 1;
+        transform: translateY(75vh) translateX(-15px) rotate(135deg) scale(1.1);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(50vh) translateX(20px) rotate(225deg) scale(1);
+    }
+    75% {
+        opacity: 1;
+        transform: translateY(25vh) translateX(-10px) rotate(315deg) scale(1.1);
+    }
+    95% {
+        opacity: 1;
+        transform: translateY(5vh) translateX(5px) rotate(405deg) scale(1);
+    }
+    100% {
+        transform: translateY(-5vh) translateX(0px) rotate(450deg) scale(0.5);
+        opacity: 0;
+    }
 }
-.loading-progress { width: 180px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 15px; }
-.loading-progress::before { content: ''; display: block; width: 0%; height: 100%; background: linear-gradient(90deg, #ae4c4c, #2196f3, #ffffff); animation: progressFill 2s ease-in-out infinite; }
-@keyframes progressFill { 0% { width: 0%; opacity: 0.5; } 50% { width: 100%; opacity: 1;} 100% { width: 0%; opacity: 0.5; transform: translateX(100%);} } /* Simplified progress */
 
-.loading-tip { font-size: 13px; color: rgba(255,255,255,0.6); text-align: center; margin-top: 10px; font-style: italic; animation: tipFade 5s ease-in-out infinite alternate; }
-@keyframes tipFade { from { opacity: 0.5; } to { opacity: 0.8; } }
+/* Progress bar addition */
+.loading-progress {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 20px;
+    position: relative;
+}
 
+.loading-progress::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgb(174, 76, 76, 0.8), 
+        rgba(33, 150, 243, 0.8), 
+        transparent
+    );
+    animation: progressSlide 2s ease-in-out infinite;
+}
+
+@keyframes progressSlide {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Fun tip text */
+.loading-tip {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    margin-top: 15px;
+    font-style: italic;
+    animation: tipFade 4s ease-in-out infinite;
+}
+
+@keyframes tipFade {
+    0%, 50%, 100% { opacity: 0.7; }
+    25%, 75% { opacity: 1; }
+}
+
+/* Responsive enhancements */
 @media (max-width: 768px) {
-   .loading-container { padding: 30px 20px; gap: 25px; }
-   .loading-logo { max-width: 80%; } .loading-text { font-size: 16px; }
-   .loading-spinner { width: 50px; height: 50px; } .loading-progress { width: 130px; }
+    .loading-container {
+        padding: 40px 25px;
+        margin: 0 15px;
+        gap: 30px;
+    }
+
+    .loading-logo {
+        max-width: 300px;
+        width: 70vw;
+    }
+
+    .loading-text {
+        font-size: 18px;
+    }
+
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+    }
+
+    .loading-progress {
+        width: 150px;
+    }
 }
 
-/* General Body and Content Styles */
+@media (max-width: 480px) {
+    .loading-container {
+        padding: 30px 20px;
+        gap: 25px;
+    }
+
+    .loading-text {
+        font-size: 16px;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* Hide main content during loading */
+body.loading #mainContent {
+    opacity: 0;
+    visibility: hidden;
+}
+
+body.loading {
+    overflow: hidden;
+}
+
+#mainContent {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease 0.3s, visibility 0.5s ease 0.3s;
+}
+
+/* Modern Background with Dot Grid Pattern */
 body {
-   font-family: 'Arial', sans-serif; text-align: center; margin: 0;
-   background-color: #121212; /* Default dark background */
-   color: #e0e0e0; /* Default light text */
-   background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
-   background-size: 25px 25px; padding: 20px 0; min-height: 100vh;
-   transition: background-color 0.5s ease; /* Smooth theme transitions */
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    margin: 0;
+    background-color: #0a0a0a;
+    background-image: 
+        radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+    padding: 20px 0;
+    min-height: 100vh;
+    color: #ffffff;
 }
-body.loading #mainContent { opacity: 0; visibility: hidden; }
-body.loading { overflow: hidden; }
-#mainContent { opacity: 1; visibility: visible; transition: opacity 0.5s ease 0.3s, visibility 0.5s ease 0.3s; }
 
-/* Filters Section */
+/* Enhanced filters section for dark theme */
 #filters {
-   display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
-   margin: 20px auto; justify-content: center;
-   background: rgba(40, 40, 40, 0.6); backdrop-filter: blur(8px);
-   border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px;
-   padding: 18px; box-shadow: 0 6px 25px rgba(0,0,0,0.3);
-   max-width: 900px; /* Limit width */
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
-#filters label { margin-right: 5px; font-weight: 500; color: #ccc; }
-#filters select, #filters input[type="text"] {
-   margin-right: 10px; padding: 9px 14px; border-radius: 8px;
-   border: 1px solid rgba(255,255,255,0.15); background: rgba(20,20,20,0.5);
-   color: #e0e0e0; backdrop-filter: blur(5px); transition: all 0.2s ease;
+
+#filters label {
+    margin-right: 5px;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
-#filters select:focus, #filters input[type="text"]:focus {
-   outline: none; border-color: #4caf50;
-   box-shadow: 0 0 0 2px rgba(76,175,80,0.2); background: rgba(30,30,30,0.7);
+
+#filters select {
+    margin-right: 15px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
 }
-#filters select option { background: #2a2a2a; color: #e0e0e0; }
-#filters input[type="text"]::placeholder { color: rgba(255,255,255,0.4); }
+
+#filters select:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+#filters select option {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+#filters input {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+#filters input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+#filters input:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
 
 #filters button {
-   padding: 10px 18px; color: white; border: none; border-radius: 8px;
-   cursor: pointer; font-weight: 600; transition: all 0.2s ease;
-   text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
 }
-#filters button:hover { transform: translateY(-2px); }
-#filters button.generate-new { background: linear-gradient(135deg, #4caf50, #388e3c); box-shadow: 0 3px 10px rgba(76,175,80,0.3); }
-#filters button.generate-new:hover { background: linear-gradient(135deg, #45a049, #2e7d32); box-shadow: 0 5px 15px rgba(76,175,80,0.4); }
-#filters button.load-card { background: linear-gradient(135deg, #2196f3, #1976d2); box-shadow: 0 3px 10px rgba(33,150,243,0.3); }
-#filters button.load-card:hover { background: linear-gradient(135deg, #1c85e0, #1565c0); box-shadow: 0 5px 15px rgba(33,150,243,0.4); }
 
+#filters button:hover {
+    background: linear-gradient(135deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
 
-/* Bingo Card Styles */
-.bingo-wrapper { display: flex; justify-content: center; align-items: flex-start; padding: 0 15px; min-height: 450px; }
+.bingo-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+    min-height: 400px;
+}
+
+/* Enhanced bingo card with glassmorphism effect */
 #bingoCard {
-   display: none; flex-direction: column; align-items: center; gap: 12px;
-   padding: 25px;
-   background: rgba(44,44,44, 0.7); /* Default dark card */
-   backdrop-filter: blur(15px);
-   border: 1px solid rgba(255,255,255,0.1);
-   border-radius: 18px; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-   width: max-content; margin: 0 auto; max-width: calc(100vw - 30px); /* Responsive */
-   transition: background-color 0.5s ease, border-color 0.5s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    width: max-content;
+    margin: 0 auto;
+    max-width: 90vw;
 }
-#bingoCard:empty { display: none; } /* Hide if JS fails to populate */
 
-#bingoCard #bingoCardLogoContainer { display: none; text-align: center; width: 100%; margin-bottom: 5px; }
-#bingoLogo { max-width: 450px; width: 80%; height: auto; display: block; margin: 0 auto; max-height: 80px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3)); }
+#bingoCard:empty {
+    padding: 0;
+    box-shadow: none;
+    background: none;
+    border: none;
+}
 
-#bingoGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; position: relative; }
+#logoContainer {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+#bingoLogo {
+    max-width: 500px;
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+    max-height: 100px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+#bingoGrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+
+/* Enhanced bingo cells */
 .bingo-cell {
-   border: 2px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 6px;
-   width: 95px; height: 125px; /* Slightly adjusted */
-   display: flex; flex-direction: column; justify-content: space-around; align-items: center;
-   background: rgba(60,60,60,0.5); /* Default dark cell */
-   backdrop-filter: blur(8px); box-sizing: border-box;
-   transition: all 0.25s ease; position: relative; gap: 2px;
-   cursor: default; overflow: hidden; /* Helps with shimmer effects */
-   color: #ddd; /* Default text color for cells */
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 8px;
+    width: 100px;
+    height: 130px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    position: relative;
+    gap: 3px;
+    z-index: 1;
+    cursor: pointer;
 }
-.bingo-cell:hover:not(.free-space-cell):not(.legendary-center) {
-   transform: translateY(-3px) scale(1.03);
-   border-color: rgba(255,255,255,0.3);
-   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-   z-index: 10;
+
+.bingo-cell:hover {
+    transform: translateY(-3px);
+    z-index: 100;
 }
-.bingo-cell .image-wrapper { width: 50px; height: 50px; display:flex; align-items:center; justify-content:center; }
-.bingo-cell img.pokemon-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); border-radius: 4px; }
-.pokemon-name { font-size: 10.5px; font-weight: bold; text-align: center; line-height: 1.1; margin: 2px 0 0 0; word-break: break-word; text-shadow: 0 1px 2px rgba(0,0,0,0.7); }
 
-/* Rarity Badges */
-.rarity-badge { padding: 2px 7px; border-radius: 10px; font-size: 8.5px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-.rarity-badge.common { background: linear-gradient(135deg, #777, #555); }
-.rarity-badge.uncommon { background: linear-gradient(135deg, #4caf50, #388e3c); }
-.rarity-badge.rare { background: linear-gradient(135deg, #2196f3, #1976d2); }
-.rarity-badge.ultra-rare, .rarity-badge.ultrarare { background: linear-gradient(135deg, #9c27b0, #7b1fa2); }
-.rarity-badge.legendary {
-    background: linear-gradient(135deg, #ffd700, #ffc107); color: #333;
-    text-shadow: 0 1px 1px rgba(255,255,255,0.3); border: 1px solid rgba(255,215,0,0.6);
-    box-shadow: 0 0 10px rgba(255,215,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
-    animation: legendaryGlow 2s ease-in-out infinite alternate;
+.bingo-cell img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
-@keyframes legendaryGlow { from { box-shadow: 0 0 10px rgba(255,215,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3); } to { box-shadow: 0 0 15px rgba(255,215,0,0.7), inset 0 1px 0 rgba(255,255,255,0.5); } }
 
-/* Standard FREE space cell (non-legendary) */
-.bingo-cell.free-space-cell {
-   font-weight: bold; font-size: 1.5em; /* Larger text for FREE */
-   cursor: default; /* Not clickable */
-   color: #4CAF50; /* Green text */
-   text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+.pokemon-img {
+    border-radius: 4px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
-/* Completed standard FREE space cell - THIS IS THE GREEN BACKGROUND */
-.bingo-cell.free-space-cell.completed {
-   background: linear-gradient(135deg, #66bb6a, #43a047); /* Green gradient */
-   border-color: #388e3c;
-   color: #ffffff; /* White text on green */
-   box-shadow: 0 4px 12px rgba(76,175,80,0.3);
-   filter: none; opacity: 1; /* Override generic .completed filters */
+
+.pokemon-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #ffffff !important;
+    text-align: center;
+    line-height: 1.2;
+    margin: 0;
+    word-wrap: break-word;
+    hyphens: auto;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
-.bingo-cell.free-space-cell.completed::after { display: none; } /* No checkmark needed, whole cell is green */
 
-
-/* Legendary Center Cell */
-.bingo-cell.legendary-center {
- background: linear-gradient(135deg, #b8860b, #daa520, #ffd700, #ffed4e);
- background-size: 250% 250%; border: 3px solid #ffd700; color: #2c1e00;
- font-weight: bold; text-shadow: 0 1px 1px rgba(255,255,255,0.4);
- box-shadow: 0 0 20px rgba(218,165,32,0.7), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(184,134,11,0.2);
- animation: legendaryPulse 2.5s ease-in-out infinite alternate, legendaryShimmer 3.5s linear infinite alternate;
- transform: scale(1.03); cursor: pointer;
+.image-wrapper {
+    position: relative;
+    display: inline-block;
+    margin: 0;
 }
-.bingo-cell.legendary-center::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); animation: legendaryShine 3s linear infinite; animation-delay: 0.5s;}
-@keyframes legendaryPulse { from { transform: scale(1.03); box-shadow: 0 0 20px rgba(218,165,32,0.7); } to { transform: scale(1.06); box-shadow: 0 0 30px rgba(218,165,32,0.9); } }
-@keyframes legendaryShimmer { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
-@keyframes legendaryShine { 0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); } 100% { transform: translateX(100%) translateY(100%) rotate(45deg); } }
-.bingo-cell.legendary-center .pokemon-name { color: #422d00; font-size: 11.5px; }
-.bingo-cell.legendary-center .pokemon-img { filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); width: 52px; height: 52px; }
-.bingo-cell.legendary-center:hover { border-color: #fffacd; transform: translateY(-2px) scale(1.07); box-shadow: 0 0 35px rgba(218,165,32,1), 0 6px 15px rgba(218,165,32,0.5); }
 
-/* General Completed Cell Styling (for regular Pokemon cells) */
-.bingo-cell.completed:not(.free-space-cell):not(.legendary-center) {
-   filter: grayscale(50%) brightness(0.7); opacity: 0.8;
-   background: rgba(76,175,80,0.15); /* Subtle green tint */
-   border-color: rgba(76,175,80,0.4);
-}
-/* Checkmark for regular completed cells */
-.bingo-cell.completed:not(.free-space-cell):not(.legendary-center)::after {
-   content: "✓"; position: absolute; top: 4px; right: 4px;
-   background: rgba(67,160,71,0.95); color: white; border-radius: 50%;
-   width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
-   font-size: 15px; font-weight: bold; z-index: 20; /* Ensure above image wrapper */
-   box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-   animation: checkmarkAppear 0.3s ease-out;
-}
-@keyframes checkmarkAppear { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
-
-/* Manual checkmark (added by JS to legendary.completed) */
-.manual-checkmark { /* This is for LEGENDARY completed */
-   position: absolute; top: 4px; right: 4px;
-   background: #FFD700; color: #000; width: 22px; height: 22px;
-   border-radius: 50%; display: flex; align-items: center; justify-content: center;
-   font-size: 15px; font-weight: bold; z-index: 100;
-   box-shadow: 0 2px 4px rgba(0,0,0,0.3); pointer-events: none;
-   animation: checkmarkAppear 0.3s ease-out;
-}
-/* Completed legendary center cell - Dimming effect */
-.bingo-cell.legendary-center.completed {
-   filter: grayscale(20%) brightness(0.9); opacity: 0.9;
-   /* The manual checkmark is added by JS, no ::after needed here */
-}
-.bingo-cell.legendary-center.completed::after { display: none; }
-
-
-/* Main loading spinner (for card generation, not initial page load) */
-#loadingSpinnerMain { display: none; justify-content: center; align-items: center; margin: 30px auto; flex-direction: column; }
-#loadingSpinnerMain .spinner-content { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-#loadingSpinnerMain img { width: 60px; height: 60px; animation: spin 1.5s linear infinite; } /* Re-use spin animation */
-#loadingSpinnerMain p { font-size: 15px; color: #e0e0e0; font-weight: 500; margin: 0; }
-
-/* Controls and Buttons */
-#postGenerationControls {
-    display: none; align-items: center; justify-content: center;
-    background: rgba(40,40,40,0.6); backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.1); padding: 12px 18px;
-    border-radius: 16px; box-shadow: 0 6px 25px rgba(0,0,0,0.3);
-    gap: 12px; margin-top: 15px;
-}
-#exportBtn, #clearBtn {
-    padding: 9px 18px; color: white; border: none; border-radius: 8px;
-    cursor: pointer; font-weight: 600; font-size: 0.85em; transition: all 0.2s ease;
-    text-transform: uppercase; letter-spacing: 0.5px;
-}
-#exportBtn { background: linear-gradient(135deg, #4caf50, #388e3c); box-shadow: 0 3px 10px rgba(76,175,80,0.3); }
-#exportBtn:hover { background: linear-gradient(135deg, #45a049, #2e7d32); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(76,175,80,0.4); }
-#clearBtn { background: linear-gradient(135deg, #f44336, #c62828); box-shadow: 0 3px 10px rgba(244,67,54,0.3); }
-#clearBtn:hover { background: linear-gradient(135deg, #e53935, #b71c1c); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(244,67,54,0.4); }
-
-.color-scheme-selector { display: flex; gap: 6px; align-items: center; }
-.color-scheme-selector::before { content: ""; display: inline-block; height: 20px; width: 1px; background: rgba(255,255,255,0.2); margin-right: 8px; }
-.color-option {
-    width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
-    border: 2px solid transparent; transition: all 0.2s ease; position: relative;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.color-option:hover { transform: scale(1.15); box-shadow: 0 0 8px rgba(255,255,255,0.2); }
-.color-option.active { border-color: #fff; transform: scale(1.1); box-shadow: 0 0 12px rgba(255,255,255,0.4); }
-.color-option.theme-default { background: linear-gradient(135deg, #3a3a3a, #2a2a2a); /* Default dark */ }
-.color-option.theme-white  { background: linear-gradient(135deg, #e0e0e0, #f5f5f5); } /* Light gray */
-.color-option.theme-blue   { background: linear-gradient(135deg, #64b5f6, #1976d2); } /* Blue */
-.color-option.theme-pink   { background: linear-gradient(135deg, #f06292, #c2185b); } /* Pink */
-.color-option.theme-purple { background: linear-gradient(135deg, #ba68c8, #7b1fa2); } /* Purple */
-.color-option.theme-red    { background: linear-gradient(135deg, #e57373, #d32f2f); } /* Red */
-.color-option.theme-yellow { background: linear-gradient(135deg, #fff176, #fbc02d); } /* Yellow */
-
-
-/* Bingo Lines & Celebration */
-.bingo-line {
-    position: absolute;
-    background: linear-gradient(45deg, #ffd700, #ffed4e, #f9a825);
-    z-index: 5; pointer-events: none; border-radius: 3px;
-    box-shadow: 0 0 10px rgba(255,215,0,0.6), 0 0 20px rgba(255,215,0,0.4);
-    animation: bingoLinePulse 1.5s ease-in-out infinite alternate;
-}
-@keyframes bingoLinePulse{ from{ opacity:0.7; box-shadow: 0 0 10px rgba(255,215,0,0.6); } to{ opacity:1; box-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 30px rgba(255,215,0,0.5); }}
-.bingo-line.horizontal { height: 6px; width: calc(100% - 12px); left: 6px; } /* Adjusted for gap */
-.bingo-line.vertical { width: 6px; height: calc(100% - 12px); top: 6px; }   /* Adjusted for gap */
-.bingo-line.diagonal-main { width: 141.42%; /* sqrt(2)*100% */ top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg); height: 6px; }
-.bingo-line.diagonal-anti { width: 141.42%; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); height: 6px; }
-
-.bingo-celebration { animation: bingoParty 0.8s ease-in-out; }
-@keyframes bingoParty { 0%,100% {transform:scale(1);} 25%,75% {transform:scale(1.015);} 50% {transform:scale(0.985);} }
-
-.bingo-message {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
-    background: linear-gradient(135deg, #ffd700, #ffc107); color: #333;
-    padding: 18px 35px; border-radius: 12px; font-size: 22px; font-weight: bold;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 6px 25px rgba(255,215,0,0.5);
-    z-index: 10001; animation: bingoMessageAnim 4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+.tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10000;
     pointer-events: none;
-}
-@keyframes bingoMessageAnim {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(-5deg); }
-  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(3deg); }
-  30%, 70% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -40%) scale(0.8) rotate(5deg); }
+    transform: translateX(-50%);
+    max-width: 200px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Color Themes - More distinct styles */
-/* Default (Dark Theme is base) */
-body.theme-default #bingoCard { background: rgba(44,44,44, 0.7); border-color: rgba(255,255,255,0.1); }
-body.theme-default .bingo-cell { background: rgba(60,60,60,0.5); border-color: rgba(255,255,255,0.15); color: #ddd; }
-body.theme-default .pokemon-name { color: #ddd; }
-body.theme-default #filters { background: rgba(40,40,40,0.6); border-color: rgba(255,255,255,0.1); }
-body.theme-default #filters label, body.theme-default #filters select, body.theme-default #filters input { color: #ccc; }
+.tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.9);
+}
 
+.image-wrapper:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.rarity-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+/* Improved rarity color mapping */
+.rarity-badge.common {
+    background: linear-gradient(135deg, #888, #666);
+}
+
+.rarity-badge.uncommon {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+}
+
+.rarity-badge.rare {
+    background: linear-gradient(135deg, #2196f3, #1976d2);
+}
+
+.rarity-badge.ultra-rare {
+    background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+}
+
+/* FREE space styling - enhanced for dark theme with green glow */
+.bingo-cell:nth-child(13) {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    border-color: #4caf50;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+/* Legendary FREE space - keep gold styling */
+.bingo-cell:nth-child(13).legendary-center {
+    background: linear-gradient(135deg, #ffd700, #ffb300) !important;
+    border-color: #ff8f00 !important;
+    color: #333 !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4) !important;
+}
+
+#loadingSpinner {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin: 40px auto;
+    flex-direction: column;
+}
+
+.spinner-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#loadingSpinner img {
+    width: 80px;
+    height: 80px;
+    animation: spin 1.5s linear infinite;
+    transform-origin: center;
+}
+
+#loadingSpinner p {
+    font-size: 16px;
+    color: #ffffff;
+    font-weight: bold;
+    margin: 0;
+}
+
+#exportBtn {
+    display: none;
+    margin: 0;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+#exportBtn:hover {
+    background: linear-gradient(135deg, #45a049, #2e7d32);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+/* Color Themes - Updated for dark background */
 /* White Theme */
-body.theme-white { background-color: #f0f0f0; color: #333; }
-body.theme-white #bingoCard { background: rgba(255,255,255,0.85); border-color: rgba(0,0,0,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-body.theme-white .bingo-cell { background: rgba(245,245,245,0.9); border-color: rgba(0,0,0,0.15); color: #333; }
-body.theme-white .pokemon-name { color: #333; text-shadow: none; }
-body.theme-white .rarity-badge { box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-body.theme-white .rarity-badge.legendary { color: #533e00; text-shadow: none; } /* Darker text for yellow on light bg */
-body.theme-white #filters { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.1); }
-body.theme-white #filters label { color: #555; }
-body.theme-white #filters select, body.theme-white #filters input[type="text"] { background: rgba(255,255,255,0.8); border-color: rgba(0,0,0,0.2); color: #333; }
-body.theme-white #filters select option { background: #fff; color: #333; }
-body.theme-white #filters input[type="text"]::placeholder { color: #777; }
-body.theme-white .bingo-cell.completed:not(.free-space-cell):not(.legendary-center) { background: rgba(102,187,106,0.3); border-color: rgba(76,175,80,0.5); } /* Lighter green completed */
-body.theme-white .bingo-cell.free-space-cell.completed { background: linear-gradient(135deg, #a5d6a7, #81c784); color: #1b5e20; } /* Lighter green FREE */
-body.theme-white .bingo-cell.legendary-center { color: #533e00; } /* Darker text for legendary on light bg */
+.theme-white #bingoCard {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
 
+.theme-white .bingo-cell {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.theme-white .pokemon-name {
+    color: #fff;
+}
+
+/* Black/Midnight Theme */
+.theme-black #bingoCard {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-black .bingo-cell {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.theme-black .pokemon-name {
+    color: #fff !important;
+}
 
 /* Blue Theme */
-body.theme-blue { background-color: #1a237e; /* Dark blue */ color: #e3f2fd; }
-body.theme-blue #bingoCard { background: rgba(21,101,192,0.7); border-color: rgba(129,212,250,0.3); } /* Mid blue card */
-body.theme-blue .bingo-cell { background: rgba(13,71,161,0.6); border-color: rgba(129,212,250,0.2); color: #e3f2fd;}
-body.theme-blue .pokemon-name { color: #e3f2fd; }
-body.theme-blue #filters { background: rgba(13,71,161,0.5); border-color: rgba(129,212,250,0.2); }
-body.theme-blue #filters label, body.theme-blue #filters select, body.theme-blue #filters input { color: #bbdefb; }
+.theme-blue #bingoCard {
+    background: rgba(33, 150, 243, 0.15);
+    border-color: rgba(33, 150, 243, 0.3);
+}
+
+.theme-blue .bingo-cell {
+    background: rgba(33, 150, 243, 0.1);
+    border-color: rgba(33, 150, 243, 0.2);
+    color: #e3f2fd;
+}
+
+.theme-blue .pokemon-name {
+    color: #e3f2fd;
+}
 
 /* Pink Theme */
-body.theme-pink { background-color: #880e4f; color: #fce4ec; }
-body.theme-pink #bingoCard { background: rgba(194,24,91,0.7); border-color: rgba(248,187,208,0.3); }
-body.theme-pink .bingo-cell { background: rgba(136,14,79,0.6); border-color: rgba(248,187,208,0.2); color: #fce4ec; }
-body.theme-pink .pokemon-name { color: #fce4ec; }
-/* Add #filters styles for pink if needed */
+.theme-pink #bingoCard {
+    background: rgba(233, 30, 99, 0.15);
+    border-color: rgba(233, 30, 99, 0.3);
+}
+
+.theme-pink .bingo-cell {
+    background: rgba(233, 30, 99, 0.1);
+    border-color: rgba(233, 30, 99, 0.2);
+    color: #fce4ec;
+}
+
+.theme-pink .pokemon-name {
+    color: #fce4ec;
+}
 
 /* Purple Theme */
-body.theme-purple { background-color: #4a148c; color: #f3e5f5; }
-body.theme-purple #bingoCard { background: rgba(123,31,162,0.7); border-color: rgba(225,190,231,0.3); }
-body.theme-purple .bingo-cell { background: rgba(74,20,140,0.6); border-color: rgba(225,190,231,0.2); color: #f3e5f5; }
-body.theme-purple .pokemon-name { color: #f3e5f5; }
+.theme-purple #bingoCard {
+    background: rgba(156, 39, 176, 0.15);
+    border-color: rgba(156, 39, 176, 0.3);
+}
+
+.theme-purple .bingo-cell {
+    background: rgba(156, 39, 176, 0.1);
+    border-color: rgba(156, 39, 176, 0.2);
+    color: #f3e5f5;
+}
+
+.theme-purple .pokemon-name {
+    color: #f3e5f5;
+}
 
 /* Red Theme */
-body.theme-red { background-color: #b71c1c; color: #ffebee; }
-body.theme-red #bingoCard { background: rgba(211,47,47,0.7); border-color: rgba(255,205,210,0.3); }
-body.theme-red .bingo-cell { background: rgba(183,28,28,0.6); border-color: rgba(255,205,210,0.2); color: #ffebee; }
-body.theme-red .pokemon-name { color: #ffebee; }
+.theme-red #bingoCard {
+    background: rgba(244, 67, 54, 0.15);
+    border-color: rgba(244, 67, 54, 0.3);
+}
+
+.theme-red .bingo-cell {
+    background: rgba(244, 67, 54, 0.1);
+    border-color: rgba(244, 67, 54, 0.2);
+    color: #ffebee;
+}
+
+.theme-red .pokemon-name {
+    color: #ffebee;
+}
 
 /* Yellow Theme */
-body.theme-yellow { background-color: #f57f17; color: #1a1a1a; } /* Dark text on yellow bg */
-body.theme-yellow #bingoCard { background: rgba(255,193,7,0.7); border-color: rgba(255,238,186,0.5); }
-body.theme-yellow .bingo-cell { background: rgba(251,192,45,0.6); border-color: rgba(255,238,186,0.3); color: #1a1a1a; }
-body.theme-yellow .pokemon-name { color: #1a1a1a; text-shadow: none; }
-body.theme-yellow .rarity-badge.legendary { color: #564400; }
-body.theme-yellow .bingo-cell.completed:not(.free-space-cell):not(.legendary-center) { background: rgba(102,187,106,0.5); border-color: rgba(76,175,80,0.6); } /* Green tint for completed on yellow */
-body.theme-yellow .bingo-cell.free-space-cell.completed { background: linear-gradient(135deg, #a5d6a7, #81c784); color: #1b5e20; } /* Green FREE on yellow */
-
-/* Tooltip styling - can be enhanced */
-.tooltip, .legendary-tooltip {
-    position: fixed; background: rgba(20, 20, 20, 0.95); color: #fff;
-    padding: 7px 12px; border-radius: 6px; font-size: 11.5px;
-    white-space: pre-wrap; word-wrap: break-word; max-width: 220px; min-width: 70px;
-    text-align: center; opacity: 0; visibility: hidden;
-    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
-    z-index: 10000; pointer-events: none;
-    transform: translateX(-50%) translateY(-10px); /* Initial offset for animation */
-    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
-    backdrop-filter: blur(5px);
+.theme-yellow #bingoCard {
+    background: rgba(255, 235, 59, 0.15);
+    border-color: rgba(255, 235, 59, 0.3);
 }
-.tooltip div, .legendary-tooltip div { /* Arrow div */
-    position: absolute; left: 50%; transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-}
-/* Arrow positioning (top or bottom) is handled by JS based on space */
-/* Default arrow points down (tooltip is above target) */
-.tooltip div { border-top: 6px solid rgba(20,20,20,0.95); top: 100%;}
-/* Legendary tooltip specific styles */
-.legendary-tooltip {
-    background: linear-gradient(135deg, #2c200a, #1e1505);
-    color: #ffd700; border: 1px solid #b8860b;
-    padding: 9px 14px; font-size: 12.5px;
-    box-shadow: 0 4px 15px rgba(218,165,32,0.3);
-}
-.legendary-tooltip div { border-top-color: #2c200a; }
 
+.theme-yellow .bingo-cell {
+    background: rgba(255, 235, 59, 0.1);
+    border-color: rgba(255, 235, 59, 0.2);
+    color: #1a1a1a;
+}
 
+.theme-yellow .pokemon-name {
+    color: #1a1a1a;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
-   body { padding: 10px 0; }
-   #filters { padding: 12px; margin: 15px 5px; gap: 8px; }
-   #filters label { font-size: 0.9em;}
-   #filters select, #filters input[type="text"], #filters button { padding: 8px 10px; font-size: 0.8em; }
-   .bingo-wrapper { padding: 0 5px; }
-   #bingoCard { padding: 15px; gap: 8px; }
-   #bingoGrid { gap: 6px; }
-   .bingo-cell { width: calc((100vw - 30px - 4*6px)/5 - 10px); height: auto; min-height: 90px; padding: 4px; } /* Responsive cells */
-   .bingo-cell .image-wrapper { width: 38px; height: 38px; }
-   .pokemon-name { font-size: 9px; }
-   .rarity-badge { font-size: 7.5px; padding: 2px 5px; }
-   #bingoLogo { max-width: 280px; max-height: 50px; }
-   #postGenerationControls { padding: 10px; gap: 8px; flex-direction: column; }
-   .color-scheme-selector::before { display: none; }
-   .bingo-message { font-size: 18px; padding: 12px 25px; }
-}
-@media (max-width: 480px) {
-    .bingo-cell { min-height: 80px; }
-    .bingo-cell .image-wrapper { width: 32px; height: 32px; }
-    .pokemon-name { font-size: 8px; }
-    .rarity-badge { font-size: 7px; }
-    #exportBtn, #clearBtn { padding: 8px 14px; font-size: 0.75em; }
+    .bingo-wrapper {
+        padding: 0 10px;
+    }
+
+    #bingoCard {
+        padding: 20px;
+        max-width: 95vw;
+    }
+
+    .bingo-cell {
+        width: 80px;
+        height: 110px;
+        padding: 4px;
+    }
+
+    .bingo-cell img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .pokemon-name {
+        font-size: 10px;
+    }
+
+    .rarity-badge {
+        font-size: 8px;
+        padding: 2px 6px;
+    }
+
+    #bingoLogo {
+        max-width: 300px;
+        max-height: 60px;
+    }
+
+    #bingoGrid {
+        gap: 8px;
+    }
+
+    #filters {
+        padding: 15px;
+        margin: 15px 10px;
+    }
 }
 
-/* Ensure that the initial hidden states from the original CSS are respected if JS relies on them */
-#bingoCard,
-#bingoCard #bingoCardLogoContainer,
-.controls-container, /* This was #filters or its wrapper */
-#loadingSpinnerMain,
-#postGenerationControls,
-#exportBtn {
-   /* display: none; */ /* JS handles initial display, but CSS can ensure it if needed before JS runs */
+/* Enhanced controls container for dark theme */
+.color-scheme-selector {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
-/* The JS logic in generateBingo now handles showing/hiding these, so explicit display:none here can be redundant */
-/* but harmless if JS correctly overrides. */
 
-/* Fallback for placeholder image if it's local */
-img[src$="pokeball_placeholder.png"] {
-    /* Optional: style the placeholder differently */
-    /* border: 1px dashed #555; */
+.color-scheme-selector::before {
+    content: "";
+    display: inline-block;
+    height: 24px;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.3);
+    margin-right: 10px;
+}
+
+.color-option {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.color-option.active {
+    border-color: #fff;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+/* Color scheme previews */
+.color-option.theme-white {
+    background: linear-gradient(135deg, #ffffff, #f0f0f0);
+}
+
+.color-option.theme-black {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+}
+
+.color-option.theme-blue {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+}
+
+.color-option.theme-pink {
+    background: linear-gradient(135deg, #fce4ec, #f8bbd9);
+}
+
+.color-option.theme-purple {
+    background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+}
+
+.color-option.theme-red {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+}
+
+.color-option.theme-yellow {
+    background: linear-gradient(135deg, #fffde7, #fff9c4);
+}
+
+.controls-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 20px 0;
+}
+
+/* Enhanced controls for dark theme */
+#postGenerationControls {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 15px 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    gap: 15px;
+}
+
+@media (max-width: 600px) {
+    #postGenerationControls {
+        flex-direction: column;
+        padding: 20px;
+        border-radius: 15px;
+        gap: 10px;
+    }
+
+    .color-scheme-selector::before {
+        display: none;
+    }
+}
+
+/* Main bingo line styles */
+.bingo-line {
+    position: absolute;
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
+    z-index: 5;
+    pointer-events: none;
+    border-radius: 3px;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    animation: bingoLineGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes bingoLineGlow {
+    0% {
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    100% {
+        box-shadow: 0 4px 16px rgba(255, 215, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+}
+
+/* Horizontal lines */
+.bingo-line.horizontal {
+    height: 6px;
+    width: calc(100% - 16px);
+    left: 8px;
+    border-radius: 3px;
+}
+
+/* Vertical lines */
+.bingo-line.vertical {
+    width: 6px;
+    height: calc(100% - 16px);
+    top: 8px;
+    border-radius: 3px;
+}
+
+/* Diagonal lines */
+.bingo-line.diagonal {
+    height: 6px;
+    border-radius: 3px;
+    position: absolute;
+    transform-origin: center center;
+}
+
+.bingo-line.diagonal-main {
+    width: 141.42%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    z-index: 5;
+}
+
+.bingo-line.diagonal-anti {
+    width: 141.42%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    z-index: 5;
+}
+
+/* Multiple bingo celebration effect */
+.bingo-celebration {
+    animation: bingoParty 3s ease-in-out;
+}
+
+@keyframes bingoParty {
+    0%, 100% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(1.02);
+    }
+    50% {
+        transform: scale(1.01);
+    }
+    75% {
+        transform: scale(1.02);
+    }
+}
+
+/* Improved cell completion styling */
+.bingo-cell.completed {
+    filter: grayscale(60%) brightness(0.6);
+    opacity: 0.7;
+    position: relative;
+    background: rgba(76, 175, 80, 0.2) !important;
+}
+
+.bingo-cell.completed::after {
+    content: "✓";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
+}
+
+.bingo-cell:nth-child(13).completed::after {
+    display: none;
+}
+
+/* Bingo message */
+.bingo-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    color: #333;
+    padding: 20px 40px;
+    border-radius: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.6);
+    z-index: 1000;
+    animation: bingoMessage 4s ease-in-out forwards;
+    pointer-events: none;
+}
+
+@keyframes bingoMessage {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+}
+
+#clearBtn {
+   margin: 0;
+   padding: 10px 20px;
+   background: linear-gradient(135deg, #ff5722, #d84315);
+   color: white;
+   border: none;
+   border-radius: 8px;
+   cursor: pointer;
+   font-weight: bold;
+   font-size: 14px;
+   transition: all 0.3s ease;
+   white-space: nowrap;
+   margin-right: 10px;
+}
+#clearBtn:hover {
+   background: linear-gradient(135deg, #e64a19, #bf360c);
+   transform: translateY(-2px);
+   box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+}
+
+/* Enhanced legendary badge with special effects */
+.rarity-badge.legendary {
+  background: linear-gradient(135deg, #ffd700, #ffed4e, #ffc107);
+  color: #1a1a1a !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.8);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  animation: legendaryGlow 2s ease-in-out infinite alternate;
+  font-weight: 900;
+}
+
+@keyframes legendaryGlow {
+  0% {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 18px rgba(255, 215, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* Enhanced legendary center cell styling */
+.bingo-cell.legendary-center {
+  background: linear-gradient(135deg, #b8860b, #daa520, #ffd700, #ffed4e);
+  background-size: 200% 200%;
+  border: 3px solid #ffd700 !important;
+  color: #1a1a1a !important;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 0 25px rgba(218, 165, 32, 0.8),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 0 rgba(184, 134, 11, 0.3);
+  animation: legendaryPulse 3s ease-in-out infinite, legendaryShimmer 4s linear infinite;
+  position: relative;
+  overflow: hidden;
+  transform: scale(1.05);
+}
+
+.bingo-cell.legendary-center::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: legendaryShine 3s linear infinite;
+}
+
+@keyframes legendaryPulse {
+  0%, 100% {
+    transform: scale(1.05);
+    box-shadow: 
+      0 0 25px rgba(218, 165, 32, 0.8),
+      inset 0 2px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -2px 0 rgba(184, 134, 11, 0.3);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 
+      0 0 35px rgba(218, 165, 32, 1.0),
+      inset 0 2px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -2px 0 rgba(184, 134, 11, 0.4);
+  }
+}
+
+@keyframes legendaryShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes legendaryShine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.bingo-cell.legendary-center .pokemon-name {
+  color: #1a1a1a !important;
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.6);
+  font-weight: bold;
+  position: relative;
+  z-index: 2;
+  font-size: 12px;
+}
+
+.bingo-cell.legendary-center .pokemon-img {
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+  position: relative;
+  z-index: 2;
+  width: 55px !important;
+  height: 55px !important;
+}
+
+.bingo-cell.legendary-center:hover {
+  border-color: #ffed4e !important;
+  transform: translateY(-3px) scale(1.08);
+  box-shadow: 
+    0 0 45px rgba(218, 165, 32, 1.0),
+    0 8px 20px rgba(218, 165, 32, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(184, 134, 11, 0.4);
+}
+
+/* Enhanced tooltip styles for legendary Pokémon */
+.legendary-tooltip {
+  position: fixed;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: #ffd700;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  border: 2px solid #ffd700;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  z-index: 10000;
+  pointer-events: none;
+  transform: translateX(-50%);
+  max-width: 220px;
+  text-align: center;
+}
+
+/* Tooltip arrow for legendary */
+.legendary-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #ffd700;
+}
+
+/* Show legendary tooltip on hover */
+.legendary-center .image-wrapper:hover .legendary-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Special styling for completed legendary cells */
+.bingo-cell.legendary-center.completed {
+  background-color: rgba(255, 215, 0, 0.3);
+  border: 2px solid #FFD700;
+}
+
+.bingo-cell.legendary-center.completed::after {
+  display: none;
+}
+
+/* Manual checkmark styles */
+.manual-checkmark {
+  animation: checkmarkAppear 0.3s ease-out;
+}
+
+@keyframes checkmarkAppear {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Animation for when cell gets completed */
+.bingo-cell.completed {
+  animation: completeCell 0.3s ease-out;
+}
+
+@keyframes completeCell {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Ensure checkmark is visible over images */
+.bingo-cell .image-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.bingo-cell.completed .pokemon-img {
+  filter: brightness(0.8) saturate(0.7);
+}
+
+/* FREE space completed styling */
+.bingo-cell.completed[style*="background-color: rgb(255, 215, 0)"] {
+  background-color: #4CAF50 !important;
+  color: white !important;
+}
+
+.bingo-cell.completed[style*="background-color: rgb(255, 215, 0)"]::after {
+  display: none; /* Hide checkmark for FREE space since the whole cell changes color */
+}
+
+/* Theme-specific hover effects */
+.theme-white .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.theme-black .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.theme-blue .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+    border-color: #2196f3;
+    background: rgba(33, 150, 243, 0.2);
+}
+
+.theme-pink .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
+    border-color: #e91e63;
+    background: rgba(233, 30, 99, 0.2);
+}
+
+.theme-purple .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4);
+    border-color: #9c27b0;
+    background: rgba(156, 39, 176, 0.2);
+}
+
+.theme-red .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+    border-color: #f44336;
+    background: rgba(244, 67, 54, 0.2);
+}
+
+.theme-yellow .bingo-cell:hover {
+    box-shadow: 0 8px 25px rgba(255, 235, 59, 0.4);
+    border-color: #ffeb3b;
+    background: rgba(255, 235, 59, 0.2);
 }
