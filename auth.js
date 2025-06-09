@@ -90,3 +90,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial UI Setup ---
     updateAccountWidget();
 });
+
+ // --- ADD THIS NEW CLICK HANDLING LOGIC ---
+    const accountWidget = document.getElementById('account-widget');
+    if (accountWidget) {
+        accountWidget.addEventListener('click', (event) => {
+            // This makes sure we only toggle when the button area is clicked,
+            // not when a link inside the dropdown is clicked.
+            if (event.target.classList.contains('account-button') || event.target.parentElement.classList.contains('account-button')) {
+                accountWidget.classList.toggle('active');
+            }
+        });
+
+        // Add a listener to the whole page to close the menu when clicking outside
+        document.addEventListener('click', (event) => {
+            // If the click is outside the account widget and the menu is open, close it.
+            if (!accountWidget.contains(event.target) && accountWidget.classList.contains('active')) {
+                accountWidget.classList.remove('active');
+            }
+        });
+    }
+
+    // --- Initial UI Setup (This call remains unchanged) ---
+    updateAccountWidget();
+});
