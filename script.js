@@ -808,6 +808,26 @@ async function generateBingo() {
     initializeCompletedCells(true); // Pass flag to indicate we're loading from server
     checkForBingo(); // Check for bingos on load
 
+    const logoContainer = document.getElementById("logoContainer");
+    const bingoLogo = document.getElementById("bingoLogo");
+
+    if (bingoLogo && logoContainer) {
+        // 1. Force the image source to be the correct, working URL.
+        bingoLogo.src = 'https://cdn.glitch.global/fecfc9cc-1e50-454e-a7d0-72e1b03260c4/public_cobblebingo.png?v=1748523580111';
+
+        // 2. Add an error handler to check if the image is blocked or the URL is bad.
+        bingoLogo.onerror = () => {
+            console.error("BINGO LOGO FAILED TO LOAD. The URL may be blocked or incorrect.");
+            logoContainer.innerHTML = "<p style='color: white;'>Logo could not be loaded.</p>";
+        };
+
+        // 3. Force the container to be visible with inline styles, overriding any CSS issues.
+        logoContainer.style.display = 'block';
+        logoContainer.style.width = '100%';
+        logoContainer.style.paddingBottom = '20px'; // Ensure it has space
+        logoContainer.style.textAlign = 'center';
+    }
+
   } catch (error) {
     console.error("Error in generateBingo:", error);
     alert(`Error: ${error.message || "Failed to generate/load bingo card"}`);
