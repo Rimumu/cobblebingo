@@ -4,7 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateAccountWidget = () => {
         const token = localStorage.getItem('token');
         const accountWidget = document.getElementById('account-widget');
-        if (!accountWidget) return;
+        if (!accountWidget) {
+            // If you open your browser's developer console (F12), you would see this error.
+            console.error('CRITICAL ERROR: The #account-widget element was not found in the HTML. The account button cannot be displayed.');
+            return;
+        }
 
         if (token) {
             // User is logged in
