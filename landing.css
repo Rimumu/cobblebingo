@@ -25,10 +25,10 @@ body {
 }
 
 .main-logo {
-    max-width: 1200px; /* Changed from 400px */
-    width: 80%;
+    max-width: 800px; /* Changed from 600px */
+    width: 100%;      /* Changed from 80% */
     height: auto;
-    margin-bottom: 20px;
+    margin-bottom: 30px; /* Increased for better spacing */
 }
 
 h1 {
