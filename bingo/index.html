@@ -75,7 +75,6 @@
         <div id="postGenerationControls">
           <button id="clearBtn" onclick="clearCompleted()">Clear</button>
           <button id="exportBtn">Export Card as PNG</button>
-          <button id="shareBtn" onclick="shareSession()">Share Session</button>
           <div class="color-scheme-selector">
             <div class="color-option theme-white active" data-theme="white" title="White"></div>
             <div class="color-option theme-black" data-theme="black" title="Black"></div>
@@ -88,40 +87,8 @@
         </div>
       </div>
     </div> 
-
-    <script>
-  function shareSession() {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-      alert('Session link copied to clipboard!');
-    }, () => {
-      alert('Failed to copy link. Please copy it from the address bar.');
-    });
-  }
-
-  // Hide share button initially
-  document.addEventListener('DOMContentLoaded', () => {
-    const shareBtn = document.getElementById('shareBtn');
-    if (shareBtn) shareBtn.style.display = 'none';
     
-    // Also, modify the main generate/load button event listener
-    const loadCardBtn = document.querySelector('button[onclick="generateBingo()"]');
-    if (loadCardBtn) {
-        loadCardBtn.addEventListener('click', () => {
-            // Show share button after card loads
-            setTimeout(() => {
-                if(document.getElementById('bingoCard').style.display !== 'none') {
-                    document.getElementById('shareBtn').style.display = 'inline-block';
-                }
-            }, 1000); // delay to ensure card is visible
-        });
-    }
-  });
-</script>
-    
-    <script src="../script.js">
-      
-    </script>
+    <script src="../script.js"></script>
 </body>
 
 </html>
