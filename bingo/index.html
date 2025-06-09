@@ -37,38 +37,44 @@
     <div id="mainContent">
       <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+      
       <div id="filters">
         <label for="difficulty">Select Difficulty:</label>
-<div class="custom-select-wrapper">
-    <div class="custom-select">
-        <div class="custom-select__trigger">
-            <span>Normal</span>
-            <div class="arrow"></div>
+        
+        <div class="custom-select-wrapper">
+            <div class="custom-select">
+                <div class="custom-select__trigger">
+                    <span>Normal</span>
+                    <div class="arrow"></div>
+                </div>
+                <div class="custom-options">
+                    <span class="custom-option" data-value="easy">Easy</span>
+                    <span class="custom-option selected" data-value="normal">Normal</span>
+                    <span class="custom-option" data-value="hard">Hard</span>
+                    <span class="custom-option" data-value="insane">Insane</span>
+                    <span class="custom-option" data-value="nightmare">Nightmare</span>
+                    <span class="custom-option" data-value="common">Common</span>
+                    <span class="custom-option" data-value="uncommon">Uncommon</span>
+                    <span class="custom-option" data-value="rare">Rare</span>
+                    <span class="custom-option" data-value="ultra-rare">Ultra-Rare</span>
+                </div>
+            </div>
         </div>
-        <div class="custom-options">
-    <span class="custom-option" data-value="easy">Easy</span>
-    <span class="custom-option selected" data-value="normal">Normal</span>
-    <span class="custom-option" data-value="hard">Hard</span>
-    <span class="custom-option" data-value="insane">Insane</span>
-    <span class="custom-option" data-value="nightmare">Nightmare</span> <span class="custom-option" data-value="common">Common</span>
-    <span class="custom-option" data-value="uncommon">Uncommon</span>
-    <span class="custom-option" data-value="rare">Rare</span>
-    <span class="custom-option" data-value="ultra-rare">Ultra-Rare</span>
-</div>
-
-<select id="difficulty" style="display: none;">
-    <option value="easy">Easy</option>
-    <option value="normal" selected>Normal</option>
-    <option value="hard">Hard</option>
-    <option value="insane">Insane</option>
-    <option value="nightmare">Nightmare</option> <option value="common">Common</option>
-    <option value="uncommon">Uncommon</option>
-    <option value="rare">Rare</option>
-    <option value="ultra-rare">Ultra-Rare</option>
-</select>
-</div>
+        
+        <select id="difficulty" style="display: none;">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+            <option value="insane">Insane</option>
+            <option value="nightmare">Nightmare</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="ultra-rare">Ultra-Rare</option>
+        </select>
+        
         <button onclick="generateNewCard()" style="background-color: #4caf50; margin-left: 10px; margin-right: 20px;">Generate New Card</button>
-
+    
         <label for="cardCode">Card Code:</label>
         <input type="text" id="cardCode" placeholder="CBXXXXXX" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; margin-left: 10px;">
         <button onclick="generateBingo()" style="background-color: #2196f3; margin-left: 10px;">Load Card</button>
