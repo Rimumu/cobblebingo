@@ -915,6 +915,8 @@ function generateNewCard() {
 
 // Updated renderBingoCard function with fixed tooltip positioning
 async function renderBingoCard(selected) {
+  // Get the current difficulty from the dropdown
+  const difficulty = document.getElementById("difficulty").value;
   const bingoCard = document.getElementById("bingoGrid");
   const imageLoadPromises = [];
 
@@ -923,164 +925,102 @@ async function renderBingoCard(selected) {
     const cell = document.createElement("div");
     cell.className = "bingo-cell";
 
-    if (index === 12) {
-      if (pokemon.rarity?.toLowerCase() === "legendary") {
-        // Legendary center cell - FIXED: Make it clickable and not pre-marked as completed
-        cell.classList.add("legendary-center");
-        cell.style.cursor = "pointer";
-        cell.style.position = "relative";
-        cell.style.overflow = "hidden"; // FIXED: Contain shimmer effect within cell
-        cell.style.isolation = "isolate"; // Create new stacking context
+    // --- NEW LOGIC: Determine if the cell should get the special legendary style ---
+    const isLegendary = pokemon.rarity?.toLowerCase() === "legendary";
+    const shouldHaveLegendaryStyle =
+      isLegendary &&
+      (difficulty === "nightmare" || (difficulty === "insane" && index === 12));
+    // --- END NEW LOGIC ---
 
-        // Add click handler for legendary cell
-        cell.addEventListener("click", (e) => {
-          // Prevent opening Pokemon page if just marking completion
-          if (
-            e.target === cell ||
-            e.target.classList.contains("pokemon-name")
-          ) {
-            toggleCellCompletion(index); // Formerly Completion(index);
-          } else {
-            if (pokemon.rarity.toLowerCase() === "legendary") {
-              window.open(
-                "https://modrinth.com/datapack/cobblemon-legendary-structures",
-                "_blank",
-              );
-            } else {
-              openPokemonPage(pokemon.name);
-            }
-          }
-        });
-
-        setupTooltipEvents(
-          cell,
-          `Legendary Pokémon | Biome: ${pokemon.biome}`,
-          true,
-        );
-
-        // Add hover transform effects
-        cell.addEventListener("mouseenter", () => {
-          cell.style.transform = "translateY(-3px) scale(1.02)";
-        });
-
-        cell.addEventListener("mouseleave", () => {
-          cell.style.transform = "";
-        });
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "image-wrapper";
-        wrapper.style.position = "relative";
-        wrapper.style.overflow = "hidden"; // Contain shimmer within wrapper
-        wrapper.style.width = "100%";
-        wrapper.style.height = "100%";
-
-        // Use local image for legendary with proper fallback
-        const img = document.createElement("img");
-        img.alt = name;
-        img.className = "pokemon-img";
-        img.crossOrigin = "anonymous";
-
-        // Try multiple possible paths for the legendary image
-        const possiblePaths = [
-          `./public/${pokemon.id}.png`,
-          `./images/${pokemon.id}.png`,
-          `/images/${pokemon.id}.png`,
-          `./assets/${pokemon.id}.png`,
-          `/assets/${pokemon.id}.png`,
-          `./${pokemon.id}.png`,
-        ];
-
-        let pathIndex = 0;
-
-        const tryNextPath = () => {
-          if (pathIndex < possiblePaths.length) {
-            img.src = possiblePaths[pathIndex];
-            pathIndex++;
-          } else {
-            // All local paths failed, try external sources
-            console.warn(
-              `Local image not found for legendary ${pokemon.name}, trying external sources`,
-            );
-            tryExternalSources();
-          }
-        };
-
-        const tryExternalSources = async () => {
-          // Try Cobbledex first
-          const formattedName = name.toLowerCase().replace(/\s+/g, "_");
-          const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${formattedName}.webp`;
-
-          try {
-            const response = await fetch(cobblemonUrl);
-            if (response.ok) {
-              const blob = await response.blob();
-              const PLACEHOLDER_SIZE_MIN = 2160;
-              const PLACEHOLDER_SIZE_MAX = 2180;
-
-              if (
-                blob.size < PLACEHOLDER_SIZE_MIN ||
-                blob.size > PLACEHOLDER_SIZE_MAX
-              ) {
-                const objectUrl = URL.createObjectURL(blob);
-                img.src = objectUrl;
-                img.onload = () => URL.revokeObjectURL(objectUrl);
-                return;
-              }
-            }
-          } catch (error) {
-            console.warn(
-              `Cobbledex failed for legendary ${pokemon.name}:`,
-              error,
-            );
-          }
-
-          // Fallback to PokeAPI
-          if (pokemon.id) {
-            const pokeApiUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-            img.src = pokeApiUrl;
-          } else {
-            img.src = "";
-            img.alt = `${pokemon.name} (Image not available)`;
-          }
-        };
-
-        img.onerror = tryNextPath;
-        tryNextPath(); // Start trying paths
-
-        wrapper.appendChild(img);
-
-        cell.appendChild(wrapper);
-
-        const label = document.createElement("div");
-        label.className = "pokemon-name";
-        label.textContent = name;
-        cell.appendChild(label);
-
-        const rarity = document.createElement("div");
-        rarity.className = "rarity-badge legendary";
-        rarity.textContent = "Legendary";
-        cell.appendChild(rarity);
-      } else {
-        // Regular FREE space
-        cell.textContent = "FREE";
-        cell.style.backgroundColor = "#ffd700";
-        cell.style.fontWeight = "bold";
-        cell.style.display = "flex";
-        cell.style.alignItems = "center";
-        cell.style.justifyContent = "center";
-        cell.style.fontSize = "18px";
-        cell.style.color = "#000";
-        // FREE space is automatically marked as completed
-        cell.classList.add("completed");
-      }
-    } else {
-      // Regular Pokemon cells
+    if (shouldHaveLegendaryStyle) {
+      // --- This block is for any cell that needs the special legendary styling ---
+      // It's the same code that was previously only for the center cell.
+      cell.classList.add("legendary-center");
       cell.style.cursor = "pointer";
       cell.style.position = "relative";
-      cell.style.overflow = "hidden"; // Prevent any overflow issues
+      cell.style.overflow = "hidden";
+      cell.style.isolation = "isolate";
 
       cell.addEventListener("click", (e) => {
-        // Prevent opening Pokemon page if just marking completion
+        if (e.target === cell || e.target.classList.contains("pokemon-name")) {
+          toggleCellCompletion(index);
+        } else {
+          window.open(
+            "https://modrinth.com/datapack/cobblemon-legendary-structures",
+            "_blank"
+          );
+        }
+      });
+
+      setupTooltipEvents(
+        cell,
+        `Legendary Pokémon | Biome: ${pokemon.biome}`,
+        true
+      );
+
+      cell.addEventListener("mouseenter", () => {
+        cell.style.transform = "translateY(-3px) scale(1.02)";
+      });
+      cell.addEventListener("mouseleave", () => {
+        cell.style.transform = "";
+      });
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "image-wrapper";
+      wrapper.style.position = "relative";
+      wrapper.style.overflow = "hidden";
+      wrapper.style.width = "100%";
+      wrapper.style.height = "100%";
+
+      const img = document.createElement("img");
+      img.alt = name;
+      img.className = "pokemon-img";
+      img.crossOrigin = "anonymous";
+      
+      const formattedName = name.toLowerCase().replace(/\s+/g, "_");
+      const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${formattedName}.webp`;
+      img.src = cobblemonUrl;
+      img.onerror = () => {
+          if(pokemon.id) {
+              img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
+          } else {
+              img.src = "";
+              img.alt = `${pokemon.name} (Image not available)`;
+          }
+      };
+
+      wrapper.appendChild(img);
+      cell.appendChild(wrapper);
+
+      const label = document.createElement("div");
+      label.className = "pokemon-name";
+      label.textContent = name;
+      cell.appendChild(label);
+
+      const rarity = document.createElement("div");
+      rarity.className = "rarity-badge legendary";
+      rarity.textContent = "Legendary";
+      cell.appendChild(rarity);
+
+    } else if (index === 12) {
+      // --- This block now only handles the regular FREE space ---
+      cell.textContent = "FREE";
+      cell.style.backgroundColor = "#ffd700";
+      cell.style.fontWeight = "bold";
+      cell.style.display = "flex";
+      cell.style.alignItems = "center";
+      cell.style.justifyContent = "center";
+      cell.style.fontSize = "18px";
+      cell.style.color = "#000";
+      cell.classList.add("completed");
+
+    } else {
+      // --- This block handles all other regular Pokémon cells ---
+      cell.style.cursor = "pointer";
+      cell.style.position = "relative";
+      cell.style.overflow = "hidden";
+
+      cell.addEventListener("click", (e) => {
         if (e.target === cell || e.target.classList.contains("pokemon-name")) {
           toggleCellCompletion(index);
         } else {
@@ -1088,14 +1028,11 @@ async function renderBingoCard(selected) {
         }
       });
 
-      // Setup tooltip for regular cell
       setupTooltipEvents(cell, "Biome: " + pokemon.biome, false);
 
-      // Add hover transform effects
       cell.addEventListener("mouseenter", () => {
         cell.style.transform = "translateY(-3px) scale(1.02)";
       });
-
       cell.addEventListener("mouseleave", () => {
         cell.style.transform = "";
       });
@@ -1131,10 +1068,8 @@ async function renderBingoCard(selected) {
           ) {
             throw new Error("Placeholder image detected");
           }
-
           const objectUrl = URL.createObjectURL(blob);
           img.src = objectUrl;
-
           await new Promise((imgResolve, imgReject) => {
             img.onload = () => {
               URL.revokeObjectURL(objectUrl);
@@ -1147,14 +1082,12 @@ async function renderBingoCard(selected) {
           });
         } catch (error) {
           console.warn(
-            `Falling back to PokeAPI for ${pokemon.name}: ${error.message}`,
+            `Falling back to PokeAPI for ${pokemon.name}: ${error.message}`
           );
-
           if (pokemon.id) {
             const pokeApiUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
             img.crossOrigin = "anonymous";
             img.src = pokeApiUrl;
-
             await new Promise((imgResolve) => {
               img.onload = imgResolve;
               img.onerror = () => {
@@ -1168,7 +1101,6 @@ async function renderBingoCard(selected) {
             img.alt = `${pokemon.name} (No ID available)`;
           }
         }
-
         resolve();
       });
 
@@ -1178,11 +1110,6 @@ async function renderBingoCard(selected) {
       const label = document.createElement("div");
       label.className = "pokemon-name";
       label.textContent = pokemon.name;
-      label.style.fontSize = "12px";
-      label.style.fontWeight = "bold";
-      label.style.textAlign = "center";
-      label.style.marginTop = "5px";
-      label.style.color = "#333";
       cell.appendChild(label);
 
       if (pokemon.rarity) {
@@ -1191,20 +1118,12 @@ async function renderBingoCard(selected) {
         rarity.className = `rarity-badge ${rarityClass}`;
         rarity.textContent =
           pokemon.rarity.charAt(0).toUpperCase() + pokemon.rarity.slice(1);
-        rarity.style.fontSize = "10px";
-        rarity.style.padding = "2px 6px";
-        rarity.style.borderRadius = "12px";
-        rarity.style.fontWeight = "bold";
-        rarity.style.textAlign = "center";
-        rarity.style.marginTop = "3px";
         cell.appendChild(rarity);
       }
     }
-
     bingoCard.appendChild(cell);
   });
 
-  // Wait for all images to load
   await Promise.all(imageLoadPromises);
   await new Promise((resolve) => setTimeout(resolve, 500));
 }
