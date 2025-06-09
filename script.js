@@ -1,4 +1,4 @@
-// Global val
+// Global val null
 let currentSessionId = null;
 let activeTooltip = null;
 
