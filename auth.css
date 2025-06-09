@@ -2,11 +2,10 @@
 
 /* In the .account-widget rule, add a padding-bottom */
 .account-widget {
-    position: fixed;
-    top: 20px;
-    right: 20px;
+    /* No longer uses position: fixed */
     z-index: 1001;
-    padding-bottom: 10px; /* Add this line */
+    position: relative; /* Use relative positioning within the flex container */
+    margin-left: auto; /* This is the key to pushing it to the right */
 }
 
 .account-button {
