@@ -1442,22 +1442,28 @@ function clearCompleted() {
 
 // Add this function to properly initialize completed cells after card generation
 function initializeCompletedCells(isLoadingFromServer = false) {
-  // If loading from server, the `completedCells` global is already set.
-  // We just need to apply the 'completed' class to the rendered cells.
-  if (isLoadingFromServer) {
-    document.querySelectorAll('.bingo-cell').forEach((cell, index) => {
-      if (completedCells[index]) {
-        cell.classList.add('completed');
-      }
-    });
-  } else {
-    // This is for the old flow, just in case.
-    const centerCell = document.querySelector(".bingo-cell:nth-child(13)");
-    if (centerCell && centerCell.textContent === "FREE") {
-      completedCells[12] = true;
-      centerCell.classList.add("completed");
-    }
+  const centerCell = document.querySelector(".bingo-cell:nth-child(13)");
+
+  // --- START OF FIX ---
+  // This is the crucial new logic.
+  // We check if the center cell is a standard "FREE" space.
+  // If it is, we FORCE its state to be 'true' in our data array,
+  // overriding whatever the server might have sent for a new session.
+  if (centerCell && centerCell.textContent === "FREE") {
+    completedCells[12] = true;
   }
+  // --- END OF FIX ---
+
+  // Now, with the corrected data, we update the visuals for all cells.
+  document.querySelectorAll('.bingo-cell').forEach((cell, index) => {
+    // We add 'completed' class if the corresponding entry in our array is true.
+    if (completedCells[index]) {
+      cell.classList.add('completed');
+    } else {
+      // It's also good practice to remove the class if it's not completed.
+      cell.classList.remove('completed');
+    }
+  });
 }
 
 // UPDATED cleanup function - Replace your existing cleanupTooltips function
