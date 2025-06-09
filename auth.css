@@ -44,7 +44,7 @@
     overflow: hidden;
 }
 
-.account-widget:hover .account-dropdown {
+.account-widget.active .account-dropdown {
     display: block;
 }
 
