@@ -717,7 +717,7 @@ async function generateBingo() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const codeFromUrl = urlParams.get("code");
-    const sessionFromUrl = urlParams.get("session");
+    let sessionFromUrl = urlParams.get("session");
     const codeToUse = cardCodeInput || codeFromUrl;
 
     if (cardCodeInput && cardCodeInput.toUpperCase() !== (codeFromUrl || '').toUpperCase()) {
