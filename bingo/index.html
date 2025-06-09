@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cobblemon Bingo Dev</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="icon" href="https://mmcreviews.com/wp-content/uploads/638110963447535353.png" type="image/png">
+</head>
+
+  <body class="theme-white loading">
+    <div id="loadingScreen">
+      <div class="particles">
+        </div>
+      <div class="loading-container">
+        <div class="logo-container">
+          <img class="loading-logo" src="https://cdn.glitch.global/fecfc9cc-1e50-454e-a7d0-72e1b03260c4/public_cobblebingo.png?v=1748523580111" alt="Cobblemon Bingo Logo">
+        </div>
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring"></div>
+        </div>
+        <div class="loading-text">
+          Loading Cobblemon Bingo
+          <div class="loading-dots">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div id="mainContent">
+      <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+      
+      <div id="filters">
+        <label for="difficulty">Select Difficulty:</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+          <option value="insane">Insane</option>
+          <option value="common">Common</option>
+          <option value="uncommon">Uncommon</option>
+          <option value="rare">Rare</option>
+          <option value="ultra-rare">Ultra-Rare</option>
+        </select>
+        <button onclick="generateNewCard()" style="background-color: #4caf50; margin-left: 10px; margin-right: 20px;">Generate New Card</button>
+
+        <label for="cardCode">Card Code:</label>
+        <input type="text" id="cardCode" placeholder="CBXXXXXX" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; margin-left: 10px;">
+        <button onclick="generateBingo()" style="background-color: #2196f3; margin-left: 10px;">Load Card</button>
+      </div>
+
+      <div class="bingo-wrapper">
+        <div id="bingoCard" style="display: none;">
+          <div id="logoContainer" style="display: none;">
+            <img id="bingoLogo" src="https://cdn.glitch.global/fecfc9cc-1e50-454e-a7d0-72e1b03260c4/public_cobblebingo.png?v=1748523580111" alt="Cobblemon Bingo Logo">
+          </div>
+          <div id="bingoGrid"></div> </div>
+      </div>
+      
+      <div id="loadingSpinner">
+      <div class="spinner-content">
+        <img src="https://mmcreviews.com/wp-content/uploads/638110963447535353.png" alt="Loading..." />
+        <p>Generating Card...</p>
+      </div>
+      </div>
+      
+      <div class="controls-container" style="display: none;">
+        <div id="postGenerationControls">
+          <button id="clearBtn" onclick="clearCompleted()">Clear</button>
+          <button id="exportBtn">Export Card as PNG</button>
+          <div class="color-scheme-selector">
+            <div class="color-option theme-white active" data-theme="white" title="White"></div>
+            <div class="color-option theme-black" data-theme="black" title="Black"></div>
+            <div class="color-option theme-blue" data-theme="blue" title="Blue"></div>
+            <div class="color-option theme-pink" data-theme="pink" title="Pink"></div>
+            <div class="color-option theme-purple" data-theme="purple" title="Purple"></div>
+            <div class="color-option theme-red" data-theme="red" title="Red"></div>
+            <div class="color-option theme-yellow" data-theme="yellow" title="Yellow"></div>
+          </div>
+        </div>
+      </div>
+    </div> 
+    
+    <script src="../script.js"></script>
+</body>
+
+</html>
