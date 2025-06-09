@@ -893,7 +893,7 @@ async function renderBingoCard(selected) {
             e.target === cell ||
             e.target.classList.contains("pokemon-name")
           ) {
-            Completion(index);
+            toggleCellCompletion(index); // Formerly Completion(index);
           } else {
             if (pokemon.rarity.toLowerCase() === "legendary") {
               window.open(
@@ -1298,21 +1298,6 @@ function toggleCellCompletion(index) {
 
   completedCells[index] = !completedCells[index];
   cell.classList.toggle("completed", completedCells[index]);
-  
-  // (The manual checkmark logic for legendary cells remains the same)
-  if (cell.classList.contains("legendary-center")) {
-    const existingCheckmark = cell.querySelector(".manual-checkmark");
-    if (completedCells[index] && !existingCheckmark) {
-      const checkmark = document.createElement("div");
-      checkmark.className = "manual-checkmark";
-      checkmark.innerHTML = "✓";
-      // (checkmark styles...)
-      cell.appendChild(checkmark);
-    } else if (!completedCells[index] && existingCheckmark) {
-      existingCheckmark.remove();
-    }
-  }
-
   cell.style.transform = "scale(0.95)";
   setTimeout(() => {
     cell.style.transform = "";
