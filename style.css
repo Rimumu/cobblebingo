@@ -1483,3 +1483,51 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
 }
+
+/* 1. Change this rule */
+.bingo-cell.completed:not(.legendary-center) {
+    filter: grayscale(60%) brightness(0.6);
+    opacity: 0.7;
+    position: relative;
+    background: rgba(76, 175, 80, 0.2) !important;
+}
+
+/* 2. And change this rule */
+.bingo-cell.completed:not(.legendary-center)::after {
+    content: "✓";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
+}
+
+/* 3. Add this new rule for the legendary checkmark */
+.bingo-cell.legendary-center.completed::after {
+    content: "✓";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 215, 0, 0.9); /* Gold background */
+    color: #1a1a1a;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
