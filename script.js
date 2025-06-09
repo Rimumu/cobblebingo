@@ -1169,8 +1169,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get("code");
-  if (code && document.getElementById("cardCode")) {
-    document.getElementById("cardCode").value = code;
+  const session = urlParams.get("session"); // Check for a session ID
+
+  // If a card code is present in the URL...
+  if (code) {
+    const cardCodeInput = document.getElementById("cardCode");
+    if (cardCodeInput) {
+      cardCodeInput.value = code; // Pre-fill the input box
+    }
+
+    // ...and if a session ID is ALSO present, auto-load the card!
+    if (session) {
+      console.log("Saved session found in URL, automatically loading card...");
+      generateBingo();
+    }
   }
 });
 
