@@ -178,89 +178,62 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
 
 console.log('Using API Base URL:', API_BASE_URL);
 
-// Enhanced API call function with better error handling and CORS support
+// --- REPLACE this entire function with the new version below ---
 async function apiCall(endpoint, options = {}) {
   try {
     const url = `${API_BASE_URL}/api/${endpoint}`;
-    console.log('Making API call to:', url);
-    console.log('Request options:', options);
     
-    const response = await fetch(url, {
-      headers: {
+    // --- START of updated logic ---
+    const token = localStorage.getItem('token');
+    const headers = {
         "Content-Type": "application/json",
         ...options.headers,
-      },
-      mode: 'cors', // Explicitly set CORS mode
-      credentials: 'include', // Include credentials if needed
-      ...options,
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    // --- END of updated logic ---
+
+    const response = await fetch(url, {
+      ...options, // Pass through original options like method and body
+      headers: headers, // Use our newly constructed headers
+      mode: 'cors',
+      credentials: 'include',
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', [...response.headers.entries()]);
-
-    // Get the response text first
     const responseText = await response.text();
-    console.log('Raw response:', responseText);
 
-    // Check if response is ok first
     if (!response.ok) {
-      // Try to parse as JSON for error details, but handle HTML responses
       let errorMessage = `HTTP error! status: ${response.status}`;
-      
       try {
         const errorData = JSON.parse(responseText);
         errorMessage = errorData.error || errorMessage;
       } catch (parseError) {
-        // If JSON parsing fails, check if it's HTML
-        if (responseText.toLowerCase().includes('<html>') || 
-            responseText.toLowerCase().includes('<!doctype')) {
-          errorMessage = `Server returned HTML instead of JSON. This usually means the API endpoint doesn't exist or there's a server configuration issue.`;
+        if (responseText.toLowerCase().includes('<html>')) {
+          errorMessage = `Server returned HTML instead of JSON. Check the API endpoint.`;
         } else {
           errorMessage = `Server error: ${responseText.substring(0, 100)}...`;
         }
       }
-      
       console.error('API error response:', errorMessage);
       throw new Error(errorMessage);
     }
 
-    // Try to parse as JSON
     let data;
     try {
       data = responseText ? JSON.parse(responseText) : {};
     } catch (parseError) {
       console.error('Failed to parse JSON response:', parseError);
-      console.error('Response text was:', responseText);
-      
-      // Check if we got HTML instead of JSON
-      if (responseText.toLowerCase().includes('<html>') || 
-          responseText.toLowerCase().includes('<!doctype')) {
-        throw new Error('Server returned an HTML page instead of JSON. The API endpoint may not exist or be configured correctly.');
-      } else {
-        throw new Error(`Invalid JSON response from ${endpoint}: ${parseError.message}`);
-      }
+      throw new Error(`Invalid JSON response from ${endpoint}: ${parseError.message}`);
     }
 
-    console.log('API call successful:', data);
     return data;
   } catch (error) {
     console.error(`API call failed for ${endpoint}:`, error);
-    
-    // Show user-friendly error messages
-    if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
-      throw new Error('Unable to connect to server. Please check your internet connection and try again.');
+    if (error.message.includes('Failed to fetch')) {
+      throw new Error('Unable to connect to server. Please check your internet connection.');
     }
-    
-    // Handle CORS errors specifically
-    if (error.message.includes('CORS') || error.message.includes('Access-Control')) {
-      throw new Error('Server configuration error (CORS). Please contact support.');
-    }
-
-    // Handle HTML response errors
-    if (error.message.includes('HTML page instead of JSON')) {
-      throw new Error('API endpoint not found. Please verify the server is running and the endpoint exists.');
-    }
-    
     throw error;
   }
 }
