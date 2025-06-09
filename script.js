@@ -436,6 +436,26 @@ async function updateSession(sessionId, cells) {
   }
 }
 
+// --- Add this new API function for saving a session ---
+async function saveSession(sessionId, sessionName, token) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/session/${sessionId}/save`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ sessionName })
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error);
+    return data;
+  } catch (error) {
+    console.error("Error saving session:", error);
+    throw error;
+  }
+}
+
 // Add a function to test all API endpoints
 async function testAllEndpoints() {
   console.log('🔍 Testing all API endpoints...');
@@ -791,6 +811,26 @@ async function generateBingo() {
     currentUrl.searchParams.set("session", currentSessionId);
     history.pushState(null, '', currentUrl.toString());
 
+        // Show/Hide Save button based on login state
+    const saveBtn = document.getElementById('saveSessionBtn');
+    const token = localStorage.getItem('token');
+    if (token) {
+        saveBtn.style.display = 'inline-block';
+        saveBtn.onclick = async () => {
+            const sessionName = prompt("Enter a name for this session:", `My Bingo Card`);
+            if (sessionName) {
+                try {
+                    await saveSession(currentSessionId, sessionName, token);
+                    alert(`Session saved as "${sessionName}"!`);
+                } catch (e) {
+                    alert(`Error: ${e.message}`);
+                }
+            }
+        };
+    } else {
+        saveBtn.style.display = 'none';
+    }
+    
     await renderBingoCard(cardData.cardData.pokemon);
     initializeCompletedCells(true); // Pass flag to indicate we're loading from server
     checkForBingo(); // Check for bingos on load
@@ -801,7 +841,7 @@ async function generateBingo() {
     loadingSpinner.style.display = "none";
     return;
   }
-
+  
   loadingSpinner.style.display = "none";
   bingoCardWrapper.style.display = "flex";
   exportBtn.style.display = "inline-block";
