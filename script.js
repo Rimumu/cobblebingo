@@ -564,7 +564,6 @@ function populateFilters() {
 function selectPokemonByDifficulty(pokemonList, difficulty) {
   console.log("Selecting Pokémon by difficulty:", difficulty);
 
-  // First categorize all Pokemon by their rarity
   const byRarity = {
     common: pokemonList.filter((p) => p.rarity.toLowerCase() === "common"),
     uncommon: pokemonList.filter((p) => p.rarity.toLowerCase() === "uncommon"),
@@ -577,11 +576,8 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
     ),
   };
 
-  console.log("Filtered Pokémon by rarity:", byRarity);
-
   let selected = [];
 
-  // Function to handle Pokémon selection based on category and count
   function selectFromCategory(category, count) {
     console.log(`Attempting to select ${count} Pokémon from ${category}`);
     if (byRarity[category].length >= count) {
@@ -602,11 +598,10 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
     }
   }
 
-  // Select Pokémon based on the selected difficulty
   if (difficulty === "easy") {
     selected = selected.concat(
-      selectFromCategory("common", 15), // 60% common
-      selectFromCategory("uncommon", 9), // 40% uncommon
+      selectFromCategory("common", 15),
+      selectFromCategory("uncommon", 9),
     );
   } else if (difficulty === "normal") {
     selected = selected.concat(
@@ -617,8 +612,8 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
     );
   } else if (difficulty === "hard") {
     selected = selected.concat(
-      selectFromCategory("rare", 15), // 60% rare
-      selectFromCategory("ultra-rare", 9), // 40% ultra-rare
+      selectFromCategory("rare", 15),
+      selectFromCategory("ultra-rare", 9),
     );
   } else if (difficulty === "common") {
     selected = selected.concat(selectFromCategory("common", 24));
@@ -629,32 +624,29 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
   } else if (difficulty === "ultra-rare") {
     selected = selected.concat(selectFromCategory("ultra-rare", 24));
   } else if (difficulty === "insane") {
-    // Special case: Get 24 ultra-rare Pokémon + 1 legendary at center
     selected = selected.concat(selectFromCategory("ultra-rare", 24));
     const legendaryPokemon = shuffle(byRarity["legendary"])[0];
     if (legendaryPokemon) {
       selected.splice(12, 0, legendaryPokemon);
+    } else {
+      selected.splice(12, 0, {
+        name: "LEGENDARY",
+        rarity: "legendary",
+        biome: "Legendary",
+        id: "0",
+      });
+    }
   } else if (difficulty === "nightmare") {
-    // 1. Get 5 legendary Pokémon
     const legendaryPokemon = selectFromCategory("legendary", 5);
-    
-    // 2. Get 20 ultra-rare Pokémon
     const ultraRarePokemon = selectFromCategory("ultra-rare", 20);
-
-    // 3. Set one legendary aside for the center
     const centerLegendary = legendaryPokemon.pop();
-
     const otherPokemon = ultraRarePokemon.concat(legendaryPokemon);
     const shuffledOthers = shuffle(otherPokemon);
-
-    // Insert legendary at position 12 (center) - this makes it 25 total
     if (centerLegendary) {
         selected.push(...shuffledOthers.slice(0, 12), centerLegendary, ...shuffledOthers.slice(12));
     } else {
-        // Fallback if no legendaries are found
         selected = selected.concat(shuffledOthers);
     }
-      
   } else {
     console.warn("Unknown difficulty, defaulting to normal");
     selected = selected.concat(
@@ -667,7 +659,6 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
 
   console.log("Selected Pokémon before padding:", selected);
 
-  // For insane difficulty, we should have exactly 25 (24 + 1 legendary)
   if (difficulty === "insane" || difficulty === "nightmare") {
     if (selected.length !== 25) {
       console.error(
@@ -679,7 +670,6 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
       selected = selected.slice(0, 25);
     }
   } else {
-    // For all other difficulties, ensure we have exactly 24 Pokémon
     if (selected.length !== 24) {
       console.error(
         `Difficulty ${difficulty} should have 24 Pokémon (got ${selected.length}), adjusting`,
@@ -1542,7 +1532,7 @@ function createEnhancedParticles() {
     const particlesContainer = document.querySelector('.particles');
     if (!particlesContainer) return;
 
-    // Clear existing particles
+    // Clear existing particlefs
     particlesContainer.innerHTML = '';
 
     // Create 15 particles for better visibility
