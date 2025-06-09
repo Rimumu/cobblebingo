@@ -811,8 +811,15 @@ async function generateBingo() {
   } catch (error) {
     console.error("Error in generateBingo:", error);
     alert(`Error: ${error.message || "Failed to generate/load bingo card"}`);
+    
+    // --- Key Fix: Hide spinner and restore UI on error ---
     loadingSpinner.style.display = "none";
-    return;
+    const bingoCardWrapper = document.getElementById("bingoCard");
+    const exportBtn = document.getElementById("exportBtn");
+    bingoCardWrapper.style.display = "none"; // Keep card hidden
+    exportBtn.style.display = "none";
+    document.querySelector(".controls-container").style.display = "flex"; // Show controls again
+    return; // Stop execution
   }
   
   loadingSpinner.style.display = "none";
