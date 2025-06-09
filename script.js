@@ -753,7 +753,7 @@ async function generateBingo() {
   await new Promise((resolve) => setTimeout(resolve, 300));
 
   let cardData;
-  let sessionData;
+  let sessionData = null; // Default session to null
 
   try {
     const urlParams = new URLSearchParams(window.location.search);
@@ -762,40 +762,28 @@ async function generateBingo() {
     const codeToUse = cardCodeInput || codeFromUrl;
 
     if (cardCodeInput && cardCodeInput.toUpperCase() !== (codeFromUrl || '').toUpperCase()) {
-        console.log("New card code entered, ignoring previous session.");
         sessionFromUrl = null;
     }
 
     if (codeToUse) {
-      // --- Loading an existing card ---
-      console.log("Loading card with code:", codeToUse);
+      // Loading an existing card
       cardData = await retrieveCard(codeToUse);
       document.getElementById("cardCode").value = cardData.code;
       document.getElementById("difficulty").value = cardData.cardData.difficulty;
       
+      // Only get session if it's in the URL (i.e., loading a saved game)
       if (sessionFromUrl) {
-        console.log("Found session in URL, attempting to load:", sessionFromUrl);
         sessionData = await getSession(sessionFromUrl);
       }
       
-      if (!sessionData) {
-        console.log("No valid session found, initializing a new one.");
-        sessionData = await initSession(cardData.code);
-      }
-      
     } else {
-      // --- Generating a new card ---
-      console.log("Generating new card...");
+      // Generating a new card
       let pokemonForCard = selectPokemonByDifficulty(pokemonData, selectedDifficulty);
-      let selectedPokemon; // This will be the final array for the card.
+      let selectedPokemon;
 
-      // --- THIS IS THE CORRECTED LOGIC ---
       if (selectedDifficulty === "insane" || selectedDifficulty === "nightmare") {
-        // For these special modes, the pokemon list is already perfectly structured with a legendary in the middle.
-        // We use it directly.
         selectedPokemon = pokemonForCard;
       } else {
-        // For all standard modes, we shuffle the pokemon and add a "FREE" space in the middle.
         selectedPokemon = [];
         const shuffledPokemon = shuffle(pokemonForCard.slice(0, 24));
         for (let i = 0; i < 25; i++) {
@@ -806,45 +794,37 @@ async function generateBingo() {
           }
         }
       }
-      // --- END OF CORRECTION ---
 
       const newCardCode = await generateAndStoreCard(selectedPokemon, selectedDifficulty);
       cardData = await retrieveCard(newCardCode);
       document.getElementById("cardCode").value = cardData.code;
-
-      console.log("Initializing new session for new card.");
-      sessionData = await initSession(cardData.code);
     }
     
     // --- Post-load/generation logic ---
-    currentSessionId = sessionData.sessionId;
-    completedCells = sessionData.completedCells;
+    if (sessionData) {
+      // This runs only when loading a saved session from the URL
+      currentSessionId = sessionData.sessionId;
+      completedCells = sessionData.completedCells;
+    } else {
+      // This runs for all new cards, clearing previous state
+      currentSessionId = null;
+      completedCells = Array(25).fill(false);
+    }
 
+    // Update URL, but only add session if it exists
     const currentUrl = new URL(window.location);
     currentUrl.searchParams.set("code", cardData.code);
-    currentUrl.searchParams.set("session", currentSessionId);
+    if (currentSessionId) {
+      currentUrl.searchParams.set("session", currentSessionId);
+    } else {
+      currentUrl.searchParams.delete("session");
+    }
     history.pushState(null, '', currentUrl.toString());
 
-    const saveBtn = document.getElementById('saveSessionBtn');
-    const token = localStorage.getItem('token');
-    if (token) {
-        saveBtn.style.display = 'inline-block';
-        saveBtn.onclick = async () => {
-            const sessionName = prompt("Enter a name for this session:", `My Bingo Card`);
-            if (sessionName) {
-                try {
-                    await saveSession(currentSessionId, sessionName, token);
-                    alert(`Session saved as "${sessionName}"!`);
-                } catch (e) {
-                    alert(`Error: ${e.message}`);
-                }
-            }
-        };
-    } else {
-        saveBtn.style.display = 'none';
-    }
+    // Hide the save button initially; it will appear after the first click
+    document.getElementById('saveSessionBtn').style.display = 'none';
     
-    await renderBingoCard(cardData.cardData.pokemon);
+    await renderBingoCard(cardData.cardData.pokemon, selectedDifficulty);
     initializeCompletedCells(true);
     checkForBingo();
 
@@ -853,13 +833,9 @@ async function generateBingo() {
     if (bingoLogo && logoContainer) {
         bingoLogo.src = 'https://cdn.glitch.global/fecfc9cc-1e50-454e-a7d0-72e1b03260c4/public_cobblebingo.png?v=1748523580111';
         bingoLogo.onerror = () => {
-            console.error("BINGO LOGO FAILED TO LOAD.");
             logoContainer.innerHTML = "<p style='color: white;'>Logo could not be loaded.</p>";
         };
         logoContainer.style.display = 'block';
-        logoContainer.style.width = '100%';
-        logoContainer.style.paddingBottom = '20px';
-        logoContainer.style.textAlign = 'center';
     }
 
   } catch (error) {
@@ -867,8 +843,6 @@ async function generateBingo() {
     alert(`Error: ${error.message || "Failed to generate/load bingo card"}`);
     
     loadingSpinner.style.display = "none";
-    const bingoCardWrapper = document.getElementById("bingoCard");
-    const exportBtn = document.getElementById("exportBtn");
     bingoCardWrapper.style.display = "none";
     exportBtn.style.display = "none";
     document.querySelector(".controls-container").style.display = "flex";
@@ -1236,7 +1210,7 @@ let completedCells = Array(25).fill(false); // 5x5 grid
 completedCells[12] = true; // FREE space is always completed*/
 
 // Enhanced toggle function with better feedback
-function toggleCellCompletion(index) {
+async function toggleCellCompletion(index) {
   const cells = document.querySelectorAll(".bingo-cell");
   const cell = cells[index];
 
@@ -1244,6 +1218,7 @@ function toggleCellCompletion(index) {
 
   completedCells[index] = !completedCells[index];
   cell.classList.toggle("completed", completedCells[index]);
+  
   cell.style.transform = "scale(0.95)";
   setTimeout(() => {
     cell.style.transform = "";
@@ -1251,7 +1226,47 @@ function toggleCellCompletion(index) {
 
   checkForBingo();
   
-  // --- Add this line to save progress to the backend ---
+  // --- NEW LOGIC: Create session on first interaction ---
+  if (!currentSessionId) {
+    const cardCode = document.getElementById("cardCode").value;
+    if (cardCode) {
+      try {
+        console.log("First interaction: creating session...");
+        const sessionData = await initSession(cardCode);
+        currentSessionId = sessionData.sessionId;
+
+        // Update URL with the new session ID
+        const currentUrl = new URL(window.location);
+        currentUrl.searchParams.set("session", currentSessionId);
+        history.pushState(null, '', currentUrl.toString());
+
+        // Show save button now that we have a session to save
+        const saveBtn = document.getElementById('saveSessionBtn');
+        const token = localStorage.getItem('token');
+        if (token) {
+          saveBtn.style.display = 'inline-block';
+          saveBtn.onclick = async () => {
+              const sessionName = prompt("Enter a name for this session:", `My Bingo Card`);
+              if (sessionName) {
+                  try {
+                      await saveSession(currentSessionId, sessionName, token);
+                      alert(`Session saved as "${sessionName}"!`);
+                  } catch (e) {
+                      alert(`Error: ${e.message}`);
+                  }
+              }
+          };
+        }
+
+      } catch (error) {
+        console.error("Failed to create session on first click:", error);
+        alert("Warning: Could not create a session. Your progress will not be saved.");
+        return; // Exit if we can't create a session
+      }
+    }
+  }
+  
+  // Now that a session is guaranteed, save the progress
   if (currentSessionId) {
     updateSession(currentSessionId, completedCells);
   }
