@@ -763,7 +763,7 @@ async function generateBingo() {
 
     if (cardCodeInput && cardCodeInput.toUpperCase() !== (codeFromUrl || '').toUpperCase()) {
         console.log("New card code entered, ignoring previous session.");
-        sessionFromUrl = null; // This forces a new session to be created.
+        sessionFromUrl = null;
     }
 
     if (codeToUse) {
@@ -787,21 +787,16 @@ async function generateBingo() {
       // --- Generating a new card ---
       console.log("Generating new card...");
       let pokemonForCard = selectPokemonByDifficulty(pokemonData, selectedDifficulty);
-      let selectedPokemon = [];
-      // (The logic to assemble the 25 pokemon array remains the same)
-      if (selectedDifficulty === "insane") {
-        const centerPokemon = pokemonForCard[12];
-        const otherPokemon = [...pokemonForCard.slice(0, 12), ...pokemonForCard.slice(13)];
-        const shuffledOther = shuffle(otherPokemon);
-        for (let i = 0; i < 25; i++) {
-          if (i === 12) {
-            selectedPokemon.push(centerPokemon);
-          } else {
-            const otherIndex = i < 12 ? i : i - 1;
-            selectedPokemon.push(shuffledOther[otherIndex]);
-          }
-        }
+      let selectedPokemon; // This will be the final array for the card.
+
+      // --- THIS IS THE CORRECTED LOGIC ---
+      if (selectedDifficulty === "insane" || selectedDifficulty === "nightmare") {
+        // For these special modes, the pokemon list is already perfectly structured with a legendary in the middle.
+        // We use it directly.
+        selectedPokemon = pokemonForCard;
       } else {
+        // For all standard modes, we shuffle the pokemon and add a "FREE" space in the middle.
+        selectedPokemon = [];
         const shuffledPokemon = shuffle(pokemonForCard.slice(0, 24));
         for (let i = 0; i < 25; i++) {
           if (i === 12) {
@@ -811,9 +806,10 @@ async function generateBingo() {
           }
         }
       }
+      // --- END OF CORRECTION ---
 
       const newCardCode = await generateAndStoreCard(selectedPokemon, selectedDifficulty);
-      cardData = await retrieveCard(newCardCode); // Re-fetch to get the full object
+      cardData = await retrieveCard(newCardCode);
       document.getElementById("cardCode").value = cardData.code;
 
       console.log("Initializing new session for new card.");
@@ -822,15 +818,13 @@ async function generateBingo() {
     
     // --- Post-load/generation logic ---
     currentSessionId = sessionData.sessionId;
-    completedCells = sessionData.completedCells; // Load progress from session
+    completedCells = sessionData.completedCells;
 
-    // Update URL with both code and session
     const currentUrl = new URL(window.location);
     currentUrl.searchParams.set("code", cardData.code);
     currentUrl.searchParams.set("session", currentSessionId);
     history.pushState(null, '', currentUrl.toString());
 
-        // Show/Hide Save button based on login state
     const saveBtn = document.getElementById('saveSessionBtn');
     const token = localStorage.getItem('token');
     if (token) {
@@ -851,26 +845,20 @@ async function generateBingo() {
     }
     
     await renderBingoCard(cardData.cardData.pokemon);
-    initializeCompletedCells(true); // Pass flag to indicate we're loading from server
-    checkForBingo(); // Check for bingos on load
+    initializeCompletedCells(true);
+    checkForBingo();
 
     const logoContainer = document.getElementById("logoContainer");
     const bingoLogo = document.getElementById("bingoLogo");
-
     if (bingoLogo && logoContainer) {
-        // 1. Force the image source to be the correct, working URL.
         bingoLogo.src = 'https://cdn.glitch.global/fecfc9cc-1e50-454e-a7d0-72e1b03260c4/public_cobblebingo.png?v=1748523580111';
-
-        // 2. Add an error handler to check if the image is blocked or the URL is bad.
         bingoLogo.onerror = () => {
-            console.error("BINGO LOGO FAILED TO LOAD. The URL may be blocked or incorrect.");
+            console.error("BINGO LOGO FAILED TO LOAD.");
             logoContainer.innerHTML = "<p style='color: white;'>Logo could not be loaded.</p>";
         };
-
-        // 3. Force the container to be visible with inline styles, overriding any CSS issues.
         logoContainer.style.display = 'block';
         logoContainer.style.width = '100%';
-        logoContainer.style.paddingBottom = '20px'; // Ensure it has space
+        logoContainer.style.paddingBottom = '20px';
         logoContainer.style.textAlign = 'center';
     }
 
@@ -878,14 +866,13 @@ async function generateBingo() {
     console.error("Error in generateBingo:", error);
     alert(`Error: ${error.message || "Failed to generate/load bingo card"}`);
     
-    // --- Key Fix: Hide spinner and restore UI on error ---
     loadingSpinner.style.display = "none";
     const bingoCardWrapper = document.getElementById("bingoCard");
     const exportBtn = document.getElementById("exportBtn");
-    bingoCardWrapper.style.display = "none"; // Keep card hidden
+    bingoCardWrapper.style.display = "none";
     exportBtn.style.display = "none";
-    document.querySelector(".controls-container").style.display = "flex"; // Show controls again
-    return; // Stop execution
+    document.querySelector(".controls-container").style.display = "flex";
+    return;
   }
   
   loadingSpinner.style.display = "none";
