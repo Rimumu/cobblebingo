@@ -1,4 +1,4 @@
-// Global tooltip management
+// Global val
 let currentSessionId = null;
 let activeTooltip = null;
 
