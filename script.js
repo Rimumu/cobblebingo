@@ -720,6 +720,11 @@ async function generateBingo() {
     const sessionFromUrl = urlParams.get("session");
     const codeToUse = cardCodeInput || codeFromUrl;
 
+    if (cardCodeInput && cardCodeInput.toUpperCase() !== (codeFromUrl || '').toUpperCase()) {
+        console.log("New card code entered, ignoring previous session.");
+        sessionFromUrl = null; // This forces a new session to be created.
+    }
+
     if (codeToUse) {
       // --- Loading an existing card ---
       console.log("Loading card with code:", codeToUse);
