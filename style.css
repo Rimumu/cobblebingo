@@ -446,6 +446,8 @@ body {
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative; /* Ensures z-index is applied correctly */
+    z-index: 10;     /* ADD THIS LINE */
 }
 
 #filters label {
