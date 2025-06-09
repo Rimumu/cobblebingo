@@ -499,7 +499,7 @@ body {
     background: rgba(255, 255, 255, 0.15);
 }
 
-#filters button {
+#filters > button {
     padding: 10px 20px;
     background: linear-gradient(135deg, #4caf50, #45a049);
     color: white;
@@ -511,7 +511,7 @@ body {
     box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
 }
 
-#filters button:hover {
+#filters > button:hover {
     background: linear-gradient(135deg, #45a049, #3d8b40);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
