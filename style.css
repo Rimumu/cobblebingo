@@ -1531,3 +1531,87 @@ body {
     z-index: 10;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
+
+/* --- Custom Select Dropdown Styles --- */
+.custom-select-wrapper {
+    position: relative;
+    color: #ffffff;
+}
+
+.custom-select {
+    position: relative;
+    width: 160px; /* You can adjust this width */
+    font-weight: 600;
+}
+
+.custom-select__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.custom-select__trigger:hover,
+.custom-select.open .custom-select__trigger {
+    border-color: #4caf50;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.custom-select .arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #fff;
+    transition: transform 0.3s ease;
+}
+
+.custom-select.open .arrow {
+    transform: rotate(180deg);
+}
+
+.custom-options {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    z-index: 1001;
+    max-height: 200px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.custom-select.open .custom-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-option {
+    display: block;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.custom-option:hover {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+.custom-option.selected {
+    background-color: rgba(76, 175, 80, 0.5);
+    font-weight: bold;
+}
