@@ -1,0 +1,147 @@
+/* auth.css */
+
+/* Account Button and Dropdown */
+.account-widget {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
+}
+
+.account-button {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.account-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #4caf50;
+}
+
+.account-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 120%;
+    background: rgba(30, 30, 30, 0.9);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    min-width: 160px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.account-widget:hover .account-dropdown {
+    display: block;
+}
+
+.account-dropdown a {
+    color: #f0f0f0;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.account-dropdown a:hover {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+#logout-btn {
+    cursor: pointer;
+    color: #ff5c5c;
+}
+#logout-btn:hover {
+    background-color: rgba(255, 92, 92, 0.3) !important;
+}
+
+/* Auth Form Container */
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.auth-container h1 {
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+.auth-form .input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #ccc;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+}
+
+.auth-form button {
+    width: 100%;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.auth-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.auth-switch-link {
+    margin-top: 20px;
+    color: #ccc;
+}
+
+.auth-switch-link a {
+    color: #4caf50;
+    font-weight: bold;
+    text-decoration: none;
+}
