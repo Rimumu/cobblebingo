@@ -1,0 +1,66 @@
+/* cards.css */
+.cards-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 80px auto 40px;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 30px;
+    text-align: left;
+}
+
+.card-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    transition: background-color 0.2s ease;
+}
+
+.card-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.card-info h3 {
+    margin: 0 0 5px 0;
+    color: #fff;
+}
+
+.card-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.card-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.card-actions button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-actions button:hover {
+    transform: translateY(-2px);
+}
+
+.load-btn { background-color: #4caf50; }
+.rename-btn { background-color: #2196f3; }
+.delete-btn { background-color: #f44336; }

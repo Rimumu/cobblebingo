@@ -446,6 +446,8 @@ body {
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative; /* Ensures z-index is applied correctly */
+    z-index: 10;     /* ADD THIS LINE */
 }
 
 #filters label {
@@ -499,7 +501,7 @@ body {
     background: rgba(255, 255, 255, 0.15);
 }
 
-#filters button {
+#filters > button {
     padding: 10px 20px;
     background: linear-gradient(135deg, #4caf50, #45a049);
     color: white;
@@ -511,7 +513,7 @@ body {
     box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
 }
 
-#filters button:hover {
+#filters > button:hover {
     background: linear-gradient(135deg, #45a049, #3d8b40);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
@@ -1462,4 +1464,156 @@ body {
     box-shadow: 0 8px 25px rgba(255, 235, 59, 0.4);
     border-color: #ffeb3b;
     background: rgba(255, 235, 59, 0.2);
+}
+
+/* In style.css */
+#saveSessionBtn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+}
+
+#saveSessionBtn:hover {
+    background: linear-gradient(135deg, #7b1fa2, #6a1b9a);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+}
+
+/* 1. Change this rule */
+.bingo-cell.completed:not(.legendary-center) {
+    filter: grayscale(60%) brightness(0.6);
+    opacity: 0.7;
+    position: relative;
+    background: rgba(76, 175, 80, 0.2) !important;
+}
+
+/* 2. And change this rule */
+.bingo-cell.completed:not(.legendary-center)::after {
+    content: "✓";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
+}
+
+/* 3. Add this new rule for the legendary checkmark */
+.bingo-cell.legendary-center.completed::after {
+    content: "✓";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 215, 0, 0.9); /* Gold background */
+    color: #1a1a1a;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Custom Select Dropdown Styles --- */
+.custom-select-wrapper {
+    position: relative;
+    color: #ffffff;
+}
+
+.custom-select {
+    position: relative;
+    width: 160px; /* You can adjust this width */
+    font-weight: 600;
+}
+
+.custom-select__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.custom-select__trigger:hover,
+.custom-select.open .custom-select__trigger {
+    border-color: #4caf50;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.custom-select .arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #fff;
+    transition: transform 0.3s ease;
+}
+
+.custom-select.open .arrow {
+    transform: rotate(180deg);
+}
+
+.custom-options {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    z-index: 1001;
+    max-height: 200px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.custom-select.open .custom-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-option {
+    display: block;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.custom-option:hover {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+.custom-option.selected {
+    background-color: rgba(76, 175, 80, 0.5);
+    font-weight: bold;
 }
