@@ -171,6 +171,49 @@ setTimeout(() => {
   }
 }, 5000); // 5 seconds maximum loading time
 
+function setupCustomDifficultySelector() {
+    const customSelect = document.querySelector('.custom-select');
+    if (!customSelect) return;
+
+    const trigger = customSelect.querySelector('.custom-select__trigger');
+    const options = customSelect.querySelectorAll('.custom-option');
+    const originalSelect = document.getElementById('difficulty');
+    const triggerText = trigger.querySelector('span');
+
+    // Toggle dropdown visibility
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent the window click listener from closing it immediately
+        customSelect.classList.toggle('open');
+    });
+
+    // Handle option selection
+    options.forEach(option => {
+        option.addEventListener('click', () => {
+            const selectedValue = option.getAttribute('data-value');
+
+            // Update the hidden <select> so the rest of the app works
+            originalSelect.value = selectedValue;
+
+            // Update the text in the trigger
+            triggerText.textContent = option.textContent;
+
+            // Update which option is marked as 'selected'
+            options.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+
+            // Close the dropdown
+            customSelect.classList.remove('open');
+        });
+    });
+
+    // Add a listener to close the dropdown when clicking anywhere else
+    window.addEventListener('click', () => {
+        if (customSelect.classList.contains('open')) {
+            customSelect.classList.remove('open');
+        }
+    });
+}
+
 // Updated API Configuration for Frontend
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8000'  // Local development
@@ -1171,19 +1214,17 @@ async function renderBingoCard(selected) {
 // Check for code in URL on page load
 document.addEventListener("DOMContentLoaded", () => {
   setupColorSchemeSelector();
-
+  setupCustomDifficultySelector(); // ADD THIS LINE
+  
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get("code");
-  const session = urlParams.get("session"); // Check for a session ID
+  const session = urlParams.get("session");
 
-  // If a card code is present in the URL...
   if (code) {
     const cardCodeInput = document.getElementById("cardCode");
     if (cardCodeInput) {
-      cardCodeInput.value = code; // Pre-fill the input box
+      cardCodeInput.value = code;
     }
-
-    // ...and if a session ID is ALSO present, auto-load the card!
     if (session) {
       console.log("Saved session found in URL, automatically loading card...");
       generateBingo();
