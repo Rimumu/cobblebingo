@@ -1,33 +1,41 @@
-// auth.js
+// auth.js - Complete and Corrected Version
+
 document.addEventListener('DOMContentLoaded', () => {
-    // --- UI Update Logic ---
+
+    // --- 1. UI Update Logic ---
     const updateAccountWidget = () => {
         const token = localStorage.getItem('token');
         const accountWidget = document.getElementById('account-widget');
-        if (!accountWidget) {
-            // If you open your browser's developer console (F12), you would see this error.
-            console.error('CRITICAL ERROR: The #account-widget element was not found in the HTML. The account button cannot be displayed.');
-            return;
+        
+        // This check is crucial. If the div doesn't exist, stop.
+        if (!accountWidget) { 
+            console.error("#account-widget element not found in HTML. Button cannot be displayed.");
+            return; 
         }
 
         if (token) {
             // User is logged in
-            // Decode token to get username (simple decode, no verification needed here)
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const username = payload.user.username;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const username = payload.user.username;
 
-            accountWidget.innerHTML = `
-                <button class="account-button">
-                    <span>${username}</span> &#9662;
-                </button>
-                <div class="account-dropdown">
-                    <a href="/cards/">My Cards</a>
-                    <a href="/inventory/">Inventory</a>
-                    <a href="/redeem/">Redeem</a>
-                    <a id="logout-btn">Logout</a>
-                </div>
-            `;
-            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+                accountWidget.innerHTML = `
+                    <button class="account-button">
+                        <span>${username}</span> &#9662;
+                    </button>
+                    <div class="account-dropdown">
+                        <a href="/cards/">My Cards</a>
+                        <a href="/inventory/">Inventory</a>
+                        <a href="/redeem/">Redeem</a>
+                        <a id="logout-btn">Logout</a>
+                    </div>
+                `;
+                // Attach logout listener only after the button is created
+                document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            } catch (e) {
+                console.error("Invalid token found. Clearing token.", e);
+                handleLogout(); // Clear bad token and refresh UI
+            }
         } else {
             // User is logged out
             accountWidget.innerHTML = `
@@ -40,10 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- Event Handlers ---
+    // --- 2. Event Handlers ---
     const handleLogout = () => {
         localStorage.removeItem('token');
-        window.location.href = '/'; // Redirect to home page
+        // Redirect to ensure the whole app state resets
+        window.location.href = '/'; 
     };
 
     const handleAuthForm = async (event, endpoint) => {
@@ -80,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- Attach Listeners ---
+    // --- 3. Attach Auth Form Event Listeners ---
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => handleAuthForm(e, 'login'));
@@ -91,30 +100,27 @@ document.addEventListener('DOMContentLoaded', () => {
         signupForm.addEventListener('submit', (e) => handleAuthForm(e, 'signup'));
     }
 
-    // --- Initial UI Setup ---
-    updateAccountWidget();
-});
-
- // --- ADD THIS NEW CLICK HANDLING LOGIC ---
+    // --- 4. Attach Dropdown Click Listeners ---
     const accountWidget = document.getElementById('account-widget');
     if (accountWidget) {
         accountWidget.addEventListener('click', (event) => {
-            // This makes sure we only toggle when the button area is clicked,
+            // This ensures we only toggle when the button area is clicked,
             // not when a link inside the dropdown is clicked.
-            if (event.target.classList.contains('account-button') || event.target.parentElement.classList.contains('account-button')) {
+            const button = event.target.closest('.account-button');
+            if (button) {
                 accountWidget.classList.toggle('active');
             }
         });
 
         // Add a listener to the whole page to close the menu when clicking outside
         document.addEventListener('click', (event) => {
-            // If the click is outside the account widget and the menu is open, close it.
             if (!accountWidget.contains(event.target) && accountWidget.classList.contains('active')) {
                 accountWidget.classList.remove('active');
             }
         });
     }
 
-    // --- Initial UI Setup (This call remains unchanged) ---
+    // --- 5. Initial UI Setup ---
     updateAccountWidget();
-});
+
+}); // <-- This is the final closing brace for the 'DOMContentLoaded' event listener. The error was likely related to this.
