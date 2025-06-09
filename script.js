@@ -631,22 +631,30 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
   } else if (difficulty === "insane") {
     // Special case: Get 24 ultra-rare Pokémon + 1 legendary at center
     selected = selected.concat(selectFromCategory("ultra-rare", 24));
-
-    // Get 1 legendary Pokémon for the center
     const legendaryPokemon = shuffle(byRarity["legendary"])[0];
-
-    // Insert legendary at position 12 (center) - this makes it 25 total
     if (legendaryPokemon) {
       selected.splice(12, 0, legendaryPokemon);
+  } else if (difficulty === "nightmare") {
+    // 1. Get 5 legendary Pokémon
+    const legendaryPokemon = selectFromCategory("legendary", 5);
+    
+    // 2. Get 20 ultra-rare Pokémon
+    const ultraRarePokemon = selectFromCategory("ultra-rare", 20);
+
+    // 3. Set one legendary aside for the center
+    const centerLegendary = legendaryPokemon.pop();
+
+    const otherPokemon = ultraRarePokemon.concat(legendaryPokemon);
+    const shuffledOthers = shuffle(otherPokemon);
+
+    // Insert legendary at position 12 (center) - this makes it 25 total
+    if (centerLegendary) {
+        selected.push(...shuffledOthers.slice(0, 12), centerLegendary, ...shuffledOthers.slice(12));
     } else {
-      // Fallback if no legendaries are available
-      selected.splice(12, 0, {
-        name: "LEGENDARY",
-        rarity: "legendary",
-        biome: "Legendary",
-        id: "0",
-      });
+        // Fallback if no legendaries are found
+        selected = selected.concat(shuffledOthers);
     }
+      
   } else {
     console.warn("Unknown difficulty, defaulting to normal");
     selected = selected.concat(
@@ -660,10 +668,10 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
   console.log("Selected Pokémon before padding:", selected);
 
   // For insane difficulty, we should have exactly 25 (24 + 1 legendary)
-  if (difficulty === "insane") {
+  if (difficulty === "insane" || difficulty === "nightmare") {
     if (selected.length !== 25) {
       console.error(
-        `Insane difficulty should have 25 Pokémon (got ${selected.length}), padding with ultra-rare`,
+        `Difficulty ${difficulty} should have 25 Pokémon (got ${selected.length}), padding with ultra-rare`,
       );
       while (selected.length < 25) {
         selected.push(...selectFromCategory("ultra-rare", 1));
@@ -671,7 +679,7 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
       selected = selected.slice(0, 25);
     }
   } else {
-    // For all other difficulties, ensure we have exactly 24 Pokémon (FREE space will be added later)
+    // For all other difficulties, ensure we have exactly 24 Pokémon
     if (selected.length !== 24) {
       console.error(
         `Difficulty ${difficulty} should have 24 Pokémon (got ${selected.length}), adjusting`,
