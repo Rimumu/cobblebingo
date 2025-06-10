@@ -1,0 +1,50 @@
+.inventory-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 80px auto 40px;
+    padding: 0 20px;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.inventory-item-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.inventory-item-card:hover {
+    transform: translateY(-5px);
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4caf50;
+}
+
+.item-image {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+    object-fit: contain;
+}
+
+.item-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+.item-quantity {
+    font-size: 1.4em;
+    color: #4caf50;
+    font-weight: bold;
+}
