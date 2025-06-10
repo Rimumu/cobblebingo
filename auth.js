@@ -1,8 +1,8 @@
-// auth.js - Final Version
+// auth.js - Final Version with Link/Unlink Logic
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const updateAccountWidget = () => {
+    const updateAccountWidget = async () => { // Make this function async
         const token = localStorage.getItem('token');
         const accountWidget = document.getElementById('account-widget');
         
@@ -10,30 +10,57 @@ document.addEventListener('DOMContentLoaded', () => {
             return; 
         }
 
-        // This check now safely handles cases where an invalid token might be stored
         if (token && token !== 'undefined') {
             try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const username = payload.user.username;
-                const linkDiscordUrl = `${getApiBaseUrl()}/api/auth/discord?token=${token}`;
+                // Fetch user data from the new '/api/user/me' endpoint
+                const userResponse = await fetch(`${getApiBaseUrl()}/api/user/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 
+                if (!userResponse.ok) throw new Error('Failed to fetch user data.');
+                
+                const { user } = await userResponse.json();
+
+                // Build the Discord link/unlink part of the dropdown
+                let discordLinkHtml = '';
+                if (user.discordId) {
+                    // User IS linked: Show their Discord name and an unlink button
+                    discordLinkHtml = `
+                        <div class="discord-info">
+                            Linked as: <strong>${user.discordUsername}</strong>
+                        </div>
+                        <a id="unlink-discord-btn">Unlink Discord</a>
+                    `;
+                } else {
+                    // User IS NOT linked: Show the link button
+                    const linkDiscordUrl = `${getApiBaseUrl()}/api/auth/discord?token=${token}`;
+                    discordLinkHtml = `<a href="${linkDiscordUrl}">Link Discord</a>`;
+                }
+
+                // Construct the final dropdown HTML
                 accountWidget.innerHTML = `
                     <button class="account-button">
-                        <span>${username}</span> &#9662;
+                        <span>${user.username}</span> &#9662;
                     </button>
                     <div class="account-dropdown">
                         <a href="/cards/">My Cards</a>
                         <a href="/inventory/">Inventory</a>
                         <a href="/redeem/">Redeem</a>
-                        <a href="${linkDiscordUrl}">Link Discord</a>
+                        ${discordLinkHtml}
                         <a id="logout-btn">Logout</a>
                     </div>
                 `;
+                
+                // Add event listeners for the new buttons
                 document.getElementById('logout-btn').addEventListener('click', handleLogout);
+                const unlinkBtn = document.getElementById('unlink-discord-btn');
+                if (unlinkBtn) {
+                    unlinkBtn.addEventListener('click', handleUnlinkDiscord);
+                }
+
             } catch (e) {
-                // If the token is invalid for any reason, log the error and log the user out
-                console.error("Invalid token found, logging out.", e);
-                handleLogout();
+                console.error("Error updating account widget:", e);
+                handleLogout(); // If anything fails, log the user out
             }
         } else {
             // User is logged out
@@ -57,6 +84,26 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('token');
         window.location.href = '/'; 
     };
+    
+    // --- NEW FUNCTION TO HANDLE UNLINKING ---
+    const handleUnlinkDiscord = async () => {
+        if (!confirm("Are you sure you want to unlink your Discord account?")) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${getApiBaseUrl()}/api/auth/discord/unlink`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            
+            alert("Discord account unlinked successfully.");
+            updateAccountWidget(); // Refresh the dropdown to show the "Link" button again
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+        }
+    };
 
     const handleAuthForm = async (event, endpoint) => {
         event.preventDefault();
@@ -70,13 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-
             const data = await response.json();
-
-            if (!data.success) {
-                throw new Error(data.error || 'An unknown error occurred during authentication.');
-            }
-
+            if (!data.success) throw new Error(data.error || 'Authentication failed.');
             if (endpoint === 'login') {
                 localStorage.setItem('token', data.token);
                 window.location.href = '/';
@@ -89,25 +131,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- Attach Event Listeners ---
     const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => handleAuthForm(e, 'login'));
-    }
-
+    if (loginForm) loginForm.addEventListener('submit', (e) => handleAuthForm(e, 'login'));
     const signupForm = document.getElementById('signup-form');
-    if (signupForm) {
-        signupForm.addEventListener('submit', (e) => handleAuthForm(e, 'signup'));
-    }
-
+    if (signupForm) signupForm.addEventListener('submit', (e) => handleAuthForm(e, 'signup'));
     const accountWidget = document.getElementById('account-widget');
     if (accountWidget) {
         accountWidget.addEventListener('click', (event) => {
             const button = event.target.closest('.account-button');
-            if (button) {
-                accountWidget.classList.toggle('active');
-            }
+            if (button) accountWidget.classList.toggle('active');
         });
-
         document.addEventListener('click', (event) => {
             if (!accountWidget.contains(event.target) && accountWidget.classList.contains('active')) {
                 accountWidget.classList.remove('active');
@@ -115,5 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Initial UI Setup
     updateAccountWidget();
 });
