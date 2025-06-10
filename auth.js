@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 const username = payload.user.username;
-
+                const linkDiscordUrl = `${getApiBaseUrl()}/api/auth/discord?token=${token}`;
+                
                 accountWidget.innerHTML = `
                     <button class="account-button">
                         <span>${username}</span> &#9662;
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <a href="/cards/">My Cards</a>
                         <a href="/inventory/">Inventory</a>
                         <a href="/redeem/">Redeem</a>
-                        <a href="${getApiBaseUrl()}/api/auth/discord">Link Discord</a>
+                        <a href="${linkDiscordUrl}">Link Discord</a>
                         <a id="logout-btn">Logout</a>
                     </div>
                 `;
