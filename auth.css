@@ -147,3 +147,29 @@
     font-weight: bold;
     text-decoration: none;
 }
+
+/* Style for the container showing the linked Discord name */
+.discord-info {
+    padding: 10px 16px 5px; /* Add some padding */
+    font-size: 13px;
+    color: #ccc;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Separator line */
+    text-align: left;
+}
+
+.discord-info strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Style for the Unlink button */
+#unlink-discord-btn {
+    cursor: pointer;
+    color: #ff9c9c; /* A softer red */
+    padding-top: 5px;
+}
+
+#unlink-discord-btn:hover {
+    background-color: rgba(255, 92, 92, 0.3) !important;
+    color: #ffcdcd !important;
+}
