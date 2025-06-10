@@ -4,9 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup - Cobblemon Fun</title>
-    <link rel="stylesheet" href="landing.css"> <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="landing.css"> 
+    <link rel="stylesheet" href="auth.css">
 </head>
 <body>
+
+    <!-- This is the new prompt window -->
+    <div id="signup-prompt-overlay" class="prompt-overlay">
+        <div class="prompt-window">
+            <h2>Important Information</h2>
+            <p>PLEASE USE YOUR MINECRAFT USERNAME AS THE USERNAME!</p>
+            <p>THE PASSWORD CAN BE ANYTHING BUT PLEASE REMEMBER IT! THERE IS NO WAY TO RECOVER YOUR PASSWORD!</p>
+            <p>MAKE SURE TO LINK YOUR DISCORD ACCOUNT AS WELL AFTER YOU HAVE LOGGED IN!!</p>
+            <button id="close-prompt-btn">I understand</button>
+        </div>
+    </div>
+
+    <!-- The rest of your page content -->
     <div id="account-widget" class="account-widget"></div>
     <div class="auth-container">
         <h1>Create Account</h1>
@@ -23,6 +37,7 @@
         </form>
         <p class="auth-switch-link">Already have an account? <a href="/login.html">Login</a></p>
     </div>
+    
     <script src="auth.js"></script>
 </body>
 </html>

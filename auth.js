@@ -1,40 +1,86 @@
-// auth.js - Complete and Corrected Version
+// auth.js - Final Version with Link/Unlink Logic
+
+const handleSignupPrompt = () => {
+    const overlay = document.getElementById('signup-prompt-overlay');
+    const closeBtn = document.getElementById('close-prompt-btn');
+    
+    // This check ensures the code only runs on the signup page
+    if (!overlay || !closeBtn) {
+        return; 
+    }
+
+    // Show the prompt shortly after the page loads for a smooth animation
+    setTimeout(() => {
+        overlay.classList.add('visible');
+    }, 100);
+
+    // Add listener to the button to hide the prompt
+    closeBtn.addEventListener('click', () => {
+        overlay.classList.remove('visible');
+    });
+};
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. UI Update Logic ---
-    const updateAccountWidget = () => {
+    const updateAccountWidget = async () => { // Make this function async
         const token = localStorage.getItem('token');
         const accountWidget = document.getElementById('account-widget');
         
-        // This check is crucial. If the div doesn't exist, stop.
         if (!accountWidget) { 
-            console.error("#account-widget element not found in HTML. Button cannot be displayed.");
             return; 
         }
 
-        if (token) {
-            // User is logged in
+        if (token && token !== 'undefined') {
             try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const username = payload.user.username;
+                // Fetch user data from the new '/api/user/me' endpoint
+                const userResponse = await fetch(`${getApiBaseUrl()}/api/user/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!userResponse.ok) throw new Error('Failed to fetch user data.');
+                
+                const { user } = await userResponse.json();
 
+                // Build the Discord link/unlink part of the dropdown
+                let discordLinkHtml = '';
+                if (user.discordId) {
+                    // User IS linked: Show their Discord name and an unlink button
+                    discordLinkHtml = `
+                        <div class="discord-info">
+                            Linked as: <strong>${user.discordUsername}</strong>
+                        </div>
+                        <a id="unlink-discord-btn">Unlink Discord</a>
+                    `;
+                } else {
+                    // User IS NOT linked: Show the link button
+                    const linkDiscordUrl = `${getApiBaseUrl()}/api/auth/discord?token=${token}`;
+                    discordLinkHtml = `<a href="${linkDiscordUrl}">Link Discord</a>`;
+                }
+
+                // Construct the final dropdown HTML
                 accountWidget.innerHTML = `
                     <button class="account-button">
-                        <span>${username}</span> &#9662;
+                        <span>${user.username}</span> &#9662;
                     </button>
                     <div class="account-dropdown">
                         <a href="/cards/">My Cards</a>
                         <a href="/inventory/">Inventory</a>
                         <a href="/redeem/">Redeem</a>
+                        ${discordLinkHtml}
                         <a id="logout-btn">Logout</a>
                     </div>
                 `;
-                // Attach logout listener only after the button is created
+                
+                // Add event listeners for the new buttons
                 document.getElementById('logout-btn').addEventListener('click', handleLogout);
+                const unlinkBtn = document.getElementById('unlink-discord-btn');
+                if (unlinkBtn) {
+                    unlinkBtn.addEventListener('click', handleUnlinkDiscord);
+                }
+
             } catch (e) {
-                console.error("Invalid token found. Clearing token.", e);
-                handleLogout(); // Clear bad token and refresh UI
+                console.error("Error updating account widget:", e);
+                handleLogout(); // If anything fails, log the user out
             }
         } else {
             // User is logged out
@@ -48,11 +94,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 2. Event Handlers ---
+    const getApiBaseUrl = () => {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : 'https://cobblebingo-backend-production.up.railway.app';
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('token');
-        // Redirect to ensure the whole app state resets
         window.location.href = '/'; 
+    };
+    
+    // --- NEW FUNCTION TO HANDLE UNLINKING ---
+    const handleUnlinkDiscord = async () => {
+        if (!confirm("Are you sure you want to unlink your Discord account?")) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${getApiBaseUrl()}/api/auth/discord/unlink`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            
+            alert("Discord account unlinked successfully.");
+            updateAccountWidget(); // Refresh the dropdown to show the "Link" button again
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+        }
     };
 
     const handleAuthForm = async (event, endpoint) => {
@@ -60,26 +130,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = event.target;
         const username = form.username.value;
         const password = form.password.value;
-        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:8000'
-            : 'https://cobblebingo-backend-production.up.railway.app';
         
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/${endpoint}`, {
+            const response = await fetch(`${getApiBaseUrl()}/api/auth/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-
             const data = await response.json();
-
-            if (!data.success) {
-                throw new Error(data.error || 'An unknown error occurred.');
-            }
-
+            if (!data.success) throw new Error(data.error || 'Authentication failed.');
             if (endpoint === 'login') {
                 localStorage.setItem('token', data.token);
-                window.location.href = '/'; // Redirect to home
+                window.location.href = '/';
             } else {
                 alert('Signup successful! Please log in.');
                 window.location.href = '/login.html';
@@ -89,30 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 3. Attach Auth Form Event Listeners ---
+    // --- Attach Event Listeners ---
     const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => handleAuthForm(e, 'login'));
-    }
-
+    if (loginForm) loginForm.addEventListener('submit', (e) => handleAuthForm(e, 'login'));
     const signupForm = document.getElementById('signup-form');
-    if (signupForm) {
-        signupForm.addEventListener('submit', (e) => handleAuthForm(e, 'signup'));
-    }
-
-    // --- 4. Attach Dropdown Click Listeners ---
+    if (signupForm) signupForm.addEventListener('submit', (e) => handleAuthForm(e, 'signup'));
     const accountWidget = document.getElementById('account-widget');
     if (accountWidget) {
         accountWidget.addEventListener('click', (event) => {
-            // This ensures we only toggle when the button area is clicked,
-            // not when a link inside the dropdown is clicked.
             const button = event.target.closest('.account-button');
-            if (button) {
-                accountWidget.classList.toggle('active');
-            }
+            if (button) accountWidget.classList.toggle('active');
         });
-
-        // Add a listener to the whole page to close the menu when clicking outside
         document.addEventListener('click', (event) => {
             if (!accountWidget.contains(event.target) && accountWidget.classList.contains('active')) {
                 accountWidget.classList.remove('active');
@@ -120,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 5. Initial UI Setup ---
+    // Initial UI Setup
+    handleSignupPrompt(); // Call the new function
     updateAccountWidget();
-
-}); // <-- This is the final closing brace for the 'DOMContentLoaded' event listener. The error was likely related to this.
+});
