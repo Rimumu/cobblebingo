@@ -121,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
             
-            // The server now sends us the complete animation reel
             await startOpeningAnimation(data.animationReel);
             
             userInventory = data.newInventory.reduce((acc, item) => {
@@ -143,7 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startOpeningAnimation(reelItems) {
         return new Promise(resolve => {
-            if (!reelItems || reelItems.length === 0) return resolve();
+            if (!reelItems || reelItems.length === 0) {
+                console.error("Animation failed: Reel items not provided by server.");
+                return resolve();
+            }
 
             reel.innerHTML = '';
             reelItems.forEach(item => {
@@ -188,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Utility Functions ---
     function hideLoadingScreen(showContent = false) {
+        const loadingScreen = document.getElementById('loadingScreen');
         if (loadingScreen) {
             loadingScreen.classList.add("fade-out");
             setTimeout(() => loadingScreen.style.display = "none", 800);
@@ -199,9 +202,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayGateMessage(message, linkUrl, linkText) {
         const gateMessage = document.getElementById('gate-message');
         const gateActions = document.getElementById('gate-actions');
-        gateMessage.textContent = message;
-        gateActions.innerHTML = `<a href="${linkUrl}" class="gate-button">${linkText}</a>`;
-        accessGate.style.display = 'flex';
+        if (gateMessage && gateActions) {
+            gateMessage.textContent = message;
+            gateActions.innerHTML = `<a href="${linkUrl}" class="gate-button">${linkText}</a>`;
+            accessGate.style.display = 'flex';
+        }
         hideLoadingScreen(false);
     }
     
