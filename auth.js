@@ -1,4 +1,4 @@
-// auth.js - DEBUG VERSION
+// auth.js - Final Version
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -10,11 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return; 
         }
 
+        // This check now safely handles cases where an invalid token might be stored
         if (token && token !== 'undefined') {
             try {
-                // DEBUG: Show the token being read from storage
-                alert(`DEBUG: Found token in storage. Trying to decode:\n\n${token}`);
-
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 const username = payload.user.username;
 
@@ -32,8 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 document.getElementById('logout-btn').addEventListener('click', handleLogout);
             } catch (e) {
-                // DEBUG: Show an alert if token decoding fails
-                alert(`DEBUG: ERROR! The token found in storage is invalid and could not be decoded.\n\nError: ${e.message}\n\nToken: ${token}`);
+                // If the token is invalid for any reason, log the error and log the user out
+                console.error("Invalid token found, logging out.", e);
                 handleLogout();
             }
         } else {
@@ -79,8 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (endpoint === 'login') {
-                // DEBUG: Show an alert with the token received from the server
-                alert(`DEBUG: Login successful! Token received from server:\n\n${data.token}`);
                 localStorage.setItem('token', data.token);
                 window.location.href = '/';
             } else {
