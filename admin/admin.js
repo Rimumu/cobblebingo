@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminContent = document.getElementById('admin-content');
     const accessDenied = document.getElementById('access-denied');
     
+    // This is the function with the corrected logic
     async function verifyAdminAccess() {
         if (!token) {
             showAccessDenied();
@@ -12,12 +13,17 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } });
             const data = await response.json();
-            if (data.success && data.user.isAdmin) {
+
+            // --- THIS IS THE FIX ---
+            // It now correctly handles the case where the user is not an admin
+            if (data.success && data.user && data.user.isAdmin) {
                 adminContent.style.display = 'block';
                 loadExistingCodes();
             } else {
                 showAccessDenied();
             }
+            // --- END OF FIX ---
+
         } catch (error) {
             showAccessDenied();
         }
@@ -49,7 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             document.getElementById('generate-result').textContent = data.success ? `Success! Code: ${data.code.code}` : `Error: ${data.error}`;
-            if (data.success) loadExistingCodes();
+            if (data.success) {
+                generateForm.reset();
+                loadExistingCodes();
+            }
         } catch (error) {
             document.getElementById('generate-result').textContent = `Error: ${error.message}`;
         }
@@ -64,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data.codes.forEach(code => {
                 const codeEl = document.createElement('div');
                 codeEl.className = 'code-item';
-                codeEl.textContent = `Code: ${code.code} | Reward: ${code.reward.quantity}x ${code.reward.itemName} | Type: ${code.useType}`;
+                codeEl.textContent = `Code: ${code.code} | Reward: ${code.reward.quantity}x ${code.reward.itemName} | Type: ${code.useType} | Redeemed: ${code.usersWhoRedeemed.length} times`;
                 codesList.appendChild(codeEl);
             });
         } catch (error) {
