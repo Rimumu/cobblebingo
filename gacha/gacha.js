@@ -147,14 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return resolve();
         }
 
+        // --- THE INFINITE REEL FIX ---
+        // 1. Duplicate the content to create a long, seamless reel. This prevents empty space.
+        const animationContent = [...reelItems, ...reelItems];
         reel.innerHTML = ''; // Clear previous items
 
-        // --- NEW: Create a seamless, infinite loop ---
-        // Duplicate the reel content to ensure it's long enough for any screen size
-        const animationContent = [...reelItems, ...reelItems];
-        // --- END NEW ---
-
-        // Populate the reel with the new, longer content
+        // 2. Populate the reel with the new, longer list of items.
         animationContent.forEach(item => {
             const itemEl = document.createElement('div');
             itemEl.className = `reel-item ${item.rarity}`;
@@ -165,33 +163,33 @@ document.addEventListener('DOMContentLoaded', () => {
             reel.appendChild(itemEl);
         });
 
-        const winningIndex = 70; 
-        const itemWidth = 150; 
-        const itemMargin = 10; 
+        // 3. Define the fixed winning position and calculate the exact stop point.
+        const winningIndex = 70; // This is the guaranteed winning position from the server
+        const itemWidth = 150;
+        const itemMargin = 10;
         const totalItemWidth = itemWidth + itemMargin;
         const containerWidth = reel.parentElement.offsetWidth;
-        
-        // The calculation for the stopping point remains the same and does not need the randomJitter
+
+        // The calculation is now 100% deterministic, with no random jitter.
         const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2);
         
-        // Run the animation
+        // 4. Reset the reel's position instantly before the animation starts.
         animationOverlay.style.display = 'flex';
-        // Reset the reel to the start with no transition
-        reel.style.transition = 'none';
+        reel.style.transition = 'none'; // No animation for the reset
         reel.style.transform = 'translateX(0)';
         
         // Force the browser to apply the reset before starting the animation
         setTimeout(() => {
-            // Re-apply the transition and set the final position
+            // 5. Apply the animation class and set the final transform position.
             reel.style.transition = 'transform 7s cubic-bezier(0.2, 0.5, 0.1, 1)';
             reel.style.transform = `translateX(-${targetPosition}px)`;
         }, 100);
 
-        // End animation
+        // 6. Resolve the promise after the animation duration.
         setTimeout(() => {
             animationOverlay.style.display = 'none';
             resolve();
-        }, 7100); 
+        }, 7100); // This must be slightly longer than the CSS transition duration
     });
 }
 
