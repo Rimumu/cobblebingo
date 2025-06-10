@@ -10,12 +10,11 @@
 </head>
 <body class="loading">
 
-    <!-- Loading Screen (Identical to Bingo Page) -->
+    <!-- Loading Screen -->
     <div id="loadingScreen">
         <div class="particles"></div>
         <div class="loading-container">
             <div class="logo-container">
-                <!-- Using the new logo as requested -->
                 <img class="loading-logo" src="../cobblemonnisa.png" alt="Cobblemon Gacha Logo">
             </div>
             <div class="loading-spinner">
@@ -34,21 +33,27 @@
         </div>
     </div>
 
-    <!-- Main Page Content -->
-    <div id="mainContent">
+    <!-- NEW: Access Gate Container -->
+    <div id="access-gate-container" class="access-gate" style="display: none;">
+        <div class="prompt-window">
+            <h2 id="gate-title">Access Denied</h2>
+            <p id="gate-message">Checking your credentials...</p>
+            <div id="gate-actions">
+                <!-- Buttons will be added here by gacha.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Page Content (initially hidden) -->
+    <div id="mainContent" style="display: none;">
         <div id="account-widget" class="account-widget"></div>
 
         <header class="gacha-header">
             <h1>Featured Banners</h1>
-            <div id="inventory-display" class="inventory-display">
-                <!-- User's pack inventory will be displayed here by gacha.js -->
-            </div>
+            <div id="inventory-display" class="inventory-display"></div>
         </header>
 
-        <main id="banner-container" class="banner-container">
-            <!-- Banners will be dynamically inserted here by gacha.js -->
-        </main>
-
+        <main id="banner-container" class="banner-container"></main>
     </div>
 
     <script src="../auth.js"></script>
