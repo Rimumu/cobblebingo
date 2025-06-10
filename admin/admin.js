@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
     const adminContent = document.getElementById('admin-content');
     const accessDenied = document.getElementById('access-denied');
+    const generateForm = document.getElementById('generate-code-form');
     
-    // This is the function with the corrected logic
     async function verifyAdminAccess() {
         if (!token) {
             showAccessDenied();
@@ -13,17 +13,14 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } });
             const data = await response.json();
-
-            // --- THIS IS THE FIX ---
-            // It now correctly handles the case where the user is not an admin
-            if (data.success && data.user && data.user.isAdmin) {
+            if (data.success && data.user.isAdmin) {
                 adminContent.style.display = 'block';
+                // If user is admin, load the reward items and existing codes
+                loadRewardItems();
                 loadExistingCodes();
             } else {
                 showAccessDenied();
             }
-            // --- END OF FIX ---
-
         } catch (error) {
             showAccessDenied();
         }
@@ -34,18 +31,49 @@ document.addEventListener('DOMContentLoaded', () => {
         accessDenied.style.display = 'block';
     }
 
-    const generateForm = document.getElementById('generate-code-form');
+    // NEW function to populate the dropdown
+    async function loadRewardItems() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/reward-items`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+
+            const rewardDropdown = document.getElementById('reward-item-id');
+            data.items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.itemId;
+                option.textContent = item.itemName;
+                // Store the name directly on the option element for easy access
+                option.dataset.itemName = item.itemName; 
+                rewardDropdown.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Failed to load reward items:", error);
+            // Optionally show an error message to the admin
+        }
+    }
+    
+    // UPDATED form submission logic
     generateForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const rewardDropdown = document.getElementById('reward-item-id');
+        const selectedOption = rewardDropdown.options[rewardDropdown.selectedIndex];
+
         const formData = {
-            code: document.getElementById('new-code').value,
+            code: document.getElementById('new-code').value.toUpperCase().trim(),
             reward: {
-                itemId: document.getElementById('reward-item-id').value,
-                itemName: document.getElementById('reward-item-name').value,
+                itemId: selectedOption.value,
+                itemName: selectedOption.dataset.itemName, // Get name from the selected option
                 quantity: parseInt(document.getElementById('reward-quantity').value, 10)
             },
             useType: document.getElementById('use-type').value
         };
+
+        if (!formData.reward.itemId) {
+            alert("Please select a reward item.");
+            return;
+        }
         
         try {
             const response = await fetch(`${API_BASE_URL}/api/admin/generate-code`, {
@@ -57,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('generate-result').textContent = data.success ? `Success! Code: ${data.code.code}` : `Error: ${data.error}`;
             if (data.success) {
                 generateForm.reset();
+                rewardDropdown.selectedIndex = 0; // Reset dropdown to placeholder
                 loadExistingCodes();
             }
         } catch (error) {
