@@ -1,85 +1,78 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- DOM Elements ---
     const mainContent = document.getElementById('mainContent');
     const accessGate = document.getElementById('access-gate-container');
     const gateTitle = document.getElementById('gate-title');
     const gateMessage = document.getElementById('gate-message');
     const gateActions = document.getElementById('gate-actions');
     const loadingScreen = document.getElementById('loadingScreen');
+    const resultsModal = document.getElementById('results-modal-overlay');
+    const rewardDisplay = document.getElementById('reward-display');
+    const closeResultsBtn = document.getElementById('close-results-btn');
 
+    // --- API Configuration ---
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:8000'
         : 'https://cobblebingo-backend-production.up.railway.app';
+    const token = localStorage.getItem('token');
 
-    // --- Main function to check access and initialize the page ---
+    // --- Global State ---
+    let availableBanners = [];
+    let userInventory = {};
+
+    // --- Main Initialization ---
     async function initializeGachaPage() {
-        const token = localStorage.getItem('token');
-
-        // 1. Check if user is logged in
         if (!token || token === 'undefined') {
-            gateMessage.textContent = 'You must be logged in to access the Gacha Realm.';
-            gateActions.innerHTML = `<a href="/login.html" class="gate-button">Login Now</a>`;
-            accessGate.style.display = 'flex';
-            hideLoadingScreen(false); // Hide loading screen without showing content
+            displayGateMessage('You must be logged in to access the Gacha Realm.', '/login.html', 'Login Now');
             return;
         }
 
-        // 2. Fetch user data to check for Discord link
         try {
-            const response = await fetch(`${API_BASE_URL}/api/user/me`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const [userResponse, bannersResponse] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_BASE_URL}/api/gacha/banners`)
+            ]);
 
-            if (!response.ok) {
-                throw new Error('Your session is invalid. Please log in again.');
-            }
+            if (!userResponse.ok) throw new Error('Your session is invalid. Please log in again.');
+            
+            const { user } = await userResponse.json();
+            const { banners } = await bannersResponse.json();
+            availableBanners = banners;
 
-            const { user } = await response.json();
-
-            // 3. Check if Discord is linked
             if (!user.discordId) {
-                gateMessage.textContent = 'You must link your Discord account to use the Gacha Realm.';
-                gateActions.innerHTML = `<a href="${API_BASE_URL}/api/auth/discord?token=${token}" class="gate-button">Link Discord Now</a>`;
-                accessGate.style.display = 'flex';
-                hideLoadingScreen(false);
+                displayGateMessage('You must link your Discord account to use the Gacha Realm.', `${API_BASE_URL}/api/auth/discord?token=${token}`, 'Link Discord Now');
                 return;
             }
 
-            // 4. Access Granted! Initialize the page.
-            hideLoadingScreen(true); // Hide loading screen and show content
+            // Convert user inventory array to an easier-to-use object
+            userInventory = user.inventory.reduce((acc, item) => {
+                acc[item.itemId] = item.quantity;
+                return acc;
+            }, {});
+
+            // Access Granted!
+            hideLoadingScreen(true);
             mainContent.style.display = 'block';
             accessGate.style.display = 'none';
-            setupGachaBanners(user);
+
+            renderBanners();
+            renderInventory();
 
         } catch (error) {
-            console.error("Access Check Error:", error);
-            gateMessage.textContent = error.message;
-            gateActions.innerHTML = `<a href="/login.html" class="gate-button">Login Now</a>`;
-            accessGate.style.display = 'flex';
-            hideLoadingScreen(false);
+            console.error("Initialization Error:", error);
+            displayGateMessage(error.message, '/login.html', 'Login Now');
         }
     }
 
-    // --- Page Setup Functions ---
-    function setupGachaBanners(user) {
-        // MOCK DATA (will be replaced with user.inventory)
-        const availableBanners = [
-            { id: 'starter_pack', name: 'Kanto Starter Pack', description: 'A special pack containing Pokémon from the Kanto region.', image: 'https://placehold.co/800x450/2E3A4D/EFFFFA?text=Kanto+Starters', requiredItemId: 'kanto_pack_ticket' },
-            { id: 'legendary_pack', name: 'Legendary Beasts', description: 'A rare pack with a chance to contain a legendary Pokémon.', image: 'https://placehold.co/800x450/D4AF37/000000?text=Legendary+Beasts', requiredItemId: 'legendary_pack_ticket' }
-        ];
-        const userInventory = { kanto_pack_ticket: 3, legendary_pack_ticket: 1 }; // Placeholder
-
-        renderBanners(availableBanners, userInventory);
-        renderInventory(userInventory);
-    }
-    
-    function renderBanners(banners, inventory) {
+    // --- UI Rendering ---
+    function renderBanners() {
         const bannerContainer = document.getElementById('banner-container');
         if (!bannerContainer) return;
         bannerContainer.innerHTML = '';
 
-        banners.forEach(banner => {
-            const hasItem = inventory[banner.requiredItemId] && inventory[banner.requiredItemId] > 0;
+        availableBanners.forEach(banner => {
+            const hasItem = userInventory[banner.requiredItemId] > 0;
             const bannerEl = document.createElement('div');
             bannerEl.className = 'banner-card';
             bannerEl.innerHTML = `
@@ -91,20 +84,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="open-pack-btn" data-banner-id="${banner.id}" ${!hasItem ? 'disabled' : ''}>
                         Open Pack
                     </button>
-                </div>
-            `;
+                </div>`;
             bannerContainer.appendChild(bannerEl);
         });
-
-        addBannerEventListeners(banners, inventory); // Pass data to the listener
+        addBannerEventListeners();
     }
-    
-    function renderInventory(inventory) {
+
+    function renderInventory() {
         const inventoryDisplay = document.getElementById('inventory-display');
         if (!inventoryDisplay) return;
         inventoryDisplay.innerHTML = '';
+        
+        // Find which items are required for the currently shown banners
+        const requiredItems = new Set(availableBanners.map(b => b.requiredItemId));
 
-        for (const [itemId, quantity] of Object.entries(inventory)) {
+        for(const itemId of requiredItems) {
+            const quantity = userInventory[itemId] || 0;
             const itemEl = document.createElement('div');
             itemEl.className = 'inventory-item';
             const ticketImage = `https://placehold.co/64x64/777777/FFFFFF?text=TICKET`;
@@ -113,20 +108,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Event Listeners ---
-    function addBannerEventListeners(banners, inventory) {
+    // --- Event Handling ---
+    function addBannerEventListeners() {
         document.querySelectorAll('.open-pack-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const bannerId = e.target.getAttribute('data-banner-id');
-                const selectedBanner = banners.find(b => b.id === bannerId);
+            button.addEventListener('click', handleOpenPack);
+        });
+    }
 
-                if (inventory[selectedBanner.requiredItemId] > 0) {
-                    alert(`Opening a ${selectedBanner.name}!`);
-                    inventory[selectedBanner.requiredItemId]--;
-                    renderInventory(inventory);
-                    renderBanners(banners, inventory);
-                }
+    async function handleOpenPack(e) {
+        const bannerId = e.target.getAttribute('data-banner-id');
+        e.target.disabled = true; // Prevent double clicks
+        e.target.textContent = 'Opening...';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/gacha/open-pack`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ bannerId })
             });
+
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+
+            // Update local inventory from server response
+            userInventory = data.newInventory.reduce((acc, item) => {
+                acc[item.itemId] = item.quantity;
+                return acc;
+            }, {});
+            
+            // Show reward modal
+            rewardDisplay.innerHTML = `
+                <h3>${data.reward.name}</h3>
+                <p>Rarity: ${data.reward.rarity}</p>
+            `;
+            resultsModal.style.display = 'flex';
+            
+            // Re-render page to reflect new inventory count
+            renderInventory();
+            renderBanners();
+
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+            e.target.disabled = false;
+            e.target.textContent = 'Open Pack';
+        }
+    }
+
+    if (closeResultsBtn) {
+        closeResultsBtn.addEventListener('click', () => {
+            resultsModal.style.display = 'none';
         });
     }
 
@@ -137,9 +170,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => loadingScreen.style.display = "none", 800);
         }
         document.body.classList.remove("loading");
-        if (showContent) {
-            document.body.classList.add("loaded");
-        }
+        if (showContent) document.body.classList.add("loaded");
+    }
+
+    function displayGateMessage(message, linkUrl, linkText) {
+        gateMessage.textContent = message;
+        gateActions.innerHTML = `<a href="${linkUrl}" class="gate-button">${linkText}</a>`;
+        accessGate.style.display = 'flex';
+        hideLoadingScreen(false);
     }
 
     // --- START THE PROCESS ---
