@@ -68,8 +68,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- UI Rendering ---
-    function renderBanners() { /* ... same as before ... */ }
-    function renderInventory() { /* ... same as before ... */ }
+    function renderBanners() {
+        const bannerContainer = document.getElementById('banner-container');
+        if (!bannerContainer) return;
+        bannerContainer.innerHTML = '';
+
+        availableBanners.forEach(banner => {
+            const hasItem = userInventory[banner.requiredItemId] > 0;
+            const bannerEl = document.createElement('div');
+            bannerEl.className = 'banner-card';
+            bannerEl.innerHTML = `
+                <img src="${banner.image}" alt="${banner.name}" class="banner-image">
+                <div class="banner-overlay"></div>
+                <div class="banner-content">
+                    <h2>${banner.name}</h2>
+                    <p>${banner.description}</p>
+                    <button class="open-pack-btn" data-banner-id="${banner.id}" ${!hasItem ? 'disabled' : ''}>
+                        Open Pack
+                    </button>
+                </div>`;
+            bannerContainer.appendChild(bannerEl);
+        });
+        addBannerEventListeners();
+    }
+
+    function renderInventory() {
+        const inventoryDisplay = document.getElementById('inventory-display');
+        if (!inventoryDisplay) return;
+        inventoryDisplay.innerHTML = '';
+        
+        const requiredItems = new Set(availableBanners.map(b => b.requiredItemId));
+
+        for(const itemId of requiredItems) {
+            const quantity = userInventory[itemId] || 0;
+            const itemEl = document.createElement('div');
+            itemEl.className = 'inventory-item';
+            const ticketImage = `https://placehold.co/64x64/777777/FFFFFF?text=TICKET`;
+            itemEl.innerHTML = `<img src="${ticketImage}" alt="${itemId}"><span>x${quantity}</span>`;
+            inventoryDisplay.appendChild(itemEl);
+        }
+    }
 
     // --- Event Handling & Animation ---
     function addBannerEventListeners() {
@@ -93,10 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
             
-            // Start the animation with the reward we received from the server
             await startOpeningAnimation(bannerId, data.reward);
             
-            // Update UI after animation finishes
             userInventory = data.newInventory.reduce((acc, item) => {
                 acc[item.itemId] = item.quantity;
                 return acc;
@@ -123,19 +159,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 1. Build the reel
             let reelItems = [];
-            const reelLength = 50; // Number of items to show in the animation
+            const reelLength = 50;
             for (let i = 0; i < reelLength; i++) {
                 const randomItem = lootTable[Math.floor(Math.random() * lootTable.length)];
                 reelItems.push(randomItem);
             }
 
-            // 2. Place the winning item near the end for suspense
             const winningIndex = reelLength - 5; 
             reelItems[winningIndex] = winningItem;
 
-            // 3. Populate the reel HTML
             reel.innerHTML = '';
             reelItems.forEach(item => {
                 const itemEl = document.createElement('div');
@@ -147,31 +180,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 reel.appendChild(itemEl);
             });
 
-            // 4. Calculate the animation destination
-            const itemWidth = 150; // Width of .reel-item
-            const itemMargin = 10;  // Margin (5px on each side)
+            const itemWidth = 150;
+            const itemMargin = 10;
             const totalItemWidth = itemWidth + itemMargin;
             const containerWidth = reel.parentElement.offsetWidth;
             
-            // The magic number: position the winning item in the center
             const randomOffset = (Math.random() - 0.5) * itemWidth * 0.8;
             const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2) + randomOffset;
             
-            // 5. Run the animation
             animationOverlay.style.display = 'flex';
-            reel.style.transform = 'translateX(0)'; // Reset position
+            reel.style.transform = 'translateX(0)';
             
             setTimeout(() => {
                 reel.classList.add('spinning');
                 reel.style.transform = `translateX(-${targetPosition}px)`;
-            }, 100); // Short delay to ensure transition is applied
+            }, 100);
 
-            // 6. Resolve the promise when animation is over
             setTimeout(() => {
                 reel.classList.remove('spinning');
                 animationOverlay.style.display = 'none';
                 resolve();
-            }, 7100); // Must be slightly longer than the animation duration (7s)
+            }, 7100);
         });
     }
 
@@ -182,6 +211,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Utility Functions and Startup ---
-    // ... (Your existing hideLoadingScreen and displayGateMessage functions) ...
+    function hideLoadingScreen(showContent = false) {
+        if (loadingScreen) {
+            loadingScreen.classList.add("fade-out");
+            setTimeout(() => loadingScreen.style.display = "none", 800);
+        }
+        document.body.classList.remove("loading");
+        if (showContent) {
+            document.body.classList.add("loaded");
+        }
+    }
+
+    function displayGateMessage(message, linkUrl, linkText) {
+        const gateMessage = document.getElementById('gate-message');
+        const gateActions = document.getElementById('gate-actions');
+
+        gateMessage.textContent = message;
+        gateActions.innerHTML = `<a href="${linkUrl}" class="gate-button">${linkText}</a>`;
+        accessGate.style.display = 'flex';
+        hideLoadingScreen(false);
+    }
+    
     initializeGachaPage();
 });
