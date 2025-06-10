@@ -21,13 +21,19 @@
                 <h2>Generate New Code</h2>
                 <form id="generate-code-form">
                     <input type="text" id="new-code" placeholder="Code (e.g., LEGENDARY2025)" required>
-                    <input type="text" id="reward-item-id" placeholder="Reward Item ID (e.g., legendary_pack_ticket)" required>
-                    <input type="text" id="reward-item-name" placeholder="Reward Item Name (e.g., Legendary Pack Ticket)" required>
-                    <input type="number" id="reward-quantity" value="1" required>
+                    
+                    <!-- The text inputs are replaced by this select dropdown -->
+                    <select id="reward-item-id" required>
+                        <option value="" disabled selected>Select a Reward Item...</option>
+                    </select>
+                    
+                    <input type="number" id="reward-quantity" value="1" min="1" required>
+                    
                     <select id="use-type">
                         <option value="one-time">One-Time Use</option>
                         <option value="infinite">Infinite Use</option>
                     </select>
+                    
                     <button type="submit">Generate Code</button>
                 </form>
                 <div id="generate-result"></div>
