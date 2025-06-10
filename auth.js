@@ -1,5 +1,25 @@
 // auth.js - Final Version with Link/Unlink Logic
 
+const handleSignupPrompt = () => {
+    const overlay = document.getElementById('signup-prompt-overlay');
+    const closeBtn = document.getElementById('close-prompt-btn');
+    
+    // This check ensures the code only runs on the signup page
+    if (!overlay || !closeBtn) {
+        return; 
+    }
+
+    // Show the prompt shortly after the page loads for a smooth animation
+    setTimeout(() => {
+        overlay.classList.add('visible');
+    }, 100);
+
+    // Add listener to the button to hide the prompt
+    closeBtn.addEventListener('click', () => {
+        overlay.classList.remove('visible');
+    });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const updateAccountWidget = async () => { // Make this function async
@@ -150,5 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial UI Setup
+    handleSignupPrompt(); // Call the new function
     updateAccountWidget();
 });
