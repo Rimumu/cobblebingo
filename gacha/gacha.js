@@ -161,32 +161,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 reel.appendChild(itemEl);
             });
 
-            // 2. Define constants and calculate the exact stopping point.
-            const winningIndex = 70; // The fixed winning position from the server.
-            const itemWidth = 150;
-            const itemMargin = 10;
-            const totalItemWidth = itemWidth + itemMargin;
-            const containerWidth = reel.parentElement.offsetWidth;
-            
-            // This calculation is now 100% deterministic.
-            const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2);
-
-            // 3. Reset the reel's position instantly (no animation).
+            // 2. Make the animation overlay visible FIRST.
             animationOverlay.style.display = 'flex';
             reel.style.transition = 'none';
             reel.style.transform = `translateX(0px)`;
             
-            // 4. Force the browser to apply the reset, then apply the animation class.
-            setTimeout(() => {
+            // 3. CRITICAL FIX: Use requestAnimationFrame to wait for the browser
+            // to render the elements before we measure them. This guarantees
+            // the width calculation is accurate.
+            requestAnimationFrame(() => {
+                // 4. Now that elements are visible, calculate the exact stopping point.
+                const winningIndex = 70; // The fixed winning position from the server.
+                const itemWidth = 150;
+                const itemMargin = 10;
+                const totalItemWidth = itemWidth + itemMargin;
+                const containerWidth = reel.parentElement.offsetWidth;
+                
+                // This calculation is now 100% deterministic and accurate.
+                const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2);
+
+                // 5. Apply the smooth animation.
                 reel.style.transition = 'transform 7s cubic-bezier(0.1, 0.4, 0.2, 1)';
                 reel.style.transform = `translateX(-${targetPosition}px)`;
-            }, 100);
-
-            // 5. End the process after the animation finishes.
-            setTimeout(() => {
-                animationOverlay.style.display = 'none';
-                resolve();
-            }, 7100); // Must be slightly longer than the CSS transition.
+            
+                // 6. End the process after the animation finishes.
+                setTimeout(() => {
+                    animationOverlay.style.display = 'none';
+                    resolve();
+                }, 7100); // Must be slightly longer than the CSS transition.
+            });
         });
     }
 
