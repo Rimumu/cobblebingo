@@ -163,8 +163,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemMargin = 10; 
             const totalItemWidth = itemWidth + itemMargin;
             const containerWidth = reel.parentElement.offsetWidth;
-            const randomJitter = (Math.random() - 0.5) * (itemWidth * 0.6);
-            const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2) + randomJitter;
+            
+            // --- THIS IS THE FIX ---
+            // The randomJitter has been removed to ensure a perfectly synchronized stop.
+            const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2);
+            // --- END OF FIX ---
             
             animationOverlay.style.display = 'flex';
             reel.style.transform = 'translateX(0)';
