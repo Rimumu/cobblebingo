@@ -23,20 +23,23 @@ body.loaded #mainContent {
 }
 
 .gacha-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 40px;
+    text-align: center;
     margin-bottom: 30px;
+    padding-top: 60px; /* Add padding to prevent content from going under the new fixed elements */
 }
 
 .gacha-header h1 {
     font-size: 2.5em;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
     color: #fff;
+    margin: 0;
 }
 
 .inventory-display {
+    position: fixed; /* Pin it to the screen */
+    top: 20px;
+    left: 20px;
+    z-index: 1000; /* Ensure it's above other content */
     display: flex;
     gap: 15px;
     background: rgba(255, 255, 255, 0.08);
