@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Global State ---
     let availableBanners = [];
     let userInventory = {};
-    let packLootTables = {}; // Cache for pack contents
+    let packLootTables = {}; 
 
     // --- Main Initialization ---
     async function initializeGachaPage() {
@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const { banners } = await bannersResponse.json();
             availableBanners = banners;
 
-            // Pre-fetch all pack contents for animations
             for (const banner of availableBanners) {
                 const contentsResponse = await fetch(`${API_BASE_URL}/api/gacha/pack-contents/${banner.id}`);
                 const { contents } = await contentsResponse.json();
@@ -70,9 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- UI Rendering ---
     function renderBanners() {
         const bannerContainer = document.getElementById('banner-container');
-        if (!bannerContainer) return;
         bannerContainer.innerHTML = '';
-
         availableBanners.forEach(banner => {
             const hasItem = userInventory[banner.requiredItemId] > 0;
             const bannerEl = document.createElement('div');
@@ -83,23 +80,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="banner-content">
                     <h2>${banner.name}</h2>
                     <p>${banner.description}</p>
-                    <button class="open-pack-btn" data-banner-id="${banner.id}" ${!hasItem ? 'disabled' : ''}>
-                        Open Pack
-                    </button>
+                    <button class="open-pack-btn" data-banner-id="${banner.id}" ${!hasItem ? 'disabled' : ''}>Open Pack</button>
                 </div>`;
             bannerContainer.appendChild(bannerEl);
         });
         addBannerEventListeners();
     }
-
     function renderInventory() {
         const inventoryDisplay = document.getElementById('inventory-display');
-        if (!inventoryDisplay) return;
         inventoryDisplay.innerHTML = '';
-        
         const requiredItems = new Set(availableBanners.map(b => b.requiredItemId));
-
-        for(const itemId of requiredItems) {
+        for (const itemId of requiredItems) {
             const quantity = userInventory[itemId] || 0;
             const itemEl = document.createElement('div');
             itemEl.className = 'inventory-item';
@@ -127,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ bannerId })
             });
-
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
             
@@ -151,24 +141,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- REBUILT Animation Function ---
     function startOpeningAnimation(bannerId, winningItem) {
         return new Promise(resolve => {
             const lootTable = packLootTables[bannerId];
-            if (!lootTable) {
-                resolve();
-                return;
-            }
+            if (!lootTable) return resolve();
 
+            // 1. Shuffle the full loot table to create a random order for this spin
+            const shuffle = (array) => array.sort(() => Math.random() - 0.5);
+            let shuffledLoot = shuffle([...lootTable]);
+
+            // 2. Build a long reel to ensure it looks infinite
             let reelItems = [];
-            const reelLength = 50;
+            const reelLength = 80; // Make it longer to be safe
             for (let i = 0; i < reelLength; i++) {
-                const randomItem = lootTable[Math.floor(Math.random() * lootTable.length)];
-                reelItems.push(randomItem);
+                reelItems.push(shuffledLoot[i % shuffledLoot.length]);
             }
-
-            const winningIndex = reelLength - 5; 
+            
+            // 3. Place the winning item at a consistent, predictable position near the end
+            const winningIndex = 70; 
             reelItems[winningIndex] = winningItem;
 
+            // 4. Populate the reel HTML
             reel.innerHTML = '';
             reelItems.forEach(item => {
                 const itemEl = document.createElement('div');
@@ -180,14 +174,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 reel.appendChild(itemEl);
             });
 
-            const itemWidth = 150;
-            const itemMargin = 10;
+            // 5. Calculate the exact stopping point
+            const itemWidth = 150; 
+            const itemMargin = 10; 
             const totalItemWidth = itemWidth + itemMargin;
             const containerWidth = reel.parentElement.offsetWidth;
+            const randomJitter = (Math.random() - 0.5) * (itemWidth * 0.6); // Makes the stop feel less robotic
             
-            const randomOffset = (Math.random() - 0.5) * itemWidth * 0.8;
-            const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2) + randomOffset;
+            const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2) + randomJitter;
             
+            // 6. Run the animation
             animationOverlay.style.display = 'flex';
             reel.style.transform = 'translateX(0)';
             
@@ -200,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 reel.classList.remove('spinning');
                 animationOverlay.style.display = 'none';
                 resolve();
-            }, 7100);
+            }, 7100); 
         });
     }
 
@@ -210,22 +206,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Utility Functions and Startup ---
+    // --- Utility Functions ---
     function hideLoadingScreen(showContent = false) {
         if (loadingScreen) {
             loadingScreen.classList.add("fade-out");
             setTimeout(() => loadingScreen.style.display = "none", 800);
         }
         document.body.classList.remove("loading");
-        if (showContent) {
-            document.body.classList.add("loaded");
-        }
+        if (showContent) document.body.classList.add("loaded");
     }
 
     function displayGateMessage(message, linkUrl, linkText) {
         const gateMessage = document.getElementById('gate-message');
         const gateActions = document.getElementById('gate-actions');
-
         gateMessage.textContent = message;
         gateActions.innerHTML = `<a href="${linkUrl}" class="gate-button">${linkText}</a>`;
         accessGate.style.display = 'flex';
