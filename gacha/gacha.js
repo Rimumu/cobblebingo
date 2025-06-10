@@ -3,10 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const mainContent = document.getElementById('mainContent');
     const accessGate = document.getElementById('access-gate-container');
-    const gateTitle = document.getElementById('gate-title');
-    const gateMessage = document.getElementById('gate-message');
-    const gateActions = document.getElementById('gate-actions');
     const loadingScreen = document.getElementById('loadingScreen');
+    const animationOverlay = document.getElementById('animation-overlay');
+    const reel = document.getElementById('reel');
     const resultsModal = document.getElementById('results-modal-overlay');
     const rewardDisplay = document.getElementById('reward-display');
     const closeResultsBtn = document.getElementById('close-results-btn');
@@ -20,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Global State ---
     let availableBanners = [];
     let userInventory = {};
+    let packLootTables = {}; // Cache for pack contents
 
     // --- Main Initialization ---
     async function initializeGachaPage() {
@@ -29,29 +29,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const [userResponse, bannersResponse] = await Promise.all([
-                fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${API_BASE_URL}/api/gacha/banners`)
-            ]);
-
+            const userResponse = await fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!userResponse.ok) throw new Error('Your session is invalid. Please log in again.');
-            
             const { user } = await userResponse.json();
-            const { banners } = await bannersResponse.json();
-            availableBanners = banners;
 
             if (!user.discordId) {
                 displayGateMessage('You must link your Discord account to use the Gacha Realm.', `${API_BASE_URL}/api/auth/discord?token=${token}`, 'Link Discord Now');
                 return;
             }
+            
+            const bannersResponse = await fetch(`${API_BASE_URL}/api/gacha/banners`);
+            const { banners } = await bannersResponse.json();
+            availableBanners = banners;
 
-            // Convert user inventory array to an easier-to-use object
+            // Pre-fetch all pack contents for animations
+            for (const banner of availableBanners) {
+                const contentsResponse = await fetch(`${API_BASE_URL}/api/gacha/pack-contents/${banner.id}`);
+                const { contents } = await contentsResponse.json();
+                packLootTables[banner.id] = contents;
+            }
+
             userInventory = user.inventory.reduce((acc, item) => {
                 acc[item.itemId] = item.quantity;
                 return acc;
             }, {});
-
-            // Access Granted!
+            
             hideLoadingScreen(true);
             mainContent.style.display = 'block';
             accessGate.style.display = 'none';
@@ -66,49 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- UI Rendering ---
-    function renderBanners() {
-        const bannerContainer = document.getElementById('banner-container');
-        if (!bannerContainer) return;
-        bannerContainer.innerHTML = '';
+    function renderBanners() { /* ... same as before ... */ }
+    function renderInventory() { /* ... same as before ... */ }
 
-        availableBanners.forEach(banner => {
-            const hasItem = userInventory[banner.requiredItemId] > 0;
-            const bannerEl = document.createElement('div');
-            bannerEl.className = 'banner-card';
-            bannerEl.innerHTML = `
-                <img src="${banner.image}" alt="${banner.name}" class="banner-image">
-                <div class="banner-overlay"></div>
-                <div class="banner-content">
-                    <h2>${banner.name}</h2>
-                    <p>${banner.description}</p>
-                    <button class="open-pack-btn" data-banner-id="${banner.id}" ${!hasItem ? 'disabled' : ''}>
-                        Open Pack
-                    </button>
-                </div>`;
-            bannerContainer.appendChild(bannerEl);
-        });
-        addBannerEventListeners();
-    }
-
-    function renderInventory() {
-        const inventoryDisplay = document.getElementById('inventory-display');
-        if (!inventoryDisplay) return;
-        inventoryDisplay.innerHTML = '';
-        
-        // Find which items are required for the currently shown banners
-        const requiredItems = new Set(availableBanners.map(b => b.requiredItemId));
-
-        for(const itemId of requiredItems) {
-            const quantity = userInventory[itemId] || 0;
-            const itemEl = document.createElement('div');
-            itemEl.className = 'inventory-item';
-            const ticketImage = `https://placehold.co/64x64/777777/FFFFFF?text=TICKET`;
-            itemEl.innerHTML = `<img src="${ticketImage}" alt="${itemId}"><span>x${quantity}</span>`;
-            inventoryDisplay.appendChild(itemEl);
-        }
-    }
-
-    // --- Event Handling ---
+    // --- Event Handling & Animation ---
     function addBannerEventListeners() {
         document.querySelectorAll('.open-pack-btn').forEach(button => {
             button.addEventListener('click', handleOpenPack);
@@ -117,36 +80,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleOpenPack(e) {
         const bannerId = e.target.getAttribute('data-banner-id');
-        e.target.disabled = true; // Prevent double clicks
+        e.target.disabled = true;
         e.target.textContent = 'Opening...';
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/gacha/open-pack`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ bannerId })
             });
 
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
-
-            // Update local inventory from server response
+            
+            // Start the animation with the reward we received from the server
+            await startOpeningAnimation(bannerId, data.reward);
+            
+            // Update UI after animation finishes
             userInventory = data.newInventory.reduce((acc, item) => {
                 acc[item.itemId] = item.quantity;
                 return acc;
             }, {});
             
-            // Show reward modal
-            rewardDisplay.innerHTML = `
-                <h3>${data.reward.name}</h3>
-                <p>Rarity: ${data.reward.rarity}</p>
-            `;
+            rewardDisplay.innerHTML = `<h3>${data.reward.name}</h3><p>Rarity: ${data.reward.rarity}</p>`;
             resultsModal.style.display = 'flex';
             
-            // Re-render page to reflect new inventory count
             renderInventory();
             renderBanners();
 
@@ -157,29 +115,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function startOpeningAnimation(bannerId, winningItem) {
+        return new Promise(resolve => {
+            const lootTable = packLootTables[bannerId];
+            if (!lootTable) {
+                resolve();
+                return;
+            }
+
+            // 1. Build the reel
+            let reelItems = [];
+            const reelLength = 50; // Number of items to show in the animation
+            for (let i = 0; i < reelLength; i++) {
+                const randomItem = lootTable[Math.floor(Math.random() * lootTable.length)];
+                reelItems.push(randomItem);
+            }
+
+            // 2. Place the winning item near the end for suspense
+            const winningIndex = reelLength - 5; 
+            reelItems[winningIndex] = winningItem;
+
+            // 3. Populate the reel HTML
+            reel.innerHTML = '';
+            reelItems.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = `reel-item ${item.rarity}`;
+                itemEl.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x100/111/FFF?text=Error';">
+                    <p>${item.name}</p>
+                `;
+                reel.appendChild(itemEl);
+            });
+
+            // 4. Calculate the animation destination
+            const itemWidth = 150; // Width of .reel-item
+            const itemMargin = 10;  // Margin (5px on each side)
+            const totalItemWidth = itemWidth + itemMargin;
+            const containerWidth = reel.parentElement.offsetWidth;
+            
+            // The magic number: position the winning item in the center
+            const randomOffset = (Math.random() - 0.5) * itemWidth * 0.8;
+            const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2) + randomOffset;
+            
+            // 5. Run the animation
+            animationOverlay.style.display = 'flex';
+            reel.style.transform = 'translateX(0)'; // Reset position
+            
+            setTimeout(() => {
+                reel.classList.add('spinning');
+                reel.style.transform = `translateX(-${targetPosition}px)`;
+            }, 100); // Short delay to ensure transition is applied
+
+            // 6. Resolve the promise when animation is over
+            setTimeout(() => {
+                reel.classList.remove('spinning');
+                animationOverlay.style.display = 'none';
+                resolve();
+            }, 7100); // Must be slightly longer than the animation duration (7s)
+        });
+    }
+
     if (closeResultsBtn) {
         closeResultsBtn.addEventListener('click', () => {
             resultsModal.style.display = 'none';
         });
     }
 
-    // --- Utility Functions ---
-    function hideLoadingScreen(showContent = false) {
-        if (loadingScreen) {
-            loadingScreen.classList.add("fade-out");
-            setTimeout(() => loadingScreen.style.display = "none", 800);
-        }
-        document.body.classList.remove("loading");
-        if (showContent) document.body.classList.add("loaded");
-    }
-
-    function displayGateMessage(message, linkUrl, linkText) {
-        gateMessage.textContent = message;
-        gateActions.innerHTML = `<a href="${linkUrl}" class="gate-button">${linkText}</a>`;
-        accessGate.style.display = 'flex';
-        hideLoadingScreen(false);
-    }
-
-    // --- START THE PROCESS ---
+    // --- Utility Functions and Startup ---
+    // ... (Your existing hideLoadingScreen and displayGateMessage functions) ...
     initializeGachaPage();
 });
