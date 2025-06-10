@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- FINAL, 100% SYNCHRONIZED JAVASCRIPT ANIMATION ---
+    // --- FINAL, 100% SYNCHRONIZED CSS-BASED ANIMATION ---
     function startOpeningAnimation(reelItems) {
         return new Promise(resolve => {
             if (!reelItems || reelItems.length === 0) {
@@ -148,72 +148,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 return resolve();
             }
 
-            const reelItemCount = 15; // Number of items visible on screen at once
-            const winningIndexOnServerReel = 70; // The fixed position from the server
-
-            // 1. Create a display buffer of empty items
+            // 1. Duplicate content to create a visually infinite reel.
+            const animationContent = [...reelItems, ...reelItems];
             reel.innerHTML = '';
-            for (let i = 0; i < reelItemCount; i++) {
+            animationContent.forEach(item => {
                 const itemEl = document.createElement('div');
-                itemEl.className = 'reel-item';
+                itemEl.className = `reel-item ${item.rarity}`;
+                itemEl.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x100/111/FFF?text=Error';">
+                    <p>${item.name}</p>
+                `;
                 reel.appendChild(itemEl);
-            }
-            const itemElements = Array.from(reel.children);
+            });
 
+            // 2. Define constants and calculate the exact stopping point.
+            const winningIndex = 70; // The fixed winning position from the server.
+            const itemWidth = 150;
+            const itemMargin = 10;
+            const totalItemWidth = itemWidth + itemMargin;
+            const containerWidth = reel.parentElement.offsetWidth;
+            
+            // This calculation is now 100% deterministic.
+            const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2);
+
+            // 3. Reset the reel's position instantly (no animation).
             animationOverlay.style.display = 'flex';
+            reel.style.transition = 'none';
+            reel.style.transform = `translateX(0px)`;
             
-            let currentFrame = 0;
-            let currentReelIndex = 0;
-            let animationStartTime = Date.now();
-            const totalDuration = 7000; // 7 seconds total animation
+            // 4. Force the browser to apply the reset, then apply the animation class.
+            setTimeout(() => {
+                reel.style.transition = 'transform 7s cubic-bezier(0.1, 0.4, 0.2, 1)';
+                reel.style.transform = `translateX(-${targetPosition}px)`;
+            }, 100);
 
-            // 2. The Animation Loop
-            function animationLoop() {
-                const elapsedTime = Date.now() - animationStartTime;
-                
-                // Determine animation speed based on time
-                let speed;
-                if (elapsedTime < 2000) speed = 30;       // Fast start
-                else if (elapsedTime < 4500) speed = 60;  // Slowing down
-                else if (elapsedTime < 6000) speed = 120; // Slower
-                else speed = 250;                         // Very slow crawl to finish
-
-                if (elapsedTime > currentFrame + speed) {
-                    // Update the visible items
-                    itemElements.forEach((el, i) => {
-                        const itemData = reelItems[(currentReelIndex + i) % reelItems.length];
-                        el.className = `reel-item ${itemData.rarity}`;
-                        el.innerHTML = `
-                            <img src="${itemData.image}" alt="${itemData.name}" onerror="this.src='https://placehold.co/100x100/111/FFF?text=Error';">
-                            <p>${itemData.name}</p>
-                        `;
-                    });
-                    currentReelIndex++;
-                    currentFrame = elapsedTime;
-                }
-
-                if (elapsedTime < totalDuration) {
-                    requestAnimationFrame(animationLoop);
-                } else {
-                    // 3. Animation Finished: Place the final items perfectly
-                    const finalReelPosition = winningIndexOnServerReel - Math.floor(reelItemCount / 2);
-                    itemElements.forEach((el, i) => {
-                        const itemData = reelItems[finalReelPosition + i];
-                        el.className = `reel-item ${itemData.rarity}`;
-                        el.innerHTML = `
-                            <img src="${itemData.image}" alt="${itemData.name}" onerror="this.src='https://placehold.co/100x100/111/FFF?text=Error';">
-                            <p>${itemData.name}</p>
-                        `;
-                    });
-                    // End the process
-                    setTimeout(() => {
-                        animationOverlay.style.display = 'none';
-                        resolve();
-                    }, 500); // Hold on the final result for a moment
-                }
-            }
-            
-            requestAnimationFrame(animationLoop);
+            // 5. End the process after the animation finishes.
+            setTimeout(() => {
+                animationOverlay.style.display = 'none';
+                resolve();
+            }, 7100); // Must be slightly longer than the CSS transition.
         });
     }
 
@@ -225,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Utility Functions ---
     function hideLoadingScreen(showContent = false) {
-        const loadingScreen = document.getElementById('loadingScreen');
         if (loadingScreen) {
             loadingScreen.classList.add("fade-out");
             setTimeout(() => loadingScreen.style.display = "none", 800);
