@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="../landing.css">
+    <link rel="stylesheet" href="../auth.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div id="account-widget" class="account-widget"></div>
+
+    <div class="admin-panel" id="admin-panel">
+        <h1>Admin Panel</h1>
+        
+        <div id="access-denied" style="display: none;">
+            <p>You do not have permission to view this page.</p>
+        </div>
+
+        <div id="admin-content" style="display: none;">
+            <div class="admin-section">
+                <h2>Generate New Code</h2>
+                <form id="generate-code-form">
+                    <input type="text" id="new-code" placeholder="Code (e.g., LEGENDARY2025)" required>
+                    <input type="text" id="reward-item-id" placeholder="Reward Item ID (e.g., legendary_pack_ticket)" required>
+                    <input type="text" id="reward-item-name" placeholder="Reward Item Name (e.g., Legendary Pack Ticket)" required>
+                    <input type="number" id="reward-quantity" value="1" required>
+                    <select id="use-type">
+                        <option value="one-time">One-Time Use</option>
+                        <option value="infinite">Infinite Use</option>
+                    </select>
+                    <button type="submit">Generate Code</button>
+                </form>
+                <div id="generate-result"></div>
+            </div>
+
+            <div class="admin-section">
+                <h2>Existing Codes</h2>
+                <div id="codes-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../auth.js"></script>
+    <script src="admin.js"></script> 
+</body>
+</html>
