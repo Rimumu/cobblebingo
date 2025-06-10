@@ -141,49 +141,59 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startOpeningAnimation(reelItems) {
-        return new Promise(resolve => {
-            if (!reelItems || reelItems.length === 0) {
-                console.error("Animation failed: Reel items not provided by server.");
-                return resolve();
-            }
+    return new Promise(resolve => {
+        if (!reelItems || reelItems.length === 0) {
+            console.error("Animation failed: Reel items not provided by server.");
+            return resolve();
+        }
 
-            reel.innerHTML = '';
-            reelItems.forEach(item => {
-                const itemEl = document.createElement('div');
-                itemEl.className = `reel-item ${item.rarity}`;
-                itemEl.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x100/111/FFF?text=Error';">
-                    <p>${item.name}</p>
-                `;
-                reel.appendChild(itemEl);
-            });
+        reel.innerHTML = ''; // Clear previous items
 
-            const winningIndex = 70; 
-            const itemWidth = 150; 
-            const itemMargin = 10; 
-            const totalItemWidth = itemWidth + itemMargin;
-            const containerWidth = reel.parentElement.offsetWidth;
-            
-            // --- THIS IS THE FIX ---
-            // The randomJitter has been removed to ensure a perfectly synchronized stop.
-            const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2);
-            // --- END OF FIX ---
-            
-            animationOverlay.style.display = 'flex';
-            reel.style.transform = 'translateX(0)';
-            
-            setTimeout(() => {
-                reel.classList.add('spinning');
-                reel.style.transform = `translateX(-${targetPosition}px)`;
-            }, 100);
+        // --- NEW: Create a seamless, infinite loop ---
+        // Duplicate the reel content to ensure it's long enough for any screen size
+        const animationContent = [...reelItems, ...reelItems];
+        // --- END NEW ---
 
-            setTimeout(() => {
-                reel.classList.remove('spinning');
-                animationOverlay.style.display = 'none';
-                resolve();
-            }, 7100); 
+        // Populate the reel with the new, longer content
+        animationContent.forEach(item => {
+            const itemEl = document.createElement('div');
+            itemEl.className = `reel-item ${item.rarity}`;
+            itemEl.innerHTML = `
+                <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x100/111/FFF?text=Error';">
+                <p>${item.name}</p>
+            `;
+            reel.appendChild(itemEl);
         });
-    }
+
+        const winningIndex = 70; 
+        const itemWidth = 150; 
+        const itemMargin = 10; 
+        const totalItemWidth = itemWidth + itemMargin;
+        const containerWidth = reel.parentElement.offsetWidth;
+        
+        // The calculation for the stopping point remains the same and does not need the randomJitter
+        const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2);
+        
+        // Run the animation
+        animationOverlay.style.display = 'flex';
+        // Reset the reel to the start with no transition
+        reel.style.transition = 'none';
+        reel.style.transform = 'translateX(0)';
+        
+        // Force the browser to apply the reset before starting the animation
+        setTimeout(() => {
+            // Re-apply the transition and set the final position
+            reel.style.transition = 'transform 7s cubic-bezier(0.2, 0.5, 0.1, 1)';
+            reel.style.transform = `translateX(-${targetPosition}px)`;
+        }, 100);
+
+        // End animation
+        setTimeout(() => {
+            animationOverlay.style.display = 'none';
+            resolve();
+        }, 7100); 
+    });
+}
 
     if (closeResultsBtn) {
         closeResultsBtn.addEventListener('click', () => {
