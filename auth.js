@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <a href="/cards/">My Cards</a>
                         <a href="/inventory/">Inventory</a>
                         <a href="/redeem/">Redeem</a>
-                        <a id="logout-btn">Logout</a>
+                        <a href="${API_BASE_URL}/api/auth/discord">Link Discord</a> <a id="logout-btn">Logout</a>
                     </div>
                 `;
                 // Attach logout listener only after the button is created
