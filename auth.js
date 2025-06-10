@@ -1,21 +1,20 @@
-// auth.js - Complete and Corrected Version
+// auth.js - DEBUG VERSION
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. UI Update Logic ---
     const updateAccountWidget = () => {
         const token = localStorage.getItem('token');
         const accountWidget = document.getElementById('account-widget');
         
-        // This check is crucial. If the div doesn't exist, stop.
         if (!accountWidget) { 
-            console.error("#account-widget element not found in HTML. Button cannot be displayed.");
             return; 
         }
 
-        if (token) {
-            // User is logged in
+        if (token && token !== 'undefined') {
             try {
+                // DEBUG: Show the token being read from storage
+                alert(`DEBUG: Found token in storage. Trying to decode:\n\n${token}`);
+
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 const username = payload.user.username;
 
@@ -27,14 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         <a href="/cards/">My Cards</a>
                         <a href="/inventory/">Inventory</a>
                         <a href="/redeem/">Redeem</a>
-                        <a href="${API_BASE_URL}/api/auth/discord">Link Discord</a> <a id="logout-btn">Logout</a>
+                        <a href="${getApiBaseUrl()}/api/auth/discord">Link Discord</a>
+                        <a id="logout-btn">Logout</a>
                     </div>
                 `;
-                // Attach logout listener only after the button is created
                 document.getElementById('logout-btn').addEventListener('click', handleLogout);
             } catch (e) {
-                console.error("Invalid token found. Clearing token.", e);
-                handleLogout(); // Clear bad token and refresh UI
+                // DEBUG: Show an alert if token decoding fails
+                alert(`DEBUG: ERROR! The token found in storage is invalid and could not be decoded.\n\nError: ${e.message}\n\nToken: ${token}`);
+                handleLogout();
             }
         } else {
             // User is logged out
@@ -48,10 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 2. Event Handlers ---
+    const getApiBaseUrl = () => {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : 'https://cobblebingo-backend-production.up.railway.app';
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('token');
-        // Redirect to ensure the whole app state resets
         window.location.href = '/'; 
     };
 
@@ -60,12 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = event.target;
         const username = form.username.value;
         const password = form.password.value;
-        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:8000'
-            : 'https://cobblebingo-backend-production.up.railway.app';
         
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/${endpoint}`, {
+            const response = await fetch(`${getApiBaseUrl()}/api/auth/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -74,12 +75,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!data.success) {
-                throw new Error(data.error || 'An unknown error occurred.');
+                throw new Error(data.error || 'An unknown error occurred during authentication.');
             }
 
             if (endpoint === 'login') {
+                // DEBUG: Show an alert with the token received from the server
+                alert(`DEBUG: Login successful! Token received from server:\n\n${data.token}`);
                 localStorage.setItem('token', data.token);
-                window.location.href = '/'; // Redirect to home
+                window.location.href = '/';
             } else {
                 alert('Signup successful! Please log in.');
                 window.location.href = '/login.html';
@@ -89,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 3. Attach Auth Form Event Listeners ---
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => handleAuthForm(e, 'login'));
@@ -100,19 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
         signupForm.addEventListener('submit', (e) => handleAuthForm(e, 'signup'));
     }
 
-    // --- 4. Attach Dropdown Click Listeners ---
     const accountWidget = document.getElementById('account-widget');
     if (accountWidget) {
         accountWidget.addEventListener('click', (event) => {
-            // This ensures we only toggle when the button area is clicked,
-            // not when a link inside the dropdown is clicked.
             const button = event.target.closest('.account-button');
             if (button) {
                 accountWidget.classList.toggle('active');
             }
         });
 
-        // Add a listener to the whole page to close the menu when clicking outside
         document.addEventListener('click', (event) => {
             if (!accountWidget.contains(event.target) && accountWidget.classList.contains('active')) {
                 accountWidget.classList.remove('active');
@@ -120,7 +118,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 5. Initial UI Setup ---
     updateAccountWidget();
-
-}); // <-- This is the final closing brace for the 'DOMContentLoaded' event listener. The error was likely related to this.
+});
