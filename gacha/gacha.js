@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Global State ---
     let availableBanners = [];
     let userInventory = {};
-    let packLootTables = {}; 
 
     // --- Main Initialization ---
     async function initializeGachaPage() {
@@ -27,25 +26,20 @@ document.addEventListener('DOMContentLoaded', () => {
             displayGateMessage('You must be logged in to access the Gacha Realm.', '/login.html', 'Login Now');
             return;
         }
-
         try {
-            const userResponse = await fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const [userResponse, bannersResponse] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_BASE_URL}/api/gacha/banners`)
+            ]);
+
             if (!userResponse.ok) throw new Error('Your session is invalid. Please log in again.');
             const { user } = await userResponse.json();
+            const { banners } = await bannersResponse.json();
+            availableBanners = banners;
 
             if (!user.discordId) {
                 displayGateMessage('You must link your Discord account to use the Gacha Realm.', `${API_BASE_URL}/api/auth/discord?token=${token}`, 'Link Discord Now');
                 return;
-            }
-            
-            const bannersResponse = await fetch(`${API_BASE_URL}/api/gacha/banners`);
-            const { banners } = await bannersResponse.json();
-            availableBanners = banners;
-
-            for (const banner of availableBanners) {
-                const contentsResponse = await fetch(`${API_BASE_URL}/api/gacha/pack-contents/${banner.id}`);
-                const { contents } = await contentsResponse.json();
-                packLootTables[banner.id] = contents;
             }
 
             userInventory = user.inventory.reduce((acc, item) => {
@@ -69,7 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- UI Rendering ---
     function renderBanners() {
         const bannerContainer = document.getElementById('banner-container');
+        if (!bannerContainer) return;
         bannerContainer.innerHTML = '';
+
         availableBanners.forEach(banner => {
             const hasItem = userInventory[banner.requiredItemId] > 0;
             const bannerEl = document.createElement('div');
@@ -86,11 +82,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         addBannerEventListeners();
     }
+    
     function renderInventory() {
         const inventoryDisplay = document.getElementById('inventory-display');
+        if (!inventoryDisplay) return;
         inventoryDisplay.innerHTML = '';
+        
         const requiredItems = new Set(availableBanners.map(b => b.requiredItemId));
-        for (const itemId of requiredItems) {
+
+        for(const itemId of requiredItems) {
             const quantity = userInventory[itemId] || 0;
             const itemEl = document.createElement('div');
             itemEl.className = 'inventory-item';
@@ -111,17 +111,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const bannerId = e.target.getAttribute('data-banner-id');
         e.target.disabled = true;
         e.target.textContent = 'Opening...';
-
         try {
             const response = await fetch(`${API_BASE_URL}/api/gacha/open-pack`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ bannerId })
             });
+
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
             
-            await startOpeningAnimation(bannerId, data.reward);
+            // The server now sends us the complete animation reel
+            await startOpeningAnimation(data.animationReel);
             
             userInventory = data.newInventory.reduce((acc, item) => {
                 acc[item.itemId] = item.quantity;
@@ -133,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             renderInventory();
             renderBanners();
-
         } catch (error) {
             alert(`Error: ${error.message}`);
             e.target.disabled = false;
@@ -141,28 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- REBUILT Animation Function ---
-    function startOpeningAnimation(bannerId, winningItem) {
+    function startOpeningAnimation(reelItems) {
         return new Promise(resolve => {
-            const lootTable = packLootTables[bannerId];
-            if (!lootTable) return resolve();
+            if (!reelItems || reelItems.length === 0) return resolve();
 
-            // 1. Shuffle the full loot table to create a random order for this spin
-            const shuffle = (array) => array.sort(() => Math.random() - 0.5);
-            let shuffledLoot = shuffle([...lootTable]);
-
-            // 2. Build a long reel to ensure it looks infinite
-            let reelItems = [];
-            const reelLength = 80; // Make it longer to be safe
-            for (let i = 0; i < reelLength; i++) {
-                reelItems.push(shuffledLoot[i % shuffledLoot.length]);
-            }
-            
-            // 3. Place the winning item at a consistent, predictable position near the end
-            const winningIndex = 70; 
-            reelItems[winningIndex] = winningItem;
-
-            // 4. Populate the reel HTML
             reel.innerHTML = '';
             reelItems.forEach(item => {
                 const itemEl = document.createElement('div');
@@ -174,16 +156,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 reel.appendChild(itemEl);
             });
 
-            // 5. Calculate the exact stopping point
+            const winningIndex = 70; 
             const itemWidth = 150; 
             const itemMargin = 10; 
             const totalItemWidth = itemWidth + itemMargin;
             const containerWidth = reel.parentElement.offsetWidth;
-            const randomJitter = (Math.random() - 0.5) * (itemWidth * 0.6); // Makes the stop feel less robotic
-            
+            const randomJitter = (Math.random() - 0.5) * (itemWidth * 0.6);
             const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2) + randomJitter;
             
-            // 6. Run the animation
             animationOverlay.style.display = 'flex';
             reel.style.transform = 'translateX(0)';
             
