@@ -138,7 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return acc;
             }, {});
             
-            rewardDisplay.innerHTML = `<h3>${data.reward.name}</h3><p>Rarity: ${data.reward.rarity}</p>`;
+            rewardDisplay.innerHTML = `
+                <img id="reward-image" src="${data.reward.image}" alt="${data.reward.name}" onerror="this.src='https://placehold.co/120x120/111/FFF?text=Error';">
+                <h3>${data.reward.name}</h3>
+                <p>Rarity: ${data.reward.rarity}</p>
+            `;
             resultsModal.style.display = 'flex';
             
             renderInventory();
