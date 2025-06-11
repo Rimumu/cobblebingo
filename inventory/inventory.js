@@ -32,13 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemCard = document.createElement('div');
             itemCard.className = 'inventory-item-card';
             
-            // --- THIS IS THE FIX ---
-            // It now uses the 'image' property saved with the item.
-            // A fallback is used if the image property doesn't exist for some reason.
             const imageSrc = item.image || 'https://placehold.co/100x100/2E3A4D/FFF?text=Item';
 
-            // For the black icons, we add a filter to make them white.
-            const imageStyle = imageSrc.includes('thenounproject') ? 'filter: invert(1);' : '';
+            // For the black icons, add a filter to make them white.
+            // This now includes a safety check for imageSrc.
+            const imageStyle = imageSrc && imageSrc.includes('thenounproject') ? 'filter: invert(1);' : '';
 
             itemCard.innerHTML = `
                 <img src="${imageSrc}" alt="${item.itemName}" class="item-image" style="${imageStyle}">
