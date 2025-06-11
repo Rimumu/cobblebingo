@@ -34,8 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const imageSrc = item.image || 'https://placehold.co/100x100/2E3A4D/FFF?text=Item';
 
-            // For the black icons, add a filter to make them white.
-            // This now includes a safety check for imageSrc.
+            // Add a safety check for imageSrc before calling .includes()
             const imageStyle = imageSrc && imageSrc.includes('thenounproject') ? 'filter: invert(1);' : '';
 
             itemCard.innerHTML = `
