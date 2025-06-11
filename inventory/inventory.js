@@ -32,10 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemCard = document.createElement('div');
             itemCard.className = 'inventory-item-card';
             
-            // Using placeholder images for now
-            const imageSrc = item.itemId.includes('ticket') 
-                ? 'https://placehold.co/100x100/777/FFF?text=Ticket'
-                : 'https://placehold.co/100x100/2E3A4D/FFF?text=Item';
+            let imageSrc = 'https://placehold.co/100x100/2E3A4D/FFF?text=Item'; // Default
+
+            if (item.itemId === 'kitchen_knife') {
+                imageSrc = 'https://i.imgur.com/2sFQc5A.png'; // Simple Kitchen Knife
+            } else if (item.itemId === 'chef_knife') {
+                imageSrc = 'https://i.imgur.com/sC9k1sA.png'; // Professional Chef Knife
+            }
+            // You can add more else if blocks here for future items
 
             itemCard.innerHTML = `
                 <img src="${imageSrc}" alt="${item.itemName}" class="item-image">
