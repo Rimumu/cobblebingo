@@ -55,43 +55,38 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // UPDATED form submission logic
     generateForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const rewardDropdown = document.getElementById('reward-item-id');
-        const selectedOption = rewardDropdown.options[rewardDropdown.selectedIndex];
+    e.preventDefault();
+    
+    // The form data is now simpler
+    const formData = {
+        code: document.getElementById('new-code').value.toUpperCase().trim(),
+        itemId: document.getElementById('reward-item-id').value,
+        quantity: parseInt(document.getElementById('reward-quantity').value, 10),
+        useType: document.getElementById('use-type').value
+    };
 
-        const formData = {
-            code: document.getElementById('new-code').value.toUpperCase().trim(),
-            reward: {
-                itemId: selectedOption.value,
-                itemName: selectedOption.dataset.itemName, // Get name from the selected option
-                quantity: parseInt(document.getElementById('reward-quantity').value, 10)
-            },
-            useType: document.getElementById('use-type').value
-        };
-
-        if (!formData.reward.itemId) {
-            alert("Please select a reward item.");
-            return;
+    if (!formData.itemId) {
+        alert("Please select a reward item.");
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/generate-code`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(formData)
+        });
+        const data = await response.json();
+        document.getElementById('generate-result').textContent = data.success ? `Success! Code: ${data.code.code}` : `Error: ${data.error}`;
+        if (data.success) {
+            generateForm.reset();
+            document.getElementById('reward-item-id').selectedIndex = 0;
+            loadExistingCodes();
         }
-        
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/generate-code`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(formData)
-            });
-            const data = await response.json();
-            document.getElementById('generate-result').textContent = data.success ? `Success! Code: ${data.code.code}` : `Error: ${data.error}`;
-            if (data.success) {
-                generateForm.reset();
-                rewardDropdown.selectedIndex = 0; // Reset dropdown to placeholder
-                loadExistingCodes();
-            }
-        } catch (error) {
-            document.getElementById('generate-result').textContent = `Error: ${error.message}`;
-        }
-    });
+    } catch (error) {
+        document.getElementById('generate-result').textContent = `Error: ${error.message}`;
+    }
+});
 
     async function loadExistingCodes() {
         try {
