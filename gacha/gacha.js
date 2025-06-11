@@ -94,8 +94,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const quantity = userInventory[itemId] || 0;
             const itemEl = document.createElement('div');
             itemEl.className = 'inventory-item';
-            const ticketImage = `https://placehold.co/64x64/777777/FFFFFF?text=TICKET`;
-            itemEl.innerHTML = `<img src="${ticketImage}" alt="${itemId}"><span>x${quantity}</span>`;
+            
+            let imageSrc = '';
+            if (itemId === 'kitchen_knife') {
+                imageSrc = 'https://i.imgur.com/2sFQc5A.png'; // Simple Kitchen Knife
+            } else if (itemId === 'chef_knife') {
+                imageSrc = 'https://i.imgur.com/sC9k1sA.png'; // Professional Chef Knife
+            } else {
+                imageSrc = 'https://placehold.co/64x64/777777/FFFFFF?text=ITEM'; // Fallback
+            }
+
+            // Added style to make the icons look sharp
+            itemEl.innerHTML = `<img src="${imageSrc}" alt="${itemId}" style="width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));"><span>x${quantity}</span>`;
             inventoryDisplay.appendChild(itemEl);
         }
     }
