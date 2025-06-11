@@ -30,11 +30,13 @@
                     <input type="number" id="reward-quantity" value="1" min="1" required>
                     
                     <select id="use-type">
-                        <option value="one-time">One-Time Use</option>
+                        <option value="one-time">One-Time Use (Total)</option>
+                        <option value="one-time-per-user">One-Time Use (Per User)</option>
                         <option value="infinite">Infinite Use</option>
                     </select>
                     
                     <button type="submit">Generate Code</button>
+                    
                 </form>
                 <div id="generate-result"></div>
             </div>
