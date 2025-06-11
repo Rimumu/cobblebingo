@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Global State ---
     let availableBanners = [];
-    let userInventory = {};
+    let userInventory = new Map(); // Use a Map to store the full item object
 
     // --- Main Initialization ---
     async function initializeGachaPage() {
@@ -42,10 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            userInventory = user.inventory.reduce((acc, item) => {
-                acc[item.itemId] = item.quantity;
-                return acc;
-            }, {});
+            // Store the full item object in the Map, keyed by itemId
+            userInventory = new Map(user.inventory.map(item => [item.itemId, item]));
             
             hideLoadingScreen(true);
             mainContent.style.display = 'block';
@@ -67,7 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
         bannerContainer.innerHTML = '';
 
         availableBanners.forEach(banner => {
-            const hasItem = userInventory[banner.requiredItemId] > 0;
+            // Check for the item in our new Map
+            const hasItem = userInventory.has(banner.requiredItemId) && userInventory.get(banner.requiredItemId).quantity > 0;
             const bannerEl = document.createElement('div');
             bannerEl.className = 'banner-card';
             bannerEl.innerHTML = `
@@ -91,21 +90,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const requiredItems = new Set(availableBanners.map(b => b.requiredItemId));
 
         for(const itemId of requiredItems) {
-            const quantity = userInventory[itemId] || 0;
+            const item = userInventory.get(itemId);
+            const quantity = item ? item.quantity : 0;
+            // Use the image from the item data, with a fallback
+            const imageSrc = item ? item.image : 'https://placehold.co/64x64/777777/FFFFFF?text=ITEM';
+            const altText = item ? item.itemName : itemId;
+            
             const itemEl = document.createElement('div');
             itemEl.className = 'inventory-item';
             
-            let imageSrc = '';
-            if (itemId === 'kitchen_knife') {
-                imageSrc = 'https://i.imgur.com/2sFQc5A.png'; // Simple Kitchen Knife
-            } else if (itemId === 'chef_knife') {
-                imageSrc = 'https://i.imgur.com/sC9k1sA.png'; // Professional Chef Knife
-            } else {
-                imageSrc = 'https://placehold.co/64x64/777777/FFFFFF?text=ITEM'; // Fallback
-            }
+            // Apply a CSS filter to the correct images to make them visible
+            const imageStyle = imageSrc.includes('thenounproject') 
+                ? 'filter: invert(1) drop-shadow(0 2px 3px rgba(0,0,0,0.5));' 
+                : 'filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));';
 
-            // Added style to make the icons look sharp
-            itemEl.innerHTML = `<img src="${imageSrc}" alt="${itemId}" style="width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));"><span>x${quantity}</span>`;
+            itemEl.innerHTML = `<img src="${imageSrc}" alt="${altText}" style="width: 48px; height: 48px; object-fit: contain; ${imageStyle}"><span>x${quantity}</span>`;
             inventoryDisplay.appendChild(itemEl);
         }
     }
@@ -133,10 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             await startOpeningAnimation(data.animationReel);
             
-            userInventory = data.newInventory.reduce((acc, item) => {
-                acc[item.itemId] = item.quantity;
-                return acc;
-            }, {});
+            // Repopulate inventory map with updated data from server
+            userInventory = new Map(data.newInventory.map(item => [item.itemId, item]));
             
             rewardDisplay.innerHTML = `
                 <img id="reward-image" src="${data.reward.image}" alt="${data.reward.name}" onerror="this.src='https://placehold.co/120x120/111/FFF?text=Error';">
