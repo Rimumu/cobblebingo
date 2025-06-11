@@ -22,7 +22,7 @@ const handleSignupPrompt = () => {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const updateAccountWidget = async () => { // Make this function async
+    const updateAccountWidget = async () => {
         const token = localStorage.getItem('token');
         const accountWidget = document.getElementById('account-widget');
         
@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (token && token !== 'undefined') {
             try {
-                // Fetch user data from the new '/api/user/me' endpoint
                 const userResponse = await fetch(`${getApiBaseUrl()}/api/user/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -41,10 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const { user } = await userResponse.json();
 
-                // Build the Discord link/unlink part of the dropdown
                 let discordLinkHtml = '';
                 if (user.discordId) {
-                    // User IS linked: Show their Discord name and an unlink button
                     discordLinkHtml = `
                         <div class="discord-info">
                             Linked as: <strong>${user.discordUsername}</strong>
@@ -52,17 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         <a id="unlink-discord-btn">Unlink Discord</a>
                     `;
                 } else {
-                    // User IS NOT linked: Show the link button
                     const linkDiscordUrl = `${getApiBaseUrl()}/api/auth/discord?token=${token}`;
                     discordLinkHtml = `<a href="${linkDiscordUrl}">Link Discord</a>`;
                 }
 
-                // Construct the final dropdown HTML
                 accountWidget.innerHTML = `
                     <button class="account-button">
                         <span>${user.username}</span> &#9662;
                     </button>
                     <div class="account-dropdown">
+                        <a href="/">Home</a>
                         <a href="/cards/">My Cards</a>
                         <a href="/inventory/">Inventory</a>
                         <a href="/redeem/">Redeem</a>
@@ -71,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
                 
-                // Add event listeners for the new buttons
                 document.getElementById('logout-btn').addEventListener('click', handleLogout);
                 const unlinkBtn = document.getElementById('unlink-discord-btn');
                 if (unlinkBtn) {
@@ -80,13 +75,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (e) {
                 console.error("Error updating account widget:", e);
-                handleLogout(); // If anything fails, log the user out
+                handleLogout();
             }
         } else {
             // User is logged out
             accountWidget.innerHTML = `
                 <button class="account-button">Account &#9662;</button>
                 <div class="account-dropdown">
+                    <a href="/">Home</a>
                     <a href="/signup.html">Signup</a>
                     <a href="/login.html">Login</a>
                 </div>
