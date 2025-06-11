@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             itemEl.className = 'inventory-item';
             
             // Apply a CSS filter to the correct images to make them visible
-            const imageStyle = imageSrc.includes('thenounproject') 
+            const imageStyle = imageSrc && imageSrc.includes('thenounproject') 
                 ? 'filter: invert(1) drop-shadow(0 2px 3px rgba(0,0,0,0.5));' 
                 : 'filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));';
 
@@ -135,10 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Repopulate inventory map with updated data from server
             userInventory = new Map(data.newInventory.map(item => [item.itemId, item]));
             
+            const reward = data.reward;
+            const pokeApiUrl = reward.id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${reward.id}.png` : '';
+            const fallbackScript = reward.id ? `this.onerror=null; this.src='${pokeApiUrl}';` : '';
+
             rewardDisplay.innerHTML = `
-                <img id="reward-image" src="${data.reward.image}" alt="${data.reward.name}" onerror="this.src='https://placehold.co/120x120/111/FFF?text=Error';">
-                <h3>${data.reward.name}</h3>
-                <p>Rarity: ${data.reward.rarity}</p>
+                <img id="reward-image" src="${reward.image}" alt="${reward.name}" onerror="${fallbackScript}">
+                <h3>${reward.name}</h3>
+                <p>Rarity: ${reward.rarity}</p>
             `;
             resultsModal.style.display = 'flex';
             
@@ -165,8 +169,12 @@ document.addEventListener('DOMContentLoaded', () => {
             animationContent.forEach(item => {
                 const itemEl = document.createElement('div');
                 itemEl.className = `reel-item ${item.rarity}`;
+                
+                const pokeApiUrl = item.id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${item.id}.png` : '';
+                const fallbackScript = item.id ? `this.onerror=null; this.src='${pokeApiUrl}';` : '';
+
                 itemEl.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x100/111/FFF?text=Error';">
+                    <img src="${item.image}" alt="${item.name}" onerror="${fallbackScript}">
                     <p>${item.name}</p>
                 `;
                 reel.appendChild(itemEl);
