@@ -17,7 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 adminContent.style.display = 'block';
                 loadRewardItems();
                 loadExistingCodes();
-                setupCustomSelect(); // Initialize the custom dropdown
+                setupCustomSelects(); // Initialize all custom dropdowns
+                setupQuantitySelector(); // Initialize the quantity input
             } else {
                 showAccessDenied();
             }
@@ -31,52 +32,71 @@ document.addEventListener('DOMContentLoaded', () => {
         accessDenied.style.display = 'block';
     }
     
-    // --- NEW: Function to control the custom dropdown ---
-    function setupCustomSelect() {
-        const customSelect = document.querySelector('.custom-select');
-        if (!customSelect) return;
+    // --- Function to control ALL custom dropdowns ---
+    function setupCustomSelects() {
+        document.querySelectorAll('.custom-select').forEach(customSelect => {
+            const trigger = customSelect.querySelector('.custom-select__trigger');
+            const optionsContainer = customSelect.querySelector('.custom-options');
+            const originalSelectId = customSelect.closest('.custom-select-wrapper').id.replace('-wrapper', '');
+            const originalSelect = document.getElementById(originalSelectId.replace('-item','-item-id').replace('use-type','use-type'));
+            const triggerText = trigger.querySelector('span');
 
-        const trigger = customSelect.querySelector('.custom-select__trigger');
-        const optionsContainer = customSelect.querySelector('.custom-options');
-        const originalSelect = document.getElementById('reward-item-id');
-        const triggerText = trigger.querySelector('span');
-
-        trigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            customSelect.classList.toggle('open');
-        });
-
-        window.addEventListener('click', () => {
-            if (customSelect.classList.contains('open')) {
-                customSelect.classList.remove('open');
-            }
-        });
-        
-        // This function will be called when options are loaded
-        window.populateCustomOptions = (items) => {
-            optionsContainer.innerHTML = '';
-            items.forEach(item => {
-                const optionEl = document.createElement('span');
-                optionEl.className = 'custom-option';
-                optionEl.textContent = item.itemName;
-                optionEl.setAttribute('data-value', item.itemId);
-                
-                optionEl.addEventListener('click', () => {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close other open selects
+                document.querySelectorAll('.custom-select.open').forEach(openSelect => {
+                    if (openSelect !== customSelect) {
+                        openSelect.classList.remove('open');
+                    }
+                });
+                customSelect.classList.toggle('open');
+            });
+            
+            optionsContainer.addEventListener('click', (e) => {
+                 if (e.target.classList.contains('custom-option')) {
+                    const optionEl = e.target;
                     const selectedValue = optionEl.getAttribute('data-value');
                     originalSelect.value = selectedValue;
                     triggerText.textContent = optionEl.textContent;
-                    
-                    // Update 'selected' class
+
                     optionsContainer.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
                     optionEl.classList.add('selected');
-                    
+
                     customSelect.classList.remove('open');
-                });
-                
-                optionsContainer.appendChild(optionEl);
+                }
             });
-        };
+        });
+        
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.custom-select.open').forEach(openSelect => {
+                openSelect.classList.remove('open');
+            });
+        });
     }
+
+    // --- NEW: Function to control the quantity input ---
+    function setupQuantitySelector() {
+        const selector = document.querySelector('.quantity-selector');
+        if (!selector) return;
+
+        const input = selector.querySelector('input');
+        const decrementBtn = selector.querySelector('[data-action="decrement"]');
+        const incrementBtn = selector.querySelector('[data-action="increment"]');
+        const min = parseInt(input.min, 10);
+
+        decrementBtn.addEventListener('click', () => {
+            let currentValue = parseInt(input.value, 10);
+            if (currentValue > min) {
+                input.value = currentValue - 1;
+            }
+        });
+
+        incrementBtn.addEventListener('click', () => {
+            let currentValue = parseInt(input.value, 10);
+            input.value = currentValue + 1;
+        });
+    }
+
 
     async function loadRewardItems() {
         try {
@@ -85,18 +105,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!data.success) throw new Error(data.error);
 
             const originalSelect = document.getElementById('reward-item-id');
+            const customOptionsContainer = document.querySelector('#reward-item-wrapper .custom-options');
+            
             originalSelect.innerHTML = '<option value="" disabled selected>Select a Reward Item...</option>';
+            customOptionsContainer.innerHTML = ''; // Clear existing custom options
+
             data.items.forEach(item => {
+                // Populate original hidden select
                 const option = document.createElement('option');
                 option.value = item.itemId;
                 option.textContent = item.itemName;
                 originalSelect.appendChild(option);
+
+                // Populate new custom dropdown
+                const customOption = document.createElement('span');
+                customOption.className = 'custom-option';
+                customOption.textContent = item.itemName;
+                customOption.setAttribute('data-value', item.itemId);
+                customOptionsContainer.appendChild(customOption);
             });
-            
-            // Populate our new custom dropdown
-            if(window.populateCustomOptions) {
-                window.populateCustomOptions(data.items);
-            }
             
         } catch (error) {
             console.error("Failed to load reward items:", error);
@@ -128,7 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('generate-result').textContent = data.success ? `Success! Code: ${data.code.code}` : `Error: ${data.error}`;
             if (data.success) {
                 generateForm.reset();
-                document.querySelector('.custom-select__trigger span').textContent = 'Select a Reward Item...';
+                // Reset custom displays to their placeholder/default text
+                document.querySelector('#reward-item-wrapper .custom-select__trigger span').textContent = 'Select a Reward Item...';
+                document.querySelector('#use-type-wrapper .custom-select__trigger span').textContent = 'One-Time Use';
+                document.getElementById('reward-quantity').value = 1;
                 loadExistingCodes();
             }
         } catch (error) {
