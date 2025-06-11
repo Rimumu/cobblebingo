@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderInventory(inventory) {
+   function renderInventory(inventory) {
         if (inventory.length === 0) {
             inventoryGrid.innerHTML = '<p>Your inventory is empty. Try opening some packs in the Gacha Realm!</p>';
             return;
@@ -32,17 +32,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemCard = document.createElement('div');
             itemCard.className = 'inventory-item-card';
             
-            let imageSrc = 'https://placehold.co/100x100/2E3A4D/FFF?text=Item'; // Default
+            // --- THIS IS THE FIX ---
+            // It now uses the 'image' property saved with the item.
+            // A fallback is used if the image property doesn't exist for some reason.
+            const imageSrc = item.image || 'https://placehold.co/100x100/2E3A4D/FFF?text=Item';
 
-            if (item.itemId === 'kitchen_knife') {
-                imageSrc = 'https://i.imgur.com/2sFQc5A.png'; // Simple Kitchen Knife
-            } else if (item.itemId === 'chef_knife') {
-                imageSrc = 'https://i.imgur.com/sC9k1sA.png'; // Professional Chef Knife
-            }
-            // You can add more else if blocks here for future items
+            // For the black icons, we add a filter to make them white.
+            const imageStyle = imageSrc.includes('thenounproject') ? 'filter: invert(1);' : '';
 
             itemCard.innerHTML = `
-                <img src="${imageSrc}" alt="${item.itemName}" class="item-image">
+                <img src="${imageSrc}" alt="${item.itemName}" class="item-image" style="${imageStyle}">
                 <div class="item-name">${item.itemName}</div>
                 <div class="item-quantity">x${item.quantity}</div>
             `;
