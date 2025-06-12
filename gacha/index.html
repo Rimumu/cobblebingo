@@ -10,7 +10,6 @@
 </head>
 <body class="loading">
 
-    <!-- Loading Screen -->
     <div id="loadingScreen">
         <div class="particles"></div>
         <div class="loading-container">
@@ -33,24 +32,28 @@
         </div>
     </div>
 
-    <!-- NEW: Access Gate Container -->
     <div id="access-gate-container" class="access-gate" style="display: none;">
         <div class="prompt-window">
             <h2 id="gate-title">Access Denied</h2>
             <p id="gate-message">Checking your credentials...</p>
             <div id="gate-actions">
-                <!-- Buttons will be added here by gacha.js -->
-            </div>
+                </div>
+        </div>
+    </div>
+    
+    <div id="pack-opening-intro-overlay" style="display: none;">
+        <div class="opening-pack-art">
+            <div class="pack-glow"></div>
+            <div class="pack-sparkle"></div>
         </div>
     </div>
 
-    <!-- Main Page Content (initially hidden) -->
+
     <div id="mainContent" style="display: none;">
         <div id="account-widget" class="account-widget"></div>
         
         <div id="inventory-display" class="inventory-display">
-            <!-- User's pack inventory will be displayed here -->
-        </div>
+            </div>
         <header class="gacha-header">
             <h1>Featured Packs</h1>
         </header>
@@ -61,22 +64,18 @@
         <div class="reel-marker"></div>
         <div class="reel-container">
             <div id="reel" class="reel">
-                <!-- Reel items will be inserted here by JavaScript -->
-            </div>
+                </div>
         </div>
     </div>
-        <!-- NEW: Pack Opening Results Modal -->
-    <div id="results-modal-overlay" class="results-overlay" style="display: none;">
+        <div id="results-modal-overlay" class="results-overlay" style="display: none;">
         <div class="results-window">
             <h2>You received:</h2>
             <div id="reward-display">
-                <!-- Reward info will be inserted here -->
-            </div>
+                </div>
             <button id="close-results-btn" class="gate-button">Awesome!</button>
         </div>
     </div>
 
-    <!-- NEW: Confirmation Modal -->
     <div id="confirmation-modal-overlay" class="confirmation-overlay" style="display: none;">
         <div class="confirmation-window">
             <h2 id="confirmation-title">Confirm Action</h2>
