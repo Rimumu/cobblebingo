@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const packNameDisplay = document.getElementById('opening-pack-name');
     const loadingProgressBar = document.getElementById('loading-progress-bar');
     const loadingText = document.getElementById('loading-text');
+    const pokeballLoader = document.querySelector('.pokeball-loader');
 
 
     // --- API Configuration ---
@@ -32,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let userInventory = new Map();
     let pendingPackOpen = null;
 
-    // --- NEW: Image Preloading Function ---
+    // --- Image Preloading Function ---
     function preloadImages(urls, onProgress) {
         let loadedCount = 0;
         const totalCount = urls.length;
@@ -51,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     onProgress((loadedCount / totalCount) * 100);
                     resolve();
                 };
-                img.onerror = () => { // Count errors as "loaded" to not block the UI
+                img.onerror = () => {
                     loadedCount++;
                     onProgress((loadedCount / totalCount) * 100);
                     resolve(); 
@@ -71,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         try {
-            // Stage 1: Fetch data
             const [userResponse, bannersResponse] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch(`${API_BASE_URL}/api/gacha/banners`)
@@ -89,23 +89,27 @@ document.addEventListener('DOMContentLoaded', () => {
             
             loadingText.textContent = 'Loading Assets...';
             
-            // Stage 2: Preload all images from banners
             const imageUrls = banners.map(b => b.image);
             await preloadImages(imageUrls, (progress) => {
                 loadingProgressBar.style.width = `${progress}%`;
             });
 
-            // Stage 3: Setup UI now that assets are loaded
+            // --- NEW: Final animation sequence ---
+            loadingText.textContent = 'Welcome!';
+            pokeballLoader.classList.add('is-opening');
+
+            // Wait for the open/glow animation to finish
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
             userInventory = new Map(user.inventory.map(item => [item.itemId, item]));
             
-            mainContent.style.display = 'block'; // Prepare content to be faded in
+            mainContent.style.display = 'block';
             accessGate.style.display = 'none';
 
             renderBanners();
             renderInventory();
             addConfirmationListeners();
 
-            // Hide loading screen only after everything is ready
             hideLoadingScreen(); 
 
         } catch (error) {
@@ -187,9 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = true;
         button.textContent = 'Opening...';
 
-        // Set up and trigger intro animation
         packNameDisplay.textContent = packName;
-        packArt.className = 'opening-pack-art'; // Reset styles
+        packArt.className = 'opening-pack-art';
         packArt.classList.add(`pack-theme-${bannerId}`);
         packIntroOverlay.style.display = 'flex';
         packContainer.classList.add('animate');
@@ -304,15 +307,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- THIS FUNCTION IS NOW FIXED ---
     function hideLoadingScreen() {
         loadingScreen.classList.add("fade-out");
-        // Add the 'loaded' class to the body to trigger the fade-in of the main content
         document.body.classList.add("loaded"); 
         
         setTimeout(() => {
             loadingScreen.style.display = "none";
-        }, 800); // The timeout should match the CSS transition duration
+        }, 800);
         
         document.body.classList.remove("loading");
     }
