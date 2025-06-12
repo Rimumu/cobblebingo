@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- DOM Elements 1---
+    // --- DOM Elements ---
     const mainContent = document.getElementById('mainContent');
     const accessGate = document.getElementById('access-gate-container');
     const loadingScreen = document.getElementById('loadingScreen');
+    const inventoryDisplay = document.getElementById('inventory-display');
     const animationOverlay = document.getElementById('animation-overlay');
     const reel = document.getElementById('reel');
     const resultsModal = document.getElementById('results-modal-overlay');
@@ -17,6 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const packContainer = packIntroOverlay.querySelector('.opening-pack-container');
     const packArt = packIntroOverlay.querySelector('.opening-pack-art');
     const packNameDisplay = document.getElementById('opening-pack-name');
+    // START: New info modal elements
+    const currencyInfoOverlay = document.getElementById('currency-info-overlay');
+    const closeInfoBtn = document.getElementById('close-info-btn');
+    // END: New info modal elements
 
 
     // --- API Configuration ---
@@ -50,9 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Main Initialization ---
     async function initializeGachaPage() {
-        // This logic now matches the simple and effective Bingo page loading sequence
         const startTime = Date.now();
-        const minimumLoadTime = 2500; // A minimum time for the animation to feel substantial
+        const minimumLoadTime = 2500; 
 
         if (!token || token === 'undefined') {
             displayGateMessage('You must be logged in to access the Gacha Realm.', '/login.html', 'Login Now');
@@ -89,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderBanners();
             renderInventory();
             addConfirmationListeners();
+            addInfoModalListeners(); // Call the new listener setup function
 
             hideLoadingScreen(); 
 
@@ -122,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function renderInventory() {
-        const inventoryDisplay = document.getElementById('inventory-display');
         if (!inventoryDisplay) return;
         inventoryDisplay.innerHTML = '';
         
@@ -234,6 +238,20 @@ document.addEventListener('DOMContentLoaded', () => {
             proceedWithPackOpening();
         });
     }
+
+    // START: New function to handle the info modal
+    function addInfoModalListeners() {
+        if (inventoryDisplay && currencyInfoOverlay && closeInfoBtn) {
+            inventoryDisplay.addEventListener('click', () => {
+                currencyInfoOverlay.style.display = 'flex';
+            });
+
+            closeInfoBtn.addEventListener('click', () => {
+                currencyInfoOverlay.style.display = 'none';
+            });
+        }
+    }
+    // END: New function
 
     function startOpeningAnimation(reelItems) {
         return new Promise(resolve => {
