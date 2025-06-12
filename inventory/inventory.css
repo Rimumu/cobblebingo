@@ -6,11 +6,11 @@
 }
 
 .inventory-grid {
-    display: grid;
-    /* Create a grid of compact 120px columns */
-    grid-template-columns: repeat(auto-fill, 120px);
-    justify-content: center; /* Center the whole grid block */
-    gap: 16px; /* Reduced gap for a tighter feel */
+    /* Using Flexbox for a more fluid layout */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center the group of items */
+    gap: 15px; /* Space between items */
     margin-top: 30px;
 }
 
@@ -18,7 +18,7 @@
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
-    padding: 10px; /* Reduced padding */
+    padding: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -27,9 +27,10 @@
     cursor: pointer;
     position: relative; 
     overflow: hidden;
-    /* New compact and square-like size */
+    
+    /* A fixed, more compact size */
     width: 120px;
-    height: 170px; 
+    height: 160px; 
     box-sizing: border-box;
 }
 
@@ -39,34 +40,36 @@
 }
 
 .item-image {
-    width: 64px; 
-    height: 64px;
-    margin-bottom: 8px; /* Reduced margin */
+    width: 60px; 
+    height: 60px;
+    margin-bottom: 5px; /* Tighter spacing */
     object-fit: contain;
     flex-shrink: 0;
 }
 
-/* New container for name and quantity for better control */
 .item-info {
-    margin-top: auto; /* Pushes this block to the bottom */
+    /* This container groups the text together */
+    margin-top: auto; /* This pushes the text to the bottom of the card */
+    padding-bottom: 2px;
 }
 
 .item-name {
     font-weight: bold;
-    font-size: 0.9em; 
+    font-size: 14px;
     line-height: 1.2;
-    margin: 0; /* Removed all margins */
+    margin: 0; /* Removed all extra spacing */
+    word-wrap: break-word; /* Helps with long names */
 }
 
 .item-quantity {
-    font-size: 1.1em; /* Reduced font size */
+    font-size: 1.1em;
     color: #4caf50;
     font-weight: bold;
     line-height: 1.1;
-    margin: 2px 0 0 0; /* Minimal top margin to bring it closer to the name */
+    margin-top: 2px; /* Minimal space between name and quantity */
 }
 
-/* --- Popup Styles (Unchanged but included for completeness) --- */
+/* --- Popup Styles --- */
 
 .item-popup-overlay {
     position: absolute;
