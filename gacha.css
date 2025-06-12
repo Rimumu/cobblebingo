@@ -188,7 +188,7 @@ body.loaded #mainContent {
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    transition: opacity 0.8s ease 0.5s, visibility 0.8s ease 0.5s; /* Add delay to fade-out */
+    transition: opacity 0.8s ease 0.5s, visibility 0.8s ease 0.5s; /* Delay fade out */
     opacity: 1;
     visibility: visible;
 }
@@ -196,6 +196,10 @@ body.loaded #mainContent {
 #loadingScreen.fade-out {
     opacity: 0;
     visibility: hidden;
+}
+
+body.loading {
+    overflow: hidden;
 }
 
 .loading-content-wrapper {
@@ -231,7 +235,7 @@ body.loaded #mainContent {
     height: 100%;
     border-radius: 50%;
     border: 3px solid;
-    transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Add transition for smooth collapse */
+    transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .portal-ring.ring-1 {
@@ -255,22 +259,23 @@ body.loaded #mainContent {
     font-size: 20px;
     font-weight: 600;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    display: flex; /* For wave effect */
 }
 
-.loading-progress-container {
-    width: 250px;
-    height: 8px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
-    overflow: hidden;
+.loading-text span {
+    display: inline-block;
+    animation: text-wave 1.6s ease-in-out infinite;
 }
 
-.loading-progress-bar {
-    width: 0%;
-    height: 100%;
-    background: linear-gradient(90deg, #4caf50, #81c784);
-    border-radius: 4px;
-    transition: width 0.3s ease-out;
+@keyframes text-wave {
+    0%, 100% {
+        transform: translateY(0);
+        color: #fff;
+    }
+    50% {
+        transform: translateY(-8px);
+        color: #81c784; /* Light green for the peak */
+    }
 }
 
 @keyframes spin-clockwise {
@@ -282,8 +287,8 @@ body.loaded #mainContent {
     to { transform: rotate(-360deg); }
 }
 @keyframes portal-pulse {
-    0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.5); }
+    0%, 100% { filter: brightness(1) saturate(1); }
+    50% { filter: brightness(1.5) saturate(1.2); }
 }
 
 .particles {
@@ -670,7 +675,6 @@ body.loaded #mainContent {
     height: 100%;
     background-size: 200% 100%;
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
     border: 2px solid grey; 
     box-sizing: border-box;
 }
