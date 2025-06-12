@@ -173,149 +173,7 @@ body.loaded #mainContent {
     transform: none;
 }
 
-
-/* --- Overhauled Gacha Loading Screen --- */
-#loadingScreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #0a0a0a;
-    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
-    background-size: 20px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    transition: opacity 0.8s ease 0.5s, visibility 0.8s ease 0.5s; /* Delay fade out */
-    opacity: 1;
-    visibility: visible;
-}
-
-#loadingScreen.fade-out {
-    opacity: 0;
-    visibility: hidden;
-}
-
-body.loading {
-    overflow: hidden;
-}
-
-.loading-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 40px;
-    transition: opacity 0.5s ease-in-out;
-}
-
-#loadingScreen.is-loaded .loading-content-wrapper {
-    opacity: 0;
-}
-
-.summoning-portal {
-    width: 150px;
-    height: 150px;
-    position: relative;
-    animation: portal-pulse 4s ease-in-out infinite;
-    transition: transform 1s ease-in-out;
-}
-
-#loadingScreen.is-loaded .summoning-portal {
-    transform: scale(0); /* Implode the portal when loaded */
-    animation: none; /* Stop the pulsing */
-}
-
-.portal-ring {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 3px solid;
-    transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-
-.portal-ring.ring-1 {
-    border-color: #ae4c4c;
-    box-shadow: 0 0 10px #ae4c4c, inset 0 0 10px #ae4c4c;
-    animation: spin-clockwise 4s linear infinite;
-}
-.portal-ring.ring-2 {
-    border-color: #2196f3;
-    box-shadow: 0 0 15px #2196f3, inset 0 0 15px #2196f3;
-    animation: spin-counter-clockwise 3s linear infinite;
-}
-.portal-ring.ring-3 {
-    border-color: #fff;
-    box-shadow: 0 0 5px #fff, inset 0 0 5px #fff;
-    animation: spin-clockwise 5s linear infinite;
-}
-
-.loading-text {
-    color: white;
-    font-size: 20px;
-    font-weight: 600;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    display: flex; /* For wave effect */
-}
-
-.loading-text span {
-    display: inline-block;
-    animation: text-wave 1.6s ease-in-out infinite;
-}
-
-@keyframes text-wave {
-    0%, 100% {
-        transform: translateY(0);
-        color: #fff;
-    }
-    50% {
-        transform: translateY(-8px);
-        color: #81c784; /* Light green for the peak */
-    }
-}
-
-@keyframes spin-clockwise {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-@keyframes spin-counter-clockwise {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(-360deg); }
-}
-@keyframes portal-pulse {
-    0%, 100% { filter: brightness(1) saturate(1); }
-    50% { filter: brightness(1.5) saturate(1.2); }
-}
-
-.particles {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-.particle {
-    position: absolute;
-    border-radius: 50%;
-    animation: particleFloat 6s linear infinite;
-    opacity: 0;
-    background: rgba(255, 255, 255, 0.7);
-    width: 5px; height: 5px;
-}
-@keyframes particleFloat {
-    0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
-    5%, 95% { opacity: 1; }
-    100% { transform: translateY(-5vh) scale(1); opacity: 0; }
-}
-
 /* --- Access Gate Styles --- */
-/* (This section and below are unchanged from previous versions) */
 .access-gate {
     position: fixed;
     top: 0;
@@ -675,6 +533,7 @@ body.loading {
     height: 100%;
     background-size: 200% 100%;
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
     border: 2px solid grey; 
     box-sizing: border-box;
 }
