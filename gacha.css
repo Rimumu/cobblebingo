@@ -624,12 +624,13 @@ body.loading {
     height: 100%;
     z-index: 4000;
     display: flex;
-    flex-direction: column; /* To stack name on top of pack */
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     background: rgba(0,0,0,0.85);
     backdrop-filter: blur(10px);
     gap: 30px;
+    perspective: 1000px;
 }
 
 #opening-pack-name {
@@ -637,57 +638,79 @@ body.loading {
     color: #fff;
     text-shadow: 0 3px 15px rgba(0,0,0,0.5);
     opacity: 0;
-    transform: translateY(20px);
 }
 
-.opening-pack-art.animate + #opening-pack-name, /* This is incorrect, the h2 is before the div */
 #opening-pack-name.animate {
-    animation: fade-in-up 2.5s ease-out forwards;
+    animation: fade-in-up 3s ease-out forwards;
+}
+
+.opening-pack-container {
+    position: relative;
+    width: 250px;
+    height: 350px;
+    transform-style: preserve-3d;
+}
+
+.opening-pack-container.animate {
+    animation: shake-pack 1.5s ease-in-out;
 }
 
 .opening-pack-art {
-    width: 250px;
-    height: 350px;
-    background: linear-gradient(145deg, #2c3e50, #34495e);
-    border-radius: 15px;
-    border: 2px solid #7f8c8d;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.3);
-    position: relative;
-    transform-style: preserve-3d;
-    transition: background 0.3s ease, border-color 0.3s ease;
-}
-
-/* Lamb Chop Pack Theme */
-.opening-pack-art.pack-theme-lamb_chop_pack {
-    background: linear-gradient(145deg, #a56d39, #6f4e2b);
-    border-color: #d2a679;
-}
-
-/* A5 Wagyu Pack Theme */
-.opening-pack-art.pack-theme-a5_wagyu_pack {
-    background: linear-gradient(145deg, #8c1c2f, #58121e);
-    border-color: #e57373;
-}
-
-
-.opening-pack-art.animate {
-    animation: shake-pack 2.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
-}
-
-.pack-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
     width: 100%;
-    height: 2px;
-    background: #f1c40f;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 15px 5px #f1c40f;
+    height: 100%;
+    position: absolute;
+    display: flex;
+}
+
+.pack-half {
+    width: 50%;
+    height: 100%;
+    background-size: 200% 100%; /* Make the background double wide */
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.pack-half.left {
+    border-radius: 15px 0 0 15px;
+    background-position: left;
+}
+.pack-half.right {
+    border-radius: 0 15px 15px 0;
+    background-position: right;
+}
+
+/* Pack Themes */
+.pack-theme-lamb_chop_pack .pack-half {
+    background-image: linear-gradient(145deg, #a56d39, #6f4e2b);
+    border: 2px solid #d2a679;
+}
+.pack-theme-a5_wagyu_pack .pack-half {
+    background-image: linear-gradient(145deg, #8c1c2f, #58121e);
+    border: 2px solid #e57373;
+}
+
+.pack-slash {
+    position: absolute;
+    top: -10%;
+    left: 50%;
+    width: 4px;
+    height: 120%;
+    background: linear-gradient(to bottom, transparent, white, transparent);
+    transform: rotate(20deg) translateX(-50%);
     opacity: 0;
+    filter: drop-shadow(0 0 10px white);
 }
-.opening-pack-art.animate .pack-glow {
-    animation: glow-line 2.5s ease-in-out forwards;
+
+.opening-pack-container.animate .pack-slash {
+    animation: slash-anim 0.5s ease-out 1.5s forwards;
 }
+
+.opening-pack-container.animate .pack-half.left {
+    animation: split-left 0.8s ease-out 1.7s forwards;
+}
+.opening-pack-container.animate .pack-half.right {
+    animation: split-right 0.8s ease-out 1.7s forwards;
+}
+
 
 @keyframes fade-in-up {
     0% { opacity: 0; transform: translateY(20px); }
@@ -696,24 +719,21 @@ body.loading {
     100% { opacity: 0; transform: translateY(-20px); }
 }
 
-
 @keyframes shake-pack {
-    0% { transform: translate(0, 0) rotate(0deg); }
-    10% { transform: translate(-2px, 2px) rotate(-1deg); }
-    20% { transform: translate(2px, -2px) rotate(1deg); }
-    30% { transform: translate(-2px, 2px) rotate(0deg); }
-    40% { transform: translate(2px, -2px) rotate(1deg); }
-    50% { transform: translate(-2px, 2px) rotate(-1deg); }
-    60% { transform: scale(1.05); }
-    70% { transform: scale(1.05) rotate(5deg); }
-    80% { transform: scale(1.05) rotate(-5deg); }
-    90% { transform: scale(1.2); }
-    100% { transform: scale(3); opacity: 0; }
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    20%, 60% { transform: translate(-2px, 2px) rotate(-1deg); }
+    40%, 80% { transform: translate(2px, -2px) rotate(1deg); }
 }
 
-@keyframes glow-line {
-    0%, 50% { opacity: 0; }
-    60% { opacity: 0.8; }
-    80% { opacity: 1; box-shadow: 0 0 30px 15px #f1c40f; }
-    100% { opacity: 0; }
+@keyframes slash-anim {
+    0% { transform: rotate(20deg) scaleY(0); opacity: 0; }
+    50% { transform: rotate(20deg) scaleY(1); opacity: 1; }
+    100% { transform: rotate(20deg) scaleY(1); opacity: 0; }
+}
+
+@keyframes split-left {
+    to { transform: translateX(-150%) rotateZ(-20deg); opacity: 0; }
+}
+@keyframes split-right {
+    to { transform: translateX(150%) rotateZ(20deg); opacity: 0; }
 }
