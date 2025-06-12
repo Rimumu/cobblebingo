@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- DOM Elements v1---
+    // --- DOM Elements 1---
     const mainContent = document.getElementById('mainContent');
     const accessGate = document.getElementById('access-gate-container');
     const loadingScreen = document.getElementById('loadingScreen');
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const p = new Promise((resolve) => {
                 const img = new Image();
                 img.onload = resolve;
-                img.onerror = resolve; 
+                img.onerror = resolve; // Always resolve even on error
                 img.src = url;
             });
             promises.push(p);
@@ -50,8 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Main Initialization ---
     async function initializeGachaPage() {
+        // This logic now matches the simple and effective Bingo page loading sequence
         const startTime = Date.now();
-        const minimumLoadTime = 2500; 
+        const minimumLoadTime = 2500; // A minimum time for the animation to feel substantial
 
         if (!token || token === 'undefined') {
             displayGateMessage('You must be logged in to access the Gacha Realm.', '/login.html', 'Login Now');
@@ -76,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const imageUrls = banners.map(b => b.image);
             await preloadImages(imageUrls);
 
-            // Enforce minimum loading time
             const elapsedTime = Date.now() - startTime;
             const remainingTime = Math.max(0, minimumLoadTime - elapsedTime);
             await new Promise(resolve => setTimeout(resolve, remainingTime));
