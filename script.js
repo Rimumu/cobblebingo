@@ -539,7 +539,7 @@ async function generateBingo() {
 
     document.getElementById('saveSessionBtn').style.display = 'none';
     
-    // **FIX:** The correct difficulty is passed directly to the rendering function.
+    // **FIX:** Pass the correct difficulty to the rendering function
     await renderBingoCard(cardData.cardData.pokemon, difficultyToUse); 
     initializeCompletedCells();
     checkForBingo();
@@ -562,9 +562,10 @@ function generateNewCard() {
   generateBingo();
 }
 
+// --- THIS FUNCTION HAS BEEN REWRITTEN FOR RELIABILITY ---
 async function renderBingoCard(selectedPokemon, difficulty) {
     const bingoCard = document.getElementById("bingoGrid");
-    bingoCard.innerHTML = "";
+    bingoCard.innerHTML = ""; // Clear the card before rendering
 
     const imageLoadPromises = [];
 
@@ -616,6 +617,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
                 const response = await fetch(cobblemonUrl);
                 if (!response.ok) throw new Error('Cobbledex image not found.');
                 const blob = await response.blob();
+                // Check if the image is the Cobbledex placeholder
                 const PLACEHOLDER_SIZE_MIN = 2160;
                 const PLACEHOLDER_SIZE_MAX = 2180;
                 if (blob.size >= PLACEHOLDER_SIZE_MIN && blob.size <= PLACEHOLDER_SIZE_MAX) {
