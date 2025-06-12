@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderInventory(inventory) {
-        if (inventory.length === 0) {
+        if (!inventory || inventory.length === 0) {
             inventoryGrid.innerHTML = '<p>Your inventory is empty. Try opening some packs in the Gacha Realm!</p>';
             return;
         }
@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         inventory.forEach(item => {
             const itemCard = document.createElement('div');
             itemCard.className = 'inventory-item-card';
+            // Add a dataset attribute to easily identify the card
+            itemCard.dataset.itemId = item.itemId; 
             
             const imageSrc = item.image || 'https://placehold.co/100x100/2E3A4D/FFF?text=Item';
             const imageStyle = imageSrc && imageSrc.includes('thenounproject') ? 'filter: invert(1);' : '';
@@ -39,63 +41,79 @@ document.addEventListener('DOMContentLoaded', () => {
             const pokeApiUrl = item.id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${item.id}.png` : '';
             const fallbackScript = item.id ? `this.onerror=null; this.src='${pokeApiUrl}';` : '';
 
-            // Add a "Use" button
+            // Updated structure with the hidden popup overlay
             itemCard.innerHTML = `
                 <img src="${imageSrc}" alt="${item.itemName}" class="item-image" style="${imageStyle}" onerror="${fallbackScript}">
                 <div class="item-name">${item.itemName}</div>
                 <div class="item-quantity">x${item.quantity}</div>
-                <button class="use-item-btn" data-item-id="${item.itemId}" data-item-name="${item.itemName}">Use</button>
+                <div class="item-popup-overlay">
+                    <button class="use-item-btn" data-item-name="${item.itemName}">Use</button>
+                </div>
             `;
             inventoryGrid.appendChild(itemCard);
         });
     }
 
-    // Add a single event listener for all "Use" buttons
+    // --- New event listener for smart click handling ---
     inventoryGrid.addEventListener('click', async (e) => {
-        if (!e.target.classList.contains('use-item-btn')) {
-            return;
-        }
+        const itemCard = e.target.closest('.inventory-item-card');
+        if (!itemCard) return;
 
-        const button = e.target;
-        const itemId = button.dataset.itemId;
-        const itemName = button.dataset.itemName;
+        // If the click is on the "Use" button
+        if (e.target.classList.contains('use-item-btn')) {
+            e.stopPropagation(); // Prevent the card click from re-triggering
+            const button = e.target;
+            const itemId = itemCard.dataset.itemId;
+            const itemName = button.dataset.itemName;
+            
+            if (confirm(`Are you sure you want to use one ${itemName}? This will send the item to you in-game.`)) {
+                button.disabled = true;
+                button.textContent = 'Using...';
 
-        if (confirm(`Are you sure you want to use one ${itemName}? This will send the item to you in-game.`)) {
-            button.disabled = true;
-            button.textContent = 'Using...';
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/inventory/use`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ itemId })
+                    });
+                    const data = await response.json();
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/inventory/use`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ itemId })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert(data.message);
-                    renderInventory(data.newInventory);
-                } else {
-                    // Check for our new specific error code
-                    if (data.errorCode === 'PLAYER_OFFLINE') {
-                        alert('Please login to the server to receive your item in-game!');
-                        // No inventory refresh is needed since the item was not used
+                    if (data.success) {
+                        alert(data.message);
+                        renderInventory(data.newInventory);
+                    } else {
+                        if (data.errorCode === 'PLAYER_OFFLINE') {
+                            alert('Please login to the server to receive your item in-game!');
+                        } else {
+                            throw new Error(data.error);
+                        }
                         button.disabled = false;
                         button.textContent = 'Use';
-                    } else {
-                        // Handle all other errors
-                        throw new Error(data.error);
                     }
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                    button.disabled = false;
+                    button.textContent = 'Use';
                 }
-
-            } catch (error) {
-                alert(`Error: ${error.message}`);
-                button.disabled = false;
-                button.textContent = 'Use';
+            }
+        // If the click is on the card itself (but not the button)
+        } else {
+            // Deactivate any other active cards first
+            const currentlyActive = document.querySelector('.inventory-item-card.active');
+            if (currentlyActive && currentlyActive !== itemCard) {
+                currentlyActive.classList.remove('active');
+            }
+            // Toggle the active state on the clicked card
+            itemCard.classList.toggle('active');
+        }
+    });
+    
+    // Add a listener to close the popup when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.inventory-item-card')) {
+            const currentlyActive = document.querySelector('.inventory-item-card.active');
+            if (currentlyActive) {
+                currentlyActive.classList.remove('active');
             }
         }
     });
