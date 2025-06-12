@@ -3,11 +3,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
     const inventoryGrid = document.getElementById('inventory-grid');
     
-    // --- START: New DOM elements for confirmation modal ---
+    // --- DOM elements for confirmation modal ---
     const confirmationOverlay = document.getElementById('item-confirmation-overlay');
     const confirmationMessage = document.getElementById('item-confirmation-message');
     const confirmBtn = document.getElementById('confirm-use-btn');
     const cancelBtn = document.getElementById('cancel-use-btn');
+
+    // --- START: New DOM elements for notice modal ---
+    const noticeOverlay = document.getElementById('item-notice-overlay');
+    const noticeTitle = document.getElementById('notice-title');
+    const noticeMessage = document.getElementById('notice-message');
+    const closeNoticeBtn = document.getElementById('close-notice-btn');
     // --- END: New DOM elements ---
 
     if (!token) {
@@ -15,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // --- START: New function to show custom confirmation ---
+    // --- Function to show custom confirmation ---
     function showConfirmation(itemName) {
         return new Promise(resolve => {
             confirmationMessage.textContent = `Are you sure you want to use one ${itemName}? This will send the item to you in-game.`;
@@ -38,8 +44,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 cancelBtn.removeEventListener('click', onCancel);
             };
 
-            confirmBtn.addEventListener('click', onConfirm);
-            cancelBtn.addEventListener('click', onCancel);
+            confirmBtn.addEventListener('click', onConfirm, { once: true });
+            cancelBtn.addEventListener('click', onCancel, { once: true });
+        });
+    }
+
+    // --- START: New function to show notice/warning modal ---
+    function showNotice(title, message) {
+        return new Promise(resolve => {
+            noticeTitle.textContent = title;
+            noticeMessage.textContent = message;
+            noticeOverlay.style.display = 'flex';
+
+            const onClose = () => {
+                noticeOverlay.style.display = 'none';
+                resolve();
+            };
+
+            closeNoticeBtn.addEventListener('click', onClose, { once: true });
         });
     }
     // --- END: New function ---
@@ -98,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemId = itemCard.dataset.itemId;
             const itemName = button.dataset.itemName;
             
-            // --- MODIFIED: Replaced confirm() with new custom modal ---
             const userConfirmed = await showConfirmation(itemName);
             if (userConfirmed) {
                 button.disabled = true;
@@ -113,11 +134,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = await response.json();
 
                     if (data.success) {
-                        alert(data.message);
+                        await showNotice('Success!', data.message);
                         renderInventory(data.newInventory);
                     } else {
+                        // --- MODIFIED: Replaced alert() with new notice modal ---
                         if (data.errorCode === 'PLAYER_OFFLINE') {
-                            alert('Please login to the server to receive your item in-game!');
+                            await showNotice('Player Offline', 'Please log in to the server to receive your item in-game!');
                         } else {
                             throw new Error(data.error);
                         }
@@ -125,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         button.textContent = 'Use';
                     }
                 } catch (error) {
-                    alert(`Error: ${error.message}`);
+                    await showNotice('Error', error.message);
                     button.disabled = false;
                     button.textContent = 'Use';
                 }
@@ -140,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.inventory-item-card') && !e.target.closest('.confirmation-overlay')) {
+        if (!e.target.closest('.inventory-item-card') && !e.target.closest('.confirmation-overlay') && !e.target.closest('.notice-overlay')) {
             const currentlyActive = document.querySelector('.inventory-item-card.active');
             if (currentlyActive) {
                 currentlyActive.classList.remove('active');
