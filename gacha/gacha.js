@@ -48,13 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const p = new Promise((resolve) => {
                 const img = new Image();
                 img.onload = resolve;
-                img.onerror = resolve; // Always resolve even on error
+                img.onerror = resolve; 
                 img.src = url;
             });
             promises.push(p);
         });
 
-        // Track progress for all images
         const progressPromises = promises.map(p => 
             p.then(() => {
                 loadedCount++;
@@ -93,10 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // --- NEW: Final animation sequence ---
-            pokeballLoader.classList.add('is-loaded'); // Trigger the open/glow animation
+            loadingScreen.classList.add('is-loaded');
 
-            // Wait for the open/glow animation to finish
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
             userInventory = new Map(user.inventory.map(item => [item.itemId, item]));
             
