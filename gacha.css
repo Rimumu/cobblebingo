@@ -511,12 +511,21 @@ body.loading {
     text-shadow: 1px 1px 2px black;
 }
 
-/* Rarity Backgrounds */
+/* --- Rarity Backgrounds --- */
 .reel-item.common { background-color: #4b5563; }
 .reel-item.common::before { background-color: #9ca3af; }
+
+.reel-item.uncommon { background-color: #166534; }
+.reel-item.uncommon::before { background-color: #4ade80; }
 
 .reel-item.rare { background-color: #1d4ed8; }
 .reel-item.rare::before { background-color: #60a5fa; }
 
+.reel-item.epic { background-color: #6b21a8; }
+.reel-item.epic::before { background-color: #c084fc; }
+
 .reel-item.legendary { background-color: #a16207; }
 .reel-item.legendary::before { background-color: #facc15; }
+
+.reel-item.mythic { background-color: #991b1b; }
+.reel-item.mythic::before { background-color: #f87171; }
