@@ -615,7 +615,7 @@ body.loading {
     stroke-width: 3;
 }
 
-/* --- Pack Intro Animation Styles --- */
+/* --- FINAL Pack Intro Animation Styles --- */
 #pack-opening-intro-overlay {
     position: fixed;
     top: 0;
@@ -661,7 +661,8 @@ body.loading {
     position: absolute;
     display: flex;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    /* The outer drop shadow now lives here */
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
 }
 
 .pack-half {
@@ -669,7 +670,7 @@ body.loading {
     height: 100%;
     background-size: 200% 100%;
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
+    /* Each half has ONLY a border, no shadow */
     border: 2px solid grey; 
     box-sizing: border-box;
 }
@@ -683,7 +684,7 @@ body.loading {
     border-radius: 0 15px 15px 0;
     background-position: right center;
     border-left: none;
-    /* This negative margin is what hides the seam */
+    /* Using negative margin to perfectly overlap the halves and hide the seam */
     margin-left: -2px; 
 }
 
