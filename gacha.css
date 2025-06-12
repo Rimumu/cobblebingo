@@ -108,8 +108,19 @@ body.loaded #mainContent {
 
 .banner-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(76, 175, 80, 0.3);
+    /* Generic glow is removed in favor of specific ones below */
 }
+
+/* START: New theme-specific glow effects */
+.banner-card.lamb_chop_pack:hover {
+    box-shadow: 0 0 30px rgba(210, 166, 121, 0.5);
+}
+
+.banner-card.a5_wagyu_pack:hover {
+    box-shadow: 0 0 30px rgba(229, 115, 115, 0.5);
+}
+/* END: New theme-specific glow effects */
+
 
 .banner-image {
     position: absolute;
