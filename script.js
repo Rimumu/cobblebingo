@@ -322,7 +322,10 @@ async function saveSession(sessionId, sessionName, token) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/session/${sessionId}/save`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ sessionName })
     });
     const data = await response.json();
@@ -605,20 +608,22 @@ async function renderBingoCard(selectedPokemon, difficulty) {
             cell.appendChild(rarity);
         }
 
-        // --- RESTORED: Robust Image Fallback Logic ---
+        // --- FULLY RESTORED: Robust Image Fallback Logic ---
         const loadPromise = new Promise(async (resolve) => {
             const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${pokemon.name.toLowerCase().replace(/\s+/g, "_")}.webp`;
             try {
                 const response = await fetch(cobblemonUrl);
                 if (!response.ok) throw new Error('Cobbledex image not found.');
                 const blob = await response.blob();
-                // Check if the image is the Cobbledex placeholder
-                if (blob.size > 2160 && blob.size < 2180) {
+                const PLACEHOLDER_SIZE_MIN = 2160;
+                const PLACEHOLDER_SIZE_MAX = 2180;
+                if (blob.size >= PLACEHOLDER_SIZE_MIN && blob.size <= PLACEHOLDER_SIZE_MAX) {
                     throw new Error("Placeholder image detected");
                 }
                 const objectUrl = URL.createObjectURL(blob);
                 img.src = objectUrl;
-                img.onload = () => URL.revokeObjectURL(objectUrl); // Clean up memory
+                // Clean up the object URL once the image is loaded to free memory
+                img.onload = () => URL.revokeObjectURL(objectUrl);
             } catch (error) {
                 console.warn(`Cobbledex failed for ${pokemon.name}, falling back to PokeAPI.`);
                 if (pokemon.id) {
@@ -628,9 +633,10 @@ async function renderBingoCard(selectedPokemon, difficulty) {
                     img.alt = `${pokemon.name} (Image not available)`;
                 }
             }
-            // Always resolve the promise so the page doesn't hang
-            img.onload = resolve;
-            img.onerror = resolve;
+            // Always resolve the promise so the page doesn't hang, even if the final image fails
+            const finalResolve = () => resolve();
+            img.addEventListener('load', finalResolve, { once: true });
+            img.addEventListener('error', finalResolve, { once: true });
         });
         imageLoadPromises.push(loadPromise);
     };
@@ -640,7 +646,6 @@ async function renderBingoCard(selectedPokemon, difficulty) {
         cell.className = "bingo-cell";
         const isLegendary = pokemon.rarity?.toLowerCase() === 'legendary';
 
-        // **FIX:** Use the reliable 'difficulty' parameter for styling decisions
         if (index === 12) {
             if (isLegendary) {
                 renderPokemonCell(cell, pokemon, true);
