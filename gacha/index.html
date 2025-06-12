@@ -58,7 +58,7 @@
     <div id="mainContent" style="display: none;">
         <div id="account-widget" class="account-widget"></div>
         
-        <div id="inventory-display" class="inventory-display">
+        <div id="inventory-display" class="inventory-display" title="How to get packs?">
             </div>
         <header class="gacha-header">
             <h1>Featured Packs</h1>
@@ -98,6 +98,16 @@
             </div>
         </div>
     </div>
+
+    <!-- START: New Currency Info Modal -->
+    <div id="currency-info-overlay" class="info-overlay" style="display: none;">
+        <div class="info-window">
+            <h2>How to Get Packs</h2>
+            <p>To get these pull currencies, you can redeem codes. You can get these codes by winning tournaments or bingo events. Additionally, five codes will be scattered randomly within 1000 blocks of spawn every day. You can also get a code by gifting 1 sub on Nisa's Twitch channel!</p>
+            <button id="close-info-btn" class="info-btn">Got it!</button>
+        </div>
+    </div>
+    <!-- END: New Currency Info Modal -->
 
     <script src="../auth.js"></script>
     <script src="gacha.js"></script>
