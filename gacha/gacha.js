@@ -89,8 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const remainingTime = Math.max(0, minimumLoadTime - elapsedTime);
             await new Promise(resolve => setTimeout(resolve, remainingTime));
 
-            // Final animation sequence
+            // --- Final animation sequence ---
             loadingScreen.classList.add('is-loaded');
+
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             userInventory = new Map(user.inventory.map(item => [item.itemId, item]));
@@ -305,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         setTimeout(() => {
             loadingScreen.style.display = "none";
-        }, 1300); // Increased timeout to match CSS transition
+        }, 1300);
         
         document.body.classList.remove("loading");
     }
