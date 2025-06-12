@@ -404,7 +404,7 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
         const legendaryPokemon = selectFromCategory('legendary', 1)[0];
         selected.splice(12, 0, legendaryPokemon || { name: "LEGENDARY", rarity: "legendary", biome: "Legendary", id: "0" });
     } else if(difficulty === 'nightmare') {
-        const centerLegendary = selected.splice(0, 1)[0]; // Take one legendary for the center
+        const centerLegendary = selected.splice(0, 1)[0]; 
         selected = shuffle(selected);
         selected.splice(12, 0, centerLegendary);
     }
@@ -565,12 +565,18 @@ async function renderBingoCard(selectedPokemon) {
 
     const imageLoadPromises = [];
 
-    const renderPokemonCell = (cell, pokemon, isCenter) => {
-        if (isCenter) cell.classList.add("legendary-center");
+    const renderPokemonCell = (cell, pokemon, isLegendaryStyled) => {
+        if (isLegendaryStyled) {
+            cell.classList.add("legendary-center");
+        }
+        
         cell.style.cursor = "pointer";
-        cell.addEventListener("click", () => toggleCellCompletion(Array.from(bingoCard.children).indexOf(cell)));
+        cell.addEventListener("click", () => {
+            const index = Array.from(bingoCard.children).indexOf(cell);
+            toggleCellCompletion(index);
+        });
 
-        setupTooltipEvents(cell, `Biome: ${pokemon.biome}`, isCenter);
+        setupTooltipEvents(cell, `Biome: ${pokemon.biome}`, isLegendaryStyled);
         
         const wrapper = document.createElement("a");
         wrapper.className = "pokemon-img-link";
@@ -599,15 +605,20 @@ async function renderBingoCard(selectedPokemon) {
             cell.appendChild(rarity);
         }
 
-        // --- Restored Image Fallback Logic ---
+        // --- RESTORED: Robust Image Fallback Logic ---
         const loadPromise = new Promise(async (resolve) => {
             const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${pokemon.name.toLowerCase().replace(/\s+/g, "_")}.webp`;
             try {
                 const response = await fetch(cobblemonUrl);
                 if (!response.ok) throw new Error('Cobbledex image not found.');
                 const blob = await response.blob();
-                if (blob.size > 2160 && blob.size < 2180) throw new Error('Placeholder image detected.');
-                img.src = URL.createObjectURL(blob);
+                const PLACEHOLDER_SIZE_MIN = 2160;
+                const PLACEHOLDER_SIZE_MAX = 2180;
+                if (blob.size >= PLACEHOLDER_SIZE_MIN && blob.size <= PLACEHOLDER_SIZE_MAX) {
+                    throw new Error("Placeholder image detected");
+                }
+                const objectUrl = URL.createObjectURL(blob);
+                img.src = objectUrl;
             } catch (error) {
                 console.warn(`Cobbledex failed for ${pokemon.name}, falling back to PokeAPI.`);
                 if (pokemon.id) {
@@ -638,7 +649,7 @@ async function renderBingoCard(selectedPokemon) {
                 cell.style.color = "#000";
             }
         } else if (difficulty === 'nightmare' && isLegendary) {
-            renderPokemonCell(cell, pokemon, true); // Style all legendaries on Nightmare
+            renderPokemonCell(cell, pokemon, true);
         } else {
             renderPokemonCell(cell, pokemon, false);
         }
@@ -648,7 +659,6 @@ async function renderBingoCard(selectedPokemon) {
 
     await Promise.all(imageLoadPromises);
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
   setupColorSchemeSelector();
@@ -661,8 +671,6 @@ document.addEventListener("DOMContentLoaded", () => {
     generateBingo();
   }
 });
-
-// ... (Rest of the functions like drawBingoLine, checkForBingo, toggleCellCompletion, etc. remain unchanged) ...
 
 function drawBingoLine(cellIndices, lineType) {
   const grid = document.getElementById("bingoGrid");
@@ -737,10 +745,8 @@ function checkForBingo() {
       grid.classList.remove("bingo-celebration");
     }, 3000);
     showBingoMessage(bingoCount);
-    console.log(`BINGO! ${bingoCount} line${bingoCount > 1 ? "s" : ""} completed!`);
   }
   currentBingoCount = bingoCount;
-  return bingoCount;
 }
 
 let completedCells = Array(25).fill(false);
@@ -805,12 +811,8 @@ async function toggleCellCompletion(index) {
 
 document.getElementById("exportBtn").addEventListener("click", async () => {
   const card = document.getElementById("bingoCard");
-  if (!card) {
-    alert("No bingo card to export. Please generate a card first.");
-    return;
-  }
+  if (!card) return alert("No bingo card to export. Please generate a card first.");
   const exportBtn = document.getElementById("exportBtn");
-  const originalText = exportBtn.textContent;
   exportBtn.textContent = "Exporting...";
   exportBtn.disabled = true;
   try {
@@ -819,52 +821,25 @@ document.getElementById("exportBtn").addEventListener("click", async () => {
       if (img.src && !img.src.startsWith("data:")) {
         try {
           const base64 = await imageToBase64(img);
-          if (base64) {
-            img.src = base64;
-          }
+          if (base64) img.src = base64;
         } catch (error) {
           console.warn("Failed to convert image to base64:", error);
         }
       }
     }
     await new Promise((resolve) => setTimeout(resolve, 300));
-    const originalCardStyle = {
-      margin: card.style.margin,
-      boxShadow: card.style.boxShadow,
-    };
-    card.style.margin = "0";
-    card.style.boxShadow = "none";
     const canvas = await html2canvas(card, {
-      useCORS: true, allowTaint: true, scale: 2, backgroundColor: null, logging: false,
-      width: card.scrollWidth, height: card.scrollHeight,
-      onclone: (clonedDoc) => {
-        const clonedCard = clonedDoc.getElementById("bingoCard");
-        if (clonedCard) {
-          clonedCard.style.margin = "0";
-          clonedCard.style.boxShadow = "none";
-          const badges = clonedCard.querySelectorAll(".rarity-badge");
-          badges.forEach((badge) => {
-            badge.style.textRendering = "geometricPrecision";
-            badge.style.fontKerning = "normal";
-            badge.style.fontSmoothing = "antialiased";
-            badge.style.webkitFontSmoothing = "antialiased";
-          });
-        }
-      },
+      useCORS: true, allowTaint: true, scale: 2, backgroundColor: null, logging: false
     });
-    card.style.margin = originalCardStyle.margin;
-    card.style.boxShadow = originalCardStyle.boxShadow;
     const link = document.createElement("a");
     link.download = `cobblemon_bingo_card_${Date.now()}.png`;
     link.href = canvas.toDataURL("image/png", 1.0);
-    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
   } catch (error) {
     console.error("Error exporting card:", error);
     alert("Error exporting card. Please try again.");
   } finally {
-    exportBtn.textContent = originalText;
+    exportBtn.textContent = "Export Card as PNG";
     exportBtn.disabled = false;
   }
 });
@@ -878,8 +853,6 @@ function clearCompleted() {
   }
   document.querySelectorAll(".bingo-cell").forEach((cell, index) => {
     cell.classList.toggle("completed", completedCells[index]);
-    const existingCheckmark = cell.querySelector(".manual-checkmark");
-    if (existingCheckmark) existingCheckmark.remove();
   });
   document.querySelectorAll(".bingo-line").forEach((el) => el.remove());
   if (currentSessionId) {
@@ -903,9 +876,7 @@ function cleanupTooltips() {
     tooltip.remove();
   });
   document.querySelectorAll(".bingo-cell").forEach((cell) => {
-    if (cell.tooltipCleanup) {
-      cell.tooltipCleanup();
-    }
+    if (cell.tooltipCleanup) cell.tooltipCleanup();
   });
 }
 
