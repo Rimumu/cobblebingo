@@ -536,7 +536,8 @@ async function generateBingo() {
 
     document.getElementById('saveSessionBtn').style.display = 'none';
     
-    await renderBingoCard(cardData.cardData.pokemon);
+    // **FIX:** Pass the correct difficulty to the rendering function
+    await renderBingoCard(cardData.cardData.pokemon, difficultyToUse); 
     initializeCompletedCells();
     checkForBingo();
 
@@ -558,9 +559,8 @@ function generateNewCard() {
   generateBingo();
 }
 
-async function renderBingoCard(selectedPokemon) {
+async function renderBingoCard(selectedPokemon, difficulty) {
     const bingoCard = document.getElementById("bingoGrid");
-    const difficulty = document.getElementById("difficulty").value;
     bingoCard.innerHTML = "";
 
     const imageLoadPromises = [];
@@ -612,13 +612,13 @@ async function renderBingoCard(selectedPokemon) {
                 const response = await fetch(cobblemonUrl);
                 if (!response.ok) throw new Error('Cobbledex image not found.');
                 const blob = await response.blob();
-                const PLACEHOLDER_SIZE_MIN = 2160;
-                const PLACEHOLDER_SIZE_MAX = 2180;
-                if (blob.size >= PLACEHOLDER_SIZE_MIN && blob.size <= PLACEHOLDER_SIZE_MAX) {
+                // Check if the image is the Cobbledex placeholder
+                if (blob.size > 2160 && blob.size < 2180) {
                     throw new Error("Placeholder image detected");
                 }
                 const objectUrl = URL.createObjectURL(blob);
                 img.src = objectUrl;
+                img.onload = () => URL.revokeObjectURL(objectUrl); // Clean up memory
             } catch (error) {
                 console.warn(`Cobbledex failed for ${pokemon.name}, falling back to PokeAPI.`);
                 if (pokemon.id) {
@@ -628,7 +628,9 @@ async function renderBingoCard(selectedPokemon) {
                     img.alt = `${pokemon.name} (Image not available)`;
                 }
             }
-            resolve();
+            // Always resolve the promise so the page doesn't hang
+            img.onload = resolve;
+            img.onerror = resolve;
         });
         imageLoadPromises.push(loadPromise);
     };
@@ -638,6 +640,7 @@ async function renderBingoCard(selectedPokemon) {
         cell.className = "bingo-cell";
         const isLegendary = pokemon.rarity?.toLowerCase() === 'legendary';
 
+        // **FIX:** Use the reliable 'difficulty' parameter for styling decisions
         if (index === 12) {
             if (isLegendary) {
                 renderPokemonCell(cell, pokemon, true);
@@ -649,7 +652,7 @@ async function renderBingoCard(selectedPokemon) {
                 cell.style.color = "#000";
             }
         } else if (difficulty === 'nightmare' && isLegendary) {
-            renderPokemonCell(cell, pokemon, true);
+            renderPokemonCell(cell, pokemon, true); // Style all legendaries on Nightmare
         } else {
             renderPokemonCell(cell, pokemon, false);
         }
@@ -671,6 +674,8 @@ document.addEventListener("DOMContentLoaded", () => {
     generateBingo();
   }
 });
+
+// ... (Rest of the functions like drawBingoLine, checkForBingo, toggleCellCompletion, etc. remain unchanged) ...
 
 function drawBingoLine(cellIndices, lineType) {
   const grid = document.getElementById("bingoGrid");
