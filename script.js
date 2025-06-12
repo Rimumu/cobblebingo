@@ -562,13 +562,15 @@ function generateNewCard() {
   generateBingo();
 }
 
+// --- THIS FUNCTION HAS BEEN REWRITTEN FOR RELIABILITY ---
 async function renderBingoCard(selectedPokemon, difficulty) {
     const bingoCard = document.getElementById("bingoGrid");
-    bingoCard.innerHTML = "";
+    bingoCard.innerHTML = ""; // Clear the card before rendering
 
     const imageLoadPromises = [];
 
-    const renderPokemonCell = (cell, pokemon, isLegendaryStyled) => {
+    // This is a helper function to avoid repeating the complex image loading code
+    const createPokemonCell = (cell, pokemon, isLegendaryStyled) => {
         if (isLegendaryStyled) {
             cell.classList.add("legendary-center");
         }
@@ -622,7 +624,6 @@ async function renderBingoCard(selectedPokemon, difficulty) {
                 }
                 const objectUrl = URL.createObjectURL(blob);
                 img.src = objectUrl;
-                // Clean up the object URL once the image is loaded to free memory
                 img.onload = () => URL.revokeObjectURL(objectUrl);
             } catch (error) {
                 console.warn(`Cobbledex failed for ${pokemon.name}, falling back to PokeAPI.`);
@@ -633,7 +634,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
                     img.alt = `${pokemon.name} (Image not available)`;
                 }
             }
-            // Always resolve the promise so the page doesn't hang, even if the final image fails
+            // Use a separate resolver for load/error to ensure Promise.all continues
             const finalResolve = () => resolve();
             img.addEventListener('load', finalResolve, { once: true });
             img.addEventListener('error', finalResolve, { once: true });
@@ -646,9 +647,10 @@ async function renderBingoCard(selectedPokemon, difficulty) {
         cell.className = "bingo-cell";
         const isLegendary = pokemon.rarity?.toLowerCase() === 'legendary';
 
-        if (index === 12) {
+        // **FIX:** The logic now uses the reliable 'difficulty' parameter for all styling decisions
+        if (index === 12) { // Center Cell Logic
             if (isLegendary) {
-                renderPokemonCell(cell, pokemon, true);
+                createPokemonCell(cell, pokemon, true); // Style as legendary
             } else {
                 cell.textContent = "FREE";
                 cell.style.backgroundColor = "#ffd700";
@@ -656,10 +658,12 @@ async function renderBingoCard(selectedPokemon, difficulty) {
                 cell.style.fontSize = "18px";
                 cell.style.color = "#000";
             }
-        } else if (difficulty === 'nightmare' && isLegendary) {
-            renderPokemonCell(cell, pokemon, true); // Style all legendaries on Nightmare
-        } else {
-            renderPokemonCell(cell, pokemon, false);
+        } else { // Logic for all other cells
+            if (difficulty === 'nightmare' && isLegendary) {
+                createPokemonCell(cell, pokemon, true); // Style as legendary on Nightmare
+            } else {
+                createPokemonCell(cell, pokemon, false); // Style as normal
+            }
         }
         
         bingoCard.appendChild(cell);
@@ -667,6 +671,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
 
     await Promise.all(imageLoadPromises);
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
   setupColorSchemeSelector();
@@ -679,8 +684,6 @@ document.addEventListener("DOMContentLoaded", () => {
     generateBingo();
   }
 });
-
-// ... (Rest of the functions like drawBingoLine, checkForBingo, toggleCellCompletion, etc. remain unchanged) ...
 
 function drawBingoLine(cellIndices, lineType) {
   const grid = document.getElementById("bingoGrid");
