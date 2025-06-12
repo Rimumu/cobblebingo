@@ -648,23 +648,26 @@ async function renderBingoCard(selectedPokemon, difficulty) {
         cell.className = "bingo-cell";
         const isLegendary = pokemon.rarity?.toLowerCase() === 'legendary';
 
-        // **FIX:** The logic now uses the reliable 'difficulty' parameter for all styling decisions
-        if (index === 12) { // Center Cell Logic
-            if (isLegendary) {
-                createPokemonCell(cell, pokemon, true); // Style as legendary
-            } else {
-                cell.textContent = "FREE";
-                cell.style.backgroundColor = "#ffd700";
-                cell.style.fontWeight = "bold";
-                cell.style.fontSize = "18px";
-                cell.style.color = "#000";
+        // Determine if the special legendary styling should be applied
+        let styleAsLegendary = false;
+        if (isLegendary) {
+            if (difficulty === 'nightmare') {
+                styleAsLegendary = true;
+            } else if (difficulty === 'insane' && index === 12) {
+                styleAsLegendary = true;
             }
-        } else { // Logic for all other cells
-            if (difficulty === 'nightmare' && isLegendary) {
-                createPokemonCell(cell, pokemon, true); // Style all legendaries on Nightmare
-            } else {
-                createPokemonCell(cell, pokemon, false); // Style as normal
-            }
+        }
+        
+        // Handle the center cell specifically if it's a "Free Space"
+        if (index === 12 && pokemon.name === 'Free Space') {
+            cell.textContent = "FREE";
+            cell.style.backgroundColor = "#ffd700";
+            cell.style.fontWeight = "bold";
+            cell.style.fontSize = "18px";
+            cell.style.color = "#000";
+        } else {
+            // For all other cells (including legendary ones), use the helper
+            createPokemonCell(cell, pokemon, styleAsLegendary);
         }
         
         bingoCard.appendChild(cell);
@@ -718,9 +721,9 @@ function showBingoMessage(count) {
   message.className = "bingo-message";
 
   if (count === 1) {
-    message.textContent = "🎉 BINGO! 🎉";
+    message.textContent = "脂 BINGO! 脂";
   } else {
-    message.textContent = `🎉 ${count} BINGOS! 🎉`;
+    message.textContent = `脂 ${count} BINGOS! 脂`;
   }
 
   document.body.appendChild(message);
