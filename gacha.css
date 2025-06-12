@@ -409,7 +409,6 @@ body.loading {
     gap: 10px;
 }
 
-/* New style for the reward image */
 #reward-image {
     width: 120px;
     height: 120px;
@@ -450,7 +449,7 @@ body.loading {
 
 .reel-marker {
     width: 4px;
-    height: 180px; /* Taller than the reel items */
+    height: 180px;
     background: #ffd700;
     position: absolute;
     z-index: 10;
@@ -460,18 +459,17 @@ body.loading {
 
 .reel-container {
     width: 100vw;
-    overflow: hidden; /* This prevents items from showing outside the animation area */
+    overflow: hidden;
 }
 
 .reel {
     display: flex;
     height: 150px;
-    /* This transition is the core of the smooth animation */
     transition: transform 7s cubic-bezier(0.1, 0.4, 0.2, 1);
 }
 
 .reel-item {
-    flex-shrink: 0; /* Prevents items from squishing */
+    flex-shrink: 0;
     width: 150px;
     height: 150px;
     margin: 0 5px;
@@ -483,7 +481,6 @@ body.loading {
     padding: 10px;
     position: relative;
     overflow: hidden;
-    /* This is the critical fix for pixel-perfect calculations */
     box-sizing: border-box; 
 }
 
@@ -616,4 +613,71 @@ body.loading {
     width: 20px;
     height: 20px;
     stroke-width: 3;
+}
+
+/* --- NEW: Pack Intro Animation Styles --- */
+#pack-opening-intro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+}
+
+.opening-pack-art {
+    width: 250px;
+    height: 350px;
+    background: linear-gradient(145deg, #2c3e50, #34495e);
+    border-radius: 15px;
+    border: 2px solid #7f8c8d;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.3);
+    position: relative;
+    transform-style: preserve-3d;
+}
+
+.opening-pack-art.animate {
+    animation: shake-pack 2.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+
+.pack-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #f1c40f;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px 5px #f1c40f;
+    opacity: 0;
+}
+.opening-pack-art.animate .pack-glow {
+    animation: glow-line 2.5s ease-in-out forwards;
+}
+
+
+@keyframes shake-pack {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-2px, 2px) rotate(-1deg); }
+    20% { transform: translate(2px, -2px) rotate(1deg); }
+    30% { transform: translate(-2px, 2px) rotate(0deg); }
+    40% { transform: translate(2px, -2px) rotate(1deg); }
+    50% { transform: translate(-2px, 2px) rotate(-1deg); }
+    60% { transform: scale(1.05); }
+    70% { transform: scale(1.05) rotate(5deg); }
+    80% { transform: scale(1.05) rotate(-5deg); }
+    90% { transform: scale(1.2); }
+    100% { transform: scale(3); opacity: 0; }
+}
+
+@keyframes glow-line {
+    0%, 50% { opacity: 0; }
+    60% { opacity: 0.8; }
+    80% { opacity: 1; box-shadow: 0 0 30px 15px #f1c40f; }
+    100% { opacity: 0; }
 }
