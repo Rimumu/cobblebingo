@@ -288,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function hideLoadingScreen() {
+        const loadingScreen = document.getElementById("loadingScreen");
         loadingScreen.classList.add("fade-out");
         document.body.classList.add("loaded"); 
         
