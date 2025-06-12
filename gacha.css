@@ -615,7 +615,7 @@ body.loading {
     stroke-width: 3;
 }
 
-/* --- NEW: Pack Intro Animation Styles --- */
+/* --- Pack Intro Animation Styles --- */
 #pack-opening-intro-overlay {
     position: fixed;
     top: 0;
@@ -624,10 +624,25 @@ body.loading {
     height: 100%;
     z-index: 4000;
     display: flex;
+    flex-direction: column; /* To stack name on top of pack */
     justify-content: center;
     align-items: center;
     background: rgba(0,0,0,0.85);
     backdrop-filter: blur(10px);
+    gap: 30px;
+}
+
+#opening-pack-name {
+    font-size: 2.5em;
+    color: #fff;
+    text-shadow: 0 3px 15px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.opening-pack-art.animate + #opening-pack-name, /* This is incorrect, the h2 is before the div */
+#opening-pack-name.animate {
+    animation: fade-in-up 2.5s ease-out forwards;
 }
 
 .opening-pack-art {
@@ -639,7 +654,21 @@ body.loading {
     box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.3);
     position: relative;
     transform-style: preserve-3d;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
+
+/* Lamb Chop Pack Theme */
+.opening-pack-art.pack-theme-lamb_chop_pack {
+    background: linear-gradient(145deg, #a56d39, #6f4e2b);
+    border-color: #d2a679;
+}
+
+/* A5 Wagyu Pack Theme */
+.opening-pack-art.pack-theme-a5_wagyu_pack {
+    background: linear-gradient(145deg, #8c1c2f, #58121e);
+    border-color: #e57373;
+}
+
 
 .opening-pack-art.animate {
     animation: shake-pack 2.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
@@ -658,6 +687,13 @@ body.loading {
 }
 .opening-pack-art.animate .pack-glow {
     animation: glow-line 2.5s ease-in-out forwards;
+}
+
+@keyframes fade-in-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    20% { opacity: 1; transform: translateY(0); }
+    80% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
 }
 
 
