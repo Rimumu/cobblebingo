@@ -174,7 +174,7 @@ body.loaded #mainContent {
 }
 
 
-/* --- NEW Gacha Loading Screen Styles --- */
+/* --- Overhauled Gacha Loading Screen --- */
 #loadingScreen {
     position: fixed;
     top: 0;
@@ -182,109 +182,79 @@ body.loaded #mainContent {
     width: 100%;
     height: 100%;
     background-color: #0a0a0a;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
+    background-size: 20px 20px;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
     transition: opacity 0.8s ease, visibility 0.8s ease;
-    flex-direction: column;
+    opacity: 1;
+    visibility: visible;
+}
+
+#loadingScreen.is-loaded {
+    /* When loading is complete, this class triggers the final animation */
+    background: #fff;
+    transition: background 0.3s ease-out 1s;
 }
 
 #loadingScreen.fade-out {
     opacity: 0;
     visibility: hidden;
+    transition: opacity 0.5s ease 0.5s, visibility 0.5s ease 0.5s;
 }
 
-body.loading {
-    overflow: hidden;
-}
-
-.loading-container {
+.loading-content-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 25px;
+    gap: 40px;
+    transition: opacity 0.5s;
 }
 
-.pokeball-loader {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    animation: shake-pokeball 1.2s cubic-bezier(.36,.07,.19,.97) infinite;
-}
-
-.pokeball-loader.is-loaded {
-    animation: none; /* Stop shaking when loading is done */
-}
-
-.pokeball-top, .pokeball-bottom, .pokeball-middle {
-    position: absolute;
-    left: 0;
-    width: 100px;
-    height: 50px;
-    transition: transform 0.5s ease-out;
-}
-
-.pokeball-top {
-    top: 0;
-    background: #f44336;
-    border-radius: 50px 50px 0 0;
-    border-bottom: 4px solid #000;
-}
-
-.pokeball-loader.is-loaded .pokeball-top {
-    animation: open-top 0.5s ease-out 0.2s forwards;
-}
-
-.pokeball-bottom {
-    bottom: 0;
-    background: #fff;
-    border-radius: 0 0 50px 50px;
-    border-top: 4px solid #000;
-}
-
-.pokeball-loader.is-loaded .pokeball-bottom {
-    animation: open-bottom 0.5s ease-out 0.2s forwards;
-}
-
-.pokeball-middle {
-    top: 50%;
-    transform: translateY(-50%);
-    height: 8px;
-    background: #000;
-}
-
-.pokeball-button {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 24px;
-    height: 24px;
-    background: #fff;
-    border-radius: 50%;
-    border: 4px solid #000;
-    transition: opacity 0.2s ease;
-}
-
-.pokeball-loader.is-loaded .pokeball-button {
+#loadingScreen.is-loaded .loading-content-wrapper {
     opacity: 0;
 }
 
-.pokeball-light {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
-    background: #ddd;
-    border-radius: 50%;
-    animation: pokeball-light-glow 1.2s ease-in-out infinite;
+
+.summoning-portal {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    animation: portal-pulse 4s ease-in-out infinite;
 }
 
-.pokeball-loader.is-loaded .pokeball-light {
-    animation: final-glow 1.5s ease-in-out forwards 0.5s;
+.portal-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid;
+}
+
+.portal-ring.ring-1 {
+    border-color: #ae4c4c;
+    box-shadow: 0 0 10px #ae4c4c, inset 0 0 10px #ae4c4c;
+    animation: spin-clockwise 4s linear infinite;
+}
+.portal-ring.ring-2 {
+    border-color: #2196f3;
+    box-shadow: 0 0 15px #2196f3, inset 0 0 15px #2196f3;
+    transform: scale(0.75);
+    animation: spin-counter-clockwise 3s linear infinite;
+}
+.portal-ring.ring-3 {
+    border-color: #fff;
+    box-shadow: 0 0 5px #fff, inset 0 0 5px #fff;
+    transform: scale(0.5);
+    animation: spin-clockwise 5s linear infinite;
+}
+
+#loadingScreen.is-loaded .summoning-portal {
+    animation: portal-flash 1s ease-out forwards;
 }
 
 .loading-text {
@@ -292,7 +262,6 @@ body.loading {
     font-size: 20px;
     font-weight: 600;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    transition: opacity 0.5s;
 }
 
 .loading-progress-container {
@@ -301,12 +270,6 @@ body.loading {
     background: rgba(255,255,255,0.1);
     border-radius: 4px;
     overflow: hidden;
-    transition: opacity 0.5s;
-}
-
-.pokeball-loader.is-loaded + .loading-text,
-.pokeball-loader.is-loaded + .loading-text + .loading-progress-container {
-    opacity: 0;
 }
 
 .loading-progress-bar {
@@ -317,28 +280,43 @@ body.loading {
     transition: width 0.3s ease-out;
 }
 
-@keyframes shake-pokeball {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  33% { transform: translate(0, -5px) rotate(5deg); }
-  66% { transform: translate(0, 0) rotate(-5deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
+@keyframes spin-clockwise {
+    from { transform: rotate(0deg) scale(1); }
+    to { transform: rotate(360deg) scale(1); }
+}
+@keyframes spin-counter-clockwise {
+    from { transform: rotate(0deg) scale(0.75); }
+    to { transform: rotate(-360deg) scale(0.75); }
+}
+@keyframes portal-pulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.5); }
+}
+@keyframes portal-flash {
+    to { transform: scale(50); opacity: 0; }
 }
 
-@keyframes pokeball-light-glow {
-  0%, 100% { box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.2); }
-  50% { box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.5); }
+.particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
-@keyframes open-top {
-    to { transform: translateY(-25%) rotate(-15deg); }
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: particleFloat 6s linear infinite;
+    opacity: 0;
+    background: rgba(255, 255, 255, 0.7);
+    width: 5px; height: 5px;
 }
-@keyframes open-bottom {
-    to { transform: translateY(25%) rotate(15deg); }
-}
-@keyframes final-glow {
-    0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 10px 5px #fff; }
-    50% { transform: translate(-50%, -50%) scale(20); box-shadow: 0 0 40px 30px #fff; background-color: #fff;}
-    100% { transform: translate(-50%, -50%) scale(20); opacity: 0; }
+@keyframes particleFloat {
+    0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+    5%, 95% { opacity: 1; }
+    100% { transform: translateY(-5vh) scale(1); opacity: 0; }
 }
 
 /* --- Access Gate Styles --- */
@@ -702,7 +680,6 @@ body.loading {
     height: 100%;
     background-size: 200% 100%;
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    /* Removed individual shadow */
     border: 2px solid grey; 
     box-sizing: border-box;
 }
