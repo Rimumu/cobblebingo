@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasItem = userInventory.has(banner.requiredItemId) && userInventory.get(banner.requiredItemId).quantity > 0;
             const bannerEl = document.createElement('div');
             bannerEl.className = 'banner-card';
+            bannerEl.classList.add(banner.id); // *** ADDED THIS LINE ***
             bannerEl.innerHTML = `
                 <img src="${banner.image}" alt="${banner.name}" class="banner-image">
                 <div class="banner-overlay"></div>
