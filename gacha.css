@@ -638,6 +638,7 @@ body.loading {
     color: #fff;
     text-shadow: 0 3px 15px rgba(0,0,0,0.5);
     opacity: 0;
+    transform: translateY(20px);
 }
 
 #opening-pack-name.animate {
@@ -661,7 +662,6 @@ body.loading {
     position: absolute;
     display: flex;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    /* The border is now gone from here */
 }
 
 .pack-half {
@@ -669,22 +669,20 @@ body.loading {
     height: 100%;
     background-size: 200% 100%;
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    /* Each half gets its own border */
-    border: 2px solid grey; 
-    box-sizing: border-box; /* Important for accurate sizing with borders */
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
+    border: 2px solid grey; /* Each half gets its own border */
+    box-sizing: border-box;
 }
 
 .pack-half.left {
     border-radius: 15px 0 0 15px;
     background-position: left center;
-    /* Remove the right border entirely */
-    border-right: none;
+    border-right: none; /* Remove the inner-right border */
 }
 .pack-half.right {
     border-radius: 0 15px 15px 0;
     background-position: right center;
-    /* Remove the left border entirely */
-    border-left: none;
+    border-left: none; /* Remove the inner-left border */
 }
 
 /* Pack Themes */
@@ -701,24 +699,25 @@ body.loading {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 10px;
+    width: 1px; /* Make it a thin line */
     height: 140%;
     background: white;
-    transform: translate(-50%, -50%) rotate(25deg) scaleY(0);
-    filter: drop-shadow(0 0 8px white) drop-shadow(0 0 15px white);
+    transform: translate(-50%, -50%) rotate(25deg);
+    filter: drop-shadow(0 0 5px white) drop-shadow(0 0 8px white);
     transform-origin: center;
+    opacity: 0;
     z-index: 10;
 }
 
 .opening-pack-container.animate .pack-slash {
-    animation: slash-anim 0.2s ease-out 1.5s forwards;
+    animation: slash-anim 0.4s ease-out 1.5s forwards;
 }
 
 .opening-pack-container.animate .pack-half.left {
-    animation: split-left 0.8s ease-out 1.6s forwards;
+    animation: split-left 0.8s ease-out 1.7s forwards;
 }
 .opening-pack-container.animate .pack-half.right {
-    animation: split-right 0.8s ease-out 1.6s forwards;
+    animation: split-right 0.8s ease-out 1.7s forwards;
 }
 
 
@@ -736,14 +735,14 @@ body.loading {
 }
 
 @keyframes slash-anim {
-    from { transform: translate(-50%, -50%) rotate(25deg) scaleY(0); opacity: 0.5; }
-    to { transform: translate(-50%, -50%) rotate(25deg) scaleY(1.2); opacity: 1; }
+    0% { opacity: 0; }
+    40%, 60% { opacity: 1; } /* Flash of the slash */
+    100% { opacity: 0; }
 }
 
-/* Updated split animation to follow the slash angle */
 @keyframes split-left {
-    to { transform: translate(-120px, 55px) rotateZ(-25deg); opacity: 0; }
+    to { transform: translate(-120px, 55px) rotateZ(-25deg); }
 }
 @keyframes split-right {
-    to { transform: translate(120px, -55px) rotateZ(25deg); opacity: 0; }
+    to { transform: translate(120px, -55px) rotateZ(25deg); }
 }
