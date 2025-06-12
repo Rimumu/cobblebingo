@@ -129,6 +129,7 @@ function setupTooltipEvents(cell, content, isLegendary = false) {
 // Loading Screen Animation and Management
 function createParticles() {
   const particlesContainer = document.querySelector(".particles");
+  if (!particlesContainer) return;
   const particleCount = 15;
 
   for (let i = 0; i < particleCount; i++) {
@@ -180,33 +181,22 @@ function setupCustomDifficultySelector() {
     const originalSelect = document.getElementById('difficulty');
     const triggerText = trigger.querySelector('span');
 
-    // Toggle dropdown visibility
     trigger.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent the window click listener from closing it immediately
+        e.stopPropagation();
         customSelect.classList.toggle('open');
     });
 
-    // Handle option selection
     options.forEach(option => {
         option.addEventListener('click', () => {
             const selectedValue = option.getAttribute('data-value');
-
-            // Update the hidden <select> so the rest of the app works
             originalSelect.value = selectedValue;
-
-            // Update the text in the trigger
             triggerText.textContent = option.textContent;
-
-            // Update which option is marked as 'selected'
             options.forEach(opt => opt.classList.remove('selected'));
             option.classList.add('selected');
-
-            // Close the dropdown
             customSelect.classList.remove('open');
         });
     });
 
-    // Add a listener to close the dropdown when clicking anywhere else
     window.addEventListener('click', () => {
         if (customSelect.classList.contains('open')) {
             customSelect.classList.remove('open');
@@ -216,17 +206,15 @@ function setupCustomDifficultySelector() {
 
 // Updated API Configuration for Frontend
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:8000'  // Local development
-  : 'https://cobblebingo-backend-production.up.railway.app';  // Fixed: Added https://
+  ? 'http://localhost:8000'
+  : 'https://cobblebingo-backend-production.up.railway.app';
 
 console.log('Using API Base URL:', API_BASE_URL);
 
-// --- REPLACE this entire function with the new version below ---
 async function apiCall(endpoint, options = {}) {
   try {
     const url = `${API_BASE_URL}/api/${endpoint}`;
     
-    // --- START of updated logic ---
     const token = localStorage.getItem('token');
     const headers = {
         "Content-Type": "application/json",
@@ -236,11 +224,10 @@ async function apiCall(endpoint, options = {}) {
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
-    // --- END of updated logic ---
 
     const response = await fetch(url, {
-      ...options, // Pass through original options like method and body
-      headers: headers, // Use our newly constructed headers
+      ...options,
+      headers: headers,
       mode: 'cors',
       credentials: 'include',
     });
@@ -253,25 +240,13 @@ async function apiCall(endpoint, options = {}) {
         const errorData = JSON.parse(responseText);
         errorMessage = errorData.error || errorMessage;
       } catch (parseError) {
-        if (responseText.toLowerCase().includes('<html>')) {
-          errorMessage = `Server returned HTML instead of JSON. Check the API endpoint.`;
-        } else {
-          errorMessage = `Server error: ${responseText.substring(0, 100)}...`;
-        }
+        errorMessage = `Server error: ${responseText.substring(0, 100)}...`;
       }
       console.error('API error response:', errorMessage);
       throw new Error(errorMessage);
     }
 
-    let data;
-    try {
-      data = responseText ? JSON.parse(responseText) : {};
-    } catch (parseError) {
-      console.error('Failed to parse JSON response:', parseError);
-      throw new Error(`Invalid JSON response from ${endpoint}: ${parseError.message}`);
-    }
-
-    return data;
+    return responseText ? JSON.parse(responseText) : {};
   } catch (error) {
     console.error(`API call failed for ${endpoint}:`, error);
     if (error.message.includes('Failed to fetch')) {
@@ -281,137 +256,38 @@ async function apiCall(endpoint, options = {}) {
   }
 }
 
-// Enhanced test API connection with better error handling
-async function testApiConnection() {
-  try {
-    console.log('Testing API connection to:', `${API_BASE_URL}/health`);
-    const response = await fetch(`${API_BASE_URL}/health`, {
-      method: 'GET',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    const responseText = await response.text();
-    console.log('Health check raw response:', responseText);
-    
-    if (response.ok) {
-      try {
-        const data = JSON.parse(responseText);
-        console.log('✅ API connection successful');
-        console.log('API health response:', data);
-        return true;
-      } catch (parseError) {
-        console.warn('⚠️ API responded but with non-JSON:', responseText);
-        return false;
-      }
-    } else {
-      console.warn('⚠️ API health check failed:', response.status, response.statusText);
-      console.warn('Response body:', responseText);
-      return false;
-    }
-  } catch (error) {
-    console.error('❌ API connection failed:', error);
-    
-    if (error.message.includes('CORS')) {
-      console.error('❌ CORS Error: Backend CORS configuration issue');
-    }
-    
-    return false;
-  }
-}
-
-// Generate and store card on server with better error handling
 async function generateAndStoreCard(selectedPokemon, selectedRarity) {
   try {
-    console.log('Generating card with:', { rarity: selectedRarity, pokemon: selectedPokemon });
-    
     const response = await apiCall("generate-card", {
       method: "POST",
-      body: JSON.stringify({
-        rarity: selectedRarity,
-        pokemon: selectedPokemon,
-      }),
+      body: JSON.stringify({ rarity: selectedRarity, pokemon: selectedPokemon }),
     });
-
-    if (!response.code) {
-      throw new Error('Server did not return a card code');
-    }
-
+    if (!response.code) throw new Error('Server did not return a card code');
     return response.code;
   } catch (error) {
     console.error("Error generating card:", error);
-    
-    // Provide specific error messages based on the error type
-    if (error.message.includes('API endpoint not found')) {
-      throw new Error('The card generation service is not available. Please check if the server is running.');
-    } else if (error.message.includes('HTML page instead of JSON')) {
-      throw new Error('Server configuration error: API endpoint not properly configured.');
-    } else {
-      throw new Error(`Failed to generate card: ${error.message}`);
-    }
+    throw new Error(`Failed to generate card: ${error.message}`);
   }
 }
 
-// Retrieve card from server with better error handling
 async function retrieveCard(code) {
   try {
-    console.log('Retrieving card with code:', code);
-    
     const response = await apiCall(`get-card/${code}`);
-    
-    if (!response.cardData) {
-      throw new Error('Invalid card data received from server');
-    }
-    
+    if (!response.cardData) throw new Error('Invalid card data received from server');
     return response;
   } catch (error) {
     console.error("Error retrieving card:", error);
-    
-    if (error.message.includes('API endpoint not found')) {
-      throw new Error('The card retrieval service is not available. Please check if the server is running.');
-    } else if (error.message.includes('HTML page instead of JSON')) {
-      throw new Error('Server configuration error: API endpoint not properly configured.');
-    } else {
-      throw new Error(`Failed to retrieve card: ${error.message}`);
-    }
+    throw new Error(`Failed to retrieve card: ${error.message}`);
   }
 }
 
-// Validate code exists with better error handling
-async function validateCode(code) {
-  try {
-    console.log('Validating code:', code);
-    
-    const response = await apiCall(`validate-code/${code}`);
-    return response.exists;
-  } catch (error) {
-    console.error("Error validating code:", error);
-    
-    // For validation, we can be more lenient and just return false
-    if (error.message.includes('API endpoint not found') || 
-        error.message.includes('HTML page instead of JSON')) {
-      console.warn('Code validation service unavailable, assuming code is invalid');
-      return false;
-    }
-    
-    return false;
-  }
-}
-
-// Create or get a session for a card
 async function initSession(cardCode) {
   try {
-    console.log(`Initializing session for card: ${cardCode}`);
     const response = await apiCall("session/init", {
       method: "POST",
       body: JSON.stringify({ cardCode }),
     });
-    if (!response.sessionId) {
-      throw new Error("Server did not return a session ID");
-    }
-    console.log(`✅ Session initialized: ${response.sessionId}`);
+    if (!response.sessionId) throw new Error("Server did not return a session ID");
     return response;
   } catch (error) {
     console.error("Error initializing session:", error);
@@ -419,40 +295,29 @@ async function initSession(cardCode) {
   }
 }
 
-// Get existing session data
 async function getSession(sessionId) {
   try {
-    console.log(`Retrieving session: ${sessionId}`);
     const response = await apiCall(`session/${sessionId}`);
-    if (!response.success) {
-      throw new Error(response.error || 'Failed to retrieve session data');
-    }
-    console.log('✅ Session data retrieved');
+    if (!response.success) throw new Error(response.error || 'Failed to retrieve session data');
     return response;
   } catch (error) {
     console.error("Error retrieving session:", error);
-    // Return null if session not found, so we can create a new one
     if (error.message.includes('not found')) return null;
     throw new Error(`Failed to retrieve session: ${error.message}`);
   }
 }
 
-// Update completed cells for a session
 async function updateSession(sessionId, cells) {
   try {
-    // No console log here to avoid spamming on every click
     await apiCall(`session/${sessionId}/update`, {
       method: "PUT",
       body: JSON.stringify({ completedCells: cells }),
     });
   } catch (error) {
     console.error("Error updating session:", error);
-    // Optionally alert the user that saving failed
-    // alert("Failed to save your progress. Please check your connection.");
   }
 }
 
-// --- Add this new API function for saving a session ---
 async function saveSession(sessionId, sessionName, token) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/session/${sessionId}/save`, {
@@ -472,81 +337,29 @@ async function saveSession(sessionId, sessionName, token) {
   }
 }
 
-// Add a function to test all API endpoints
-async function testAllEndpoints() {
-  console.log('🔍 Testing all API endpoints...');
-  
-  const endpoints = [
-    { name: 'Health Check', url: `${API_BASE_URL}/health` },
-    { name: 'Generate Card', url: `${API_BASE_URL}/api/generate-card` },
-    { name: 'Get Card', url: `${API_BASE_URL}/api/get-card/test` },
-    { name: 'Validate Code', url: `${API_BASE_URL}/api/validate-code/test` }
-  ];
-  
-  for (const endpoint of endpoints) {
-    try {
-      const response = await fetch(endpoint.url, {
-        method: endpoint.name === 'Generate Card' ? 'POST' : 'GET',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: endpoint.name === 'Generate Card' ? JSON.stringify({
-          rarity: 'normal',
-          pokemon: []
-        }) : undefined
-      });
-      
-      const text = await response.text();
-      console.log(`${endpoint.name}: ${response.status} - ${text.substring(0, 100)}...`);
-    } catch (error) {
-      console.error(`${endpoint.name}: Failed -`, error.message);
-    }
-  }
-}
-
-// Your existing utility functions (keep these)
-function createSeededRandom(seed) {
-  let x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
-
 async function fetchPokemonData() {
   const response = await fetch(
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vRlLTA4Oe6Kzu-EQp_AS1wGs_PzLZ9GMIhWrgUDuXux18AYe7sg6B5LfrN0oRw63ZdyTr5rrDvM54ui/pub?output=csv",
   );
   const csvText = await response.text();
-
-  const parsed = Papa.parse(csvText, {
-    header: true,
-    skipEmptyLines: true,
-  });
-
+  const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
   const data = [];
   const seen = new Set();
-
   parsed.data.forEach((row) => {
-    const id = row["ID"];
     const name = row["Name"];
-    const biome = row["Biome"];
-    const rarity = row["Rarity"];
-
-    if (!name || !id || seen.has(name)) return;
+    if (!name || !row["ID"] || seen.has(name)) return;
     seen.add(name);
-
     data.push({
       name: name.trim(),
-      biome: biome.trim(),
-      rarity: rarity.trim(),
-      id: row["ID"] ? row["ID"].trim().replace(/\D/g, "") : "",
+      biome: (row["Biome"] || '').trim(),
+      rarity: (row["Rarity"] || '').trim(),
+      id: row["ID"].trim().replace(/\D/g, ""),
     });
   });
-
   return data;
 }
 
 function shuffle(array) {
-  // Create a copy to avoid mutating the original
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -555,139 +368,60 @@ function shuffle(array) {
   return shuffled;
 }
 
-// Replace the populateFilters function with:
-function populateFilters() {
-  // No need to populate dynamically since we have fixed difficulty options
-}
+function populateFilters() {}
 
-// Add this new function to select Pokemon based on difficulty:
 function selectPokemonByDifficulty(pokemonList, difficulty) {
-  console.log("Selecting Pokémon by difficulty:", difficulty);
+    const byRarity = {
+        common: pokemonList.filter((p) => p.rarity.toLowerCase() === "common"),
+        uncommon: pokemonList.filter((p) => p.rarity.toLowerCase() === "uncommon"),
+        rare: pokemonList.filter((p) => p.rarity.toLowerCase() === "rare"),
+        "ultra-rare": pokemonList.filter((p) => p.rarity.toLowerCase() === "ultra-rare"),
+        legendary: pokemonList.filter((p) => p.rarity.toLowerCase() === "legendary"),
+    };
 
-  const byRarity = {
-    common: pokemonList.filter((p) => p.rarity.toLowerCase() === "common"),
-    uncommon: pokemonList.filter((p) => p.rarity.toLowerCase() === "uncommon"),
-    rare: pokemonList.filter((p) => p.rarity.toLowerCase() === "rare"),
-    "ultra-rare": pokemonList.filter(
-      (p) => p.rarity.toLowerCase() === "ultra-rare",
-    ),
-    legendary: pokemonList.filter(
-      (p) => p.rarity.toLowerCase() === "legendary",
-    ),
-  };
+    let selected = [];
 
-  let selected = [];
+    const selectFromCategory = (category, count) => shuffle(byRarity[category]).slice(0, count);
 
-  function selectFromCategory(category, count) {
-    console.log(`Attempting to select ${count} Pokémon from ${category}`);
-    if (byRarity[category].length >= count) {
-      console.log(`Selecting ${count} Pokémon from ${category}`);
-      const selectedFromCategory = shuffle(byRarity[category]).slice(0, count);
-      console.log(`${category} selected:`, selectedFromCategory);
-      return selectedFromCategory;
-    } else {
-      console.warn(
-        `Not enough ${category} Pokémon for difficulty ${difficulty}, selecting all available.`,
-      );
-      const selectedFromCategory = shuffle(byRarity[category]);
-      console.log(
-        `${category} selected (not enough Pokémon):`,
-        selectedFromCategory,
-      );
-      return selectedFromCategory;
+    const compositions = {
+        easy: { common: 15, uncommon: 9 },
+        normal: { common: 2, uncommon: 8, rare: 8, "ultra-rare": 6 },
+        hard: { rare: 15, "ultra-rare": 9 },
+        common: { common: 24 },
+        uncommon: { uncommon: 24 },
+        rare: { rare: 24 },
+        "ultra-rare": { "ultra-rare": 24 },
+        insane: { "ultra-rare": 24, legendary: 1 },
+        nightmare: { legendary: 5, "ultra-rare": 20 }
+    };
+    
+    const composition = compositions[difficulty] || compositions.normal;
+
+    for (const category in composition) {
+        if (category !== 'legendary' || difficulty !== 'insane') {
+             selected.push(...selectFromCategory(category, composition[category]));
+        }
     }
-  }
-
-  if (difficulty === "easy") {
-    selected = selected.concat(
-      selectFromCategory("common", 15),
-      selectFromCategory("uncommon", 9),
-    );
-  } else if (difficulty === "normal") {
-    selected = selected.concat(
-      selectFromCategory("common", 2),
-      selectFromCategory("uncommon", 8),
-      selectFromCategory("rare", 8),
-      selectFromCategory("ultra-rare", 6),
-    );
-  } else if (difficulty === "hard") {
-    selected = selected.concat(
-      selectFromCategory("rare", 15),
-      selectFromCategory("ultra-rare", 9),
-    );
-  } else if (difficulty === "common") {
-    selected = selected.concat(selectFromCategory("common", 24));
-  } else if (difficulty === "uncommon") {
-    selected = selected.concat(selectFromCategory("uncommon", 24));
-  } else if (difficulty === "rare") {
-    selected = selected.concat(selectFromCategory("rare", 24));
-  } else if (difficulty === "ultra-rare") {
-    selected = selected.concat(selectFromCategory("ultra-rare", 24));
-  } else if (difficulty === "insane") {
-    selected = selected.concat(selectFromCategory("ultra-rare", 24));
-    const legendaryPokemon = shuffle(byRarity["legendary"])[0];
-    if (legendaryPokemon) {
-      selected.splice(12, 0, legendaryPokemon);
-    } else {
-      selected.splice(12, 0, {
-        name: "LEGENDARY",
-        rarity: "legendary",
-        biome: "Legendary",
-        id: "0",
-      });
+    
+    if(difficulty === 'insane') {
+        const legendaryPokemon = selectFromCategory('legendary', 1)[0];
+        selected.splice(12, 0, legendaryPokemon || { name: "LEGENDARY", rarity: "legendary", biome: "Legendary", id: "0" });
+    } else if(difficulty === 'nightmare') {
+        const centerLegendary = selected.splice(0, 1)[0]; 
+        selected = shuffle(selected);
+        selected.splice(12, 0, centerLegendary);
     }
-  } else if (difficulty === "nightmare") {
-    const legendaryPokemon = selectFromCategory("legendary", 5);
-    const ultraRarePokemon = selectFromCategory("ultra-rare", 20);
-    const centerLegendary = legendaryPokemon.pop();
-    const otherPokemon = ultraRarePokemon.concat(legendaryPokemon);
-    const shuffledOthers = shuffle(otherPokemon);
-    if (centerLegendary) {
-        selected.push(...shuffledOthers.slice(0, 12), centerLegendary, ...shuffledOthers.slice(12));
-    } else {
-        selected = selected.concat(shuffledOthers);
+    
+    const targetCount = (difficulty === 'insane' || difficulty === 'nightmare') ? 25 : 24;
+    while(selected.length < targetCount) {
+        selected.push(selectFromCategory('uncommon', 1)[0]);
     }
-  } else {
-    console.warn("Unknown difficulty, defaulting to normal");
-    selected = selected.concat(
-      selectFromCategory("common", 2),
-      selectFromCategory("uncommon", 8),
-      selectFromCategory("rare", 8),
-      selectFromCategory("ultra-rare", 6),
-    );
-  }
-
-  console.log("Selected Pokémon before padding:", selected);
-
-  if (difficulty === "insane" || difficulty === "nightmare") {
-    if (selected.length !== 25) {
-      console.error(
-        `Difficulty ${difficulty} should have 25 Pokémon (got ${selected.length}), padding with ultra-rare`,
-      );
-      while (selected.length < 25) {
-        selected.push(...selectFromCategory("ultra-rare", 1));
-      }
-      selected = selected.slice(0, 25);
-    }
-  } else {
-    if (selected.length !== 24) {
-      console.error(
-        `Difficulty ${difficulty} should have 24 Pokémon (got ${selected.length}), adjusting`,
-      );
-      while (selected.length < 24) {
-        selected.push(...selectFromCategory("ultra-rare", 1));
-      }
-      selected = selected.slice(0, 24);
-    }
-  }
-
-  console.log("Final Selected Pokémon:", selected);
-  return selected;
+    
+    return selected.slice(0, targetCount);
 }
 
 function setupColorSchemeSelector() {
   const colorOptions = document.querySelectorAll(".color-option");
-
   colorOptions.forEach((option) => {
     option.addEventListener("click", () => {
       colorOptions.forEach((opt) => opt.classList.remove("active"));
@@ -699,35 +433,18 @@ function setupColorSchemeSelector() {
 }
 
 let pokemonData = [];
-
-fetchPokemonData().then((data) => {
-  pokemonData = data;
-  populateFilters();
-});
-
-function openPokemonPage(pokemonName) {
-  const formattedName = pokemonName.toLowerCase().replace(/\s+/g, "_");
-  const url = `https://cobblemon.tools/pokedex/pokemon/${formattedName}`;
-  window.open(url, "_blank");
-}
+fetchPokemonData().then((data) => { pokemonData = data; });
 
 async function imageToBase64(imgElement) {
   return new Promise((resolve) => {
-    if (!imgElement.src || imgElement.src === "") {
-      resolve("");
-      return;
-    }
-
+    if (!imgElement.src || imgElement.src === "") return resolve("");
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
     canvas.width = imgElement.naturalWidth || imgElement.width || 150;
     canvas.height = imgElement.naturalHeight || imgElement.height || 150;
-
     try {
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(imgElement, 0, 0);
-      const dataURL = canvas.toDataURL("image/png");
-      resolve(dataURL);
+      resolve(canvas.toDataURL("image/png"));
     } catch (error) {
       console.warn("Could not convert image to base64:", error);
       resolve("");
@@ -735,25 +452,23 @@ async function imageToBase64(imgElement) {
   });
 }
 
-// Updated generateBingo function with proper new card generation
 async function generateBingo() {
-  const selectedDifficulty = document.getElementById("difficulty").value;
-  const cardCodeInput = document.getElementById("cardCode").value.trim().toUpperCase();
   const loadingSpinner = document.getElementById("loadingSpinner");
-  const bingoCard = document.getElementById("bingoGrid");
   const bingoCardWrapper = document.getElementById("bingoCard");
   const exportBtn = document.getElementById("exportBtn");
+  const cardCodeInput = document.getElementById("cardCode").value.trim().toUpperCase();
 
   loadingSpinner.style.display = "flex";
   bingoCardWrapper.style.display = "none";
   exportBtn.style.display = "none";
   document.querySelector(".controls-container").style.display = "none";
-  bingoCard.innerHTML = "";
+  document.getElementById("bingoGrid").innerHTML = "";
   
   await new Promise((resolve) => setTimeout(resolve, 300));
 
   let cardData;
-  let sessionData = null; // Default session to null
+  let sessionData = null;
+  let difficultyToUse;
 
   try {
     const urlParams = new URLSearchParams(window.location.search);
@@ -766,22 +481,27 @@ async function generateBingo() {
     }
 
     if (codeToUse) {
-      // Loading an existing card
       cardData = await retrieveCard(codeToUse);
+      difficultyToUse = cardData.cardData.difficulty; 
       document.getElementById("cardCode").value = cardData.code;
-      document.getElementById("difficulty").value = cardData.cardData.difficulty;
-      
-      // Only get session if it's in the URL (i.e., loading a saved game)
+      document.getElementById("difficulty").value = difficultyToUse;
+      const customSelectTrigger = document.querySelector('.custom-select__trigger span');
+      const selectedOption = document.querySelector(`.custom-option[data-value="${difficultyToUse}"]`);
+      if (customSelectTrigger && selectedOption) {
+          customSelectTrigger.textContent = selectedOption.textContent;
+          document.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+          selectedOption.classList.add('selected');
+      }
+
       if (sessionFromUrl) {
         sessionData = await getSession(sessionFromUrl);
       }
-      
     } else {
-      // Generating a new card
-      let pokemonForCard = selectPokemonByDifficulty(pokemonData, selectedDifficulty);
+      difficultyToUse = document.getElementById("difficulty").value;
+      let pokemonForCard = selectPokemonByDifficulty(pokemonData, difficultyToUse);
       let selectedPokemon;
 
-      if (selectedDifficulty === "insane" || selectedDifficulty === "nightmare") {
+      if (difficultyToUse === "insane" || difficultyToUse === "nightmare") {
         selectedPokemon = pokemonForCard;
       } else {
         selectedPokemon = [];
@@ -795,23 +515,19 @@ async function generateBingo() {
         }
       }
 
-      const newCardCode = await generateAndStoreCard(selectedPokemon, selectedDifficulty);
+      const newCardCode = await generateAndStoreCard(selectedPokemon, difficultyToUse);
       cardData = await retrieveCard(newCardCode);
       document.getElementById("cardCode").value = cardData.code;
     }
     
-    // --- Post-load/generation logic ---
     if (sessionData) {
-      // This runs only when loading a saved session from the URL
       currentSessionId = sessionData.sessionId;
       completedCells = sessionData.completedCells;
     } else {
-      // This runs for all new cards, clearing previous state
       currentSessionId = null;
       completedCells = Array(25).fill(false);
     }
 
-    // Update URL, but only add session if it exists
     const currentUrl = new URL(window.location);
     currentUrl.searchParams.set("code", cardData.code);
     if (currentSessionId) {
@@ -821,294 +537,176 @@ async function generateBingo() {
     }
     history.pushState(null, '', currentUrl.toString());
 
-    // Hide the save button initially; it will appear after the first click
     document.getElementById('saveSessionBtn').style.display = 'none';
     
-    await renderBingoCard(cardData.cardData.pokemon, selectedDifficulty);
-    initializeCompletedCells(true);
+    await renderBingoCard(cardData.cardData.pokemon, difficultyToUse); 
+    initializeCompletedCells();
     checkForBingo();
-
-    const logoContainer = document.getElementById("logoContainer");
-    const bingoLogo = document.getElementById("bingoLogo");
-    if (bingoLogo && logoContainer) {
-        bingoLogo.src = 'https://cdn.glitch.global/fecfc9cc-1e50-454e-a7d0-72e1b03260c4/public_cobblebingo.png?v=1748523580111';
-        bingoLogo.onerror = () => {
-            logoContainer.innerHTML = "<p style='color: white;'>Logo could not be loaded.</p>";
-        };
-        logoContainer.style.display = 'block';
-    }
 
   } catch (error) {
     console.error("Error in generateBingo:", error);
     alert(`Error: ${error.message || "Failed to generate/load bingo card"}`);
-    
-    loadingSpinner.style.display = "none";
-    bingoCardWrapper.style.display = "none";
-    exportBtn.style.display = "none";
-    document.querySelector(".controls-container").style.display = "flex";
-    return;
+  } finally {
+      loadingSpinner.style.display = "none";
+      bingoCardWrapper.style.display = "flex";
+      exportBtn.style.display = "inline-block";
+      document.getElementById("postGenerationControls").style.display = "inline-flex";
+      document.querySelector(".controls-container").style.display = "flex";
   }
-  
-  loadingSpinner.style.display = "none";
-  bingoCardWrapper.style.display = "flex";
-  exportBtn.style.display = "inline-block";
-  document.getElementById("postGenerationControls").style.display = "inline-flex";
-  document.querySelector(".controls-container").style.display = "flex";
 }
 
-// Add a function to explicitly generate a new card
 function generateNewCard() {
-  // Clear the input field and URL
-  const cardCodeElement = document.getElementById("cardCode");
-  if (cardCodeElement) {
-    cardCodeElement.value = "";
-  }
-
-  // Clear URL parameter
+  document.getElementById("cardCode").value = "";
   history.replaceState(null, null, window.location.pathname);
-
-  // Remove the generated flag so we definitely create a new card
-  document.body.removeAttribute("data-generated");
-
-  // Generate the bingo card
   generateBingo();
 }
 
-// Updated renderBingoCard function with fixed tooltip positioning
-async function renderBingoCard(selected) {
-  // Get the current difficulty from the dropdown to use in our logic
-  const difficulty = document.getElementById("difficulty").value;
-  const bingoCard = document.getElementById("bingoGrid");
-  const imageLoadPromises = [];
+async function renderBingoCard(selectedPokemon, difficulty) {
+    const bingoCard = document.getElementById("bingoGrid");
+    bingoCard.innerHTML = ""; // Clear the card before rendering
 
-  selected.forEach((pokemon, index) => {
-    const name = pokemon.name;
-    const cell = document.createElement("div");
-    cell.className = "bingo-cell";
+    const imageLoadPromises = [];
 
-    // First, determine if the cell should get the special legendary style
-    const isLegendary = pokemon.rarity?.toLowerCase() === "legendary";
-    const shouldHaveLegendaryStyle =
-      isLegendary &&
-      (difficulty === "nightmare" || (difficulty === "insane" && index === 12));
+    // Count the number of legendary Pokémon to create a reliable styling rule,
+    // as the 'difficulty' string can be unreliable when loading saved cards.
+    const legendaryCount = selectedPokemon.filter(p => p.rarity?.toLowerCase() === 'legendary').length;
 
-    // Now, we use your existing code blocks based on our new condition
-    if (shouldHaveLegendaryStyle) {
-      // This is your original code for styling the legendary center cell.
-      // It will now apply to ALL legendaries on Nightmare difficulty.
-      cell.classList.add("legendary-center");
-      cell.style.cursor = "pointer";
-      cell.style.position = "relative";
-      cell.style.overflow = "hidden";
-      cell.style.isolation = "isolate";
+    // This is a helper function to avoid repeating rendering logic
+    const createPokemonCell = (cell, pokemon, isLegendaryStyled) => {
+        if (isLegendaryStyled) {
+            cell.classList.add("legendary-center");
+        }
+        
+        cell.style.cursor = "pointer";
+        cell.addEventListener("click", () => {
+            const index = Array.from(bingoCard.children).indexOf(cell);
+            toggleCellCompletion(index);
+        });
 
-      cell.addEventListener("click", (e) => {
-        if (
-          e.target === cell ||
-          e.target.classList.contains("pokemon-name")
-        ) {
-          toggleCellCompletion(index);
+        setupTooltipEvents(cell, `Biome: ${pokemon.biome}`, isLegendaryStyled);
+        
+        const wrapper = document.createElement("a");
+        wrapper.className = "pokemon-img-link";
+        wrapper.href = `https://cobblemon.tools/pokedex/pokemon/${pokemon.name.toLowerCase().replace(/\s+/g, "_")}`;
+        wrapper.target = "_blank";
+        wrapper.onclick = (e) => e.stopPropagation();
+
+        const img = document.createElement("img");
+        img.alt = pokemon.name;
+        img.className = "pokemon-img";
+        img.crossOrigin = "anonymous";
+        
+        wrapper.appendChild(img);
+        cell.appendChild(wrapper);
+
+        const label = document.createElement("div");
+        label.className = "pokemon-name";
+        label.textContent = pokemon.name;
+        cell.appendChild(label);
+
+        if (pokemon.rarity) {
+            const rarity = document.createElement("div");
+            const rarityClass = pokemon.rarity.toLowerCase().replace(/\s+/g, "-");
+            rarity.className = `rarity-badge ${rarityClass}`;
+            rarity.textContent = pokemon.rarity.charAt(0).toUpperCase() + pokemon.rarity.slice(1);
+            cell.appendChild(rarity);
+        }
+
+        // --- Robust Image Fallback Logic ---
+        const loadPromise = new Promise(async (resolve) => {
+            const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${pokemon.name.toLowerCase().replace(/\s+/g, "_")}.webp`;
+            try {
+                const response = await fetch(cobblemonUrl);
+                if (!response.ok) throw new Error('Cobbledex image not found.');
+                const blob = await response.blob();
+                // Check if the image is the Cobbledex placeholder
+                const PLACEHOLDER_SIZE_MIN = 2160;
+                const PLACEHOLDER_SIZE_MAX = 2180;
+                if (blob.size >= PLACEHOLDER_SIZE_MIN && blob.size <= PLACEHOLDER_SIZE_MAX) {
+                    throw new Error("Placeholder image detected");
+                }
+                const objectUrl = URL.createObjectURL(blob);
+                img.src = objectUrl;
+                img.onload = () => URL.revokeObjectURL(objectUrl);
+            } catch (error) {
+                console.warn(`Cobbledex failed for ${pokemon.name}, falling back to PokeAPI.`);
+                if (pokemon.id) {
+                    img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
+                } else {
+                    img.src = "";
+                    img.alt = `${pokemon.name} (Image not available)`;
+                }
+            }
+            // Use event listeners to resolve the promise, ensuring it always completes
+            const finalResolve = () => resolve();
+            img.addEventListener('load', finalResolve, { once: true });
+            img.addEventListener('error', finalResolve, { once: true });
+        });
+        imageLoadPromises.push(loadPromise);
+    };
+
+    selectedPokemon.forEach((pokemon, index) => {
+        const cell = document.createElement("div");
+        cell.className = "bingo-cell";
+        const isLegendary = pokemon.rarity?.toLowerCase() === 'legendary';
+
+        // Determine if the special legendary styling should be applied based on the data itself.
+        let styleAsLegendary = false;
+        if (isLegendary) {
+            // If there are 5+ legendaries, it's a Nightmare-style card. Style all of them.
+            if (legendaryCount >= 5) {
+                styleAsLegendary = true;
+            } 
+            // If there's 1 legendary, it's an Insane-style card. Only style it if it's in the center.
+            else if (legendaryCount === 1 && index === 12) {
+                styleAsLegendary = true;
+            }
+        }
+        
+        // Handle the "Free Space" cell separately
+        if (index === 12 && pokemon.name === 'Free Space') {
+            cell.textContent = "FREE";
+            cell.style.backgroundColor = "#ffd700";
+            cell.style.fontWeight = "bold";
+            cell.style.fontSize = "18px";
+            cell.style.color = "#000";
         } else {
-            window.open(
-              "https://modrinth.com/datapack/cobblemon-legendary-structures",
-              "_blank"
-            );
+            // For all Pokémon cells (including legendary ones), use the helper
+            createPokemonCell(cell, pokemon, styleAsLegendary);
         }
-      });
-      setupTooltipEvents(
-        cell,
-        `Legendary Pokémon | Biome: ${pokemon.biome}`,
-        true
-      );
-      cell.addEventListener("mouseenter", () => {
-        cell.style.transform = "translateY(-3px) scale(1.02)";
-      });
-      cell.addEventListener("mouseleave", () => {
-        cell.style.transform = "";
-      });
-      const wrapper = document.createElement("div");
-      wrapper.className = "image-wrapper";
-      wrapper.style.position = "relative";
-      wrapper.style.overflow = "hidden";
-      wrapper.style.width = "100%";
-      wrapper.style.height = "100%";
-      const img = document.createElement("img");
-      img.alt = name;
-      img.className = "pokemon-img";
-      img.crossOrigin = "anonymous";
-      const formattedName = name.toLowerCase().replace(/\s+/g, "_");
-      const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${formattedName}.webp`;
-      img.src = cobblemonUrl;
-      img.onerror = () => {
-        if(pokemon.id) {
-            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-        } else {
-            img.src = "";
-            img.alt = `${pokemon.name} (Image not available)`;
-        }
-      };
-      wrapper.appendChild(img);
-      cell.appendChild(wrapper);
-      const label = document.createElement("div");
-      label.className = "pokemon-name";
-      label.textContent = name;
-      cell.appendChild(label);
-      const rarity = document.createElement("div");
-      rarity.className = "rarity-badge legendary";
-      rarity.textContent = "Legendary";
-      cell.appendChild(rarity);
+        
+        bingoCard.appendChild(cell);
+    });
 
-    } else if (index === 12) {
-      // This is your original code for the "FREE" space. It will now only run
-      // on difficulties that are NOT Insane or Nightmare.
-      cell.textContent = "FREE";
-      cell.style.backgroundColor = "#ffd700";
-      cell.style.fontWeight = "bold";
-      cell.style.display = "flex";
-      cell.style.alignItems = "center";
-      cell.style.justifyContent = "center";
-      cell.style.fontSize = "18px";
-      cell.style.color = "#000";
-      cell.classList.add("completed");
-
-    } else {
-      // This is your original code for all other regular Pokémon cells.
-      cell.style.cursor = "pointer";
-      cell.style.position = "relative";
-      cell.style.overflow = "hidden";
-      cell.addEventListener("click", (e) => {
-        if (e.target === cell || e.target.classList.contains("pokemon-name")) {
-          toggleCellCompletion(index);
-        } else {
-          openPokemonPage(pokemon.name);
-        }
-      });
-      setupTooltipEvents(cell, "Biome: " + pokemon.biome, false);
-      cell.addEventListener("mouseenter", () => {
-        cell.style.transform = "translateY(-3px) scale(1.02)";
-      });
-      cell.addEventListener("mouseleave", () => {
-        cell.style.transform = "";
-      });
-      const wrapper = document.createElement("div");
-      wrapper.className = "image-wrapper";
-      wrapper.style.position = "relative";
-      const formattedName = name.toLowerCase().replace(/\s+/g, "_");
-      const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${formattedName}.webp`;
-      const img = document.createElement("img");
-      img.alt = name;
-      img.className = "pokemon-img";
-      img.crossOrigin = "anonymous";
-      img.style.maxWidth = "100%";
-      img.style.height = "auto";
-      wrapper.appendChild(img);
-      const loadPromise = new Promise(async (resolve) => {
-        try {
-          const response = await fetch(cobblemonUrl);
-          if (!response.ok)
-            throw new Error(`Cobbledex failed: ${response.status}`);
-          const blob = await response.blob();
-          const PLACEHOLDER_SIZE_MIN = 2160;
-          const PLACEHOLDER_SIZE_MAX = 2180;
-          if (
-            blob.size >= PLACEHOLDER_SIZE_MIN &&
-            blob.size <= PLACEHOLDER_SIZE_MAX
-          ) {
-            throw new Error("Placeholder image detected");
-          }
-          const objectUrl = URL.createObjectURL(blob);
-          img.src = objectUrl;
-          await new Promise((imgResolve, imgReject) => {
-            img.onload = () => {
-              URL.revokeObjectURL(objectUrl);
-              imgResolve();
-            };
-            img.onerror = () => {
-              URL.revokeObjectURL(objectUrl);
-              imgReject(new Error("Image load failed"));
-            };
-          });
-        } catch (error) {
-          console.warn(
-            `Falling back to PokeAPI for ${pokemon.name}: ${error.message}`
-          );
-          if (pokemon.id) {
-            const pokeApiUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-            img.crossOrigin = "anonymous";
-            img.src = pokeApiUrl;
-            await new Promise((imgResolve) => {
-              img.onload = imgResolve;
-              img.onerror = () => {
-                img.src = "";
-                img.alt = `${pokemon.name} (Image not available)`;
-                imgResolve();
-              };
-            });
-          } else {
-            img.src = "";
-            img.alt = `${pokemon.name} (No ID available)`;
-          }
-        }
-        resolve();
-      });
-      imageLoadPromises.push(loadPromise);
-      cell.appendChild(wrapper);
-      const label = document.createElement("div");
-      label.className = "pokemon-name";
-      label.textContent = pokemon.name;
-      cell.appendChild(label);
-      if (pokemon.rarity) {
-        const rarity = document.createElement("div");
-        const rarityClass = pokemon.rarity.toLowerCase().replace(/\s+/g, "-");
-        rarity.className = `rarity-badge ${rarityClass}`;
-        rarity.textContent =
-          pokemon.rarity.charAt(0).toUpperCase() + pokemon.rarity.slice(1);
-        cell.appendChild(rarity);
-      }
-    }
-    bingoCard.appendChild(cell);
-  });
-
-  await Promise.all(imageLoadPromises);
-  await new Promise((resolve) => setTimeout(resolve, 500));
+    await Promise.all(imageLoadPromises);
 }
 
-// Check for code in URL on page load
+
 document.addEventListener("DOMContentLoaded", () => {
   setupColorSchemeSelector();
-  setupCustomDifficultySelector(); // ADD THIS LINE
+  setupCustomDifficultySelector();
   
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get("code");
-  const session = urlParams.get("session");
-
   if (code) {
-    const cardCodeInput = document.getElementById("cardCode");
-    if (cardCodeInput) {
-      cardCodeInput.value = code;
-    }
-    if (session) {
-      console.log("Saved session found in URL, automatically loading card...");
-      generateBingo();
-    }
+    document.getElementById("cardCode").value = code;
+    generateBingo();
   }
 });
 
-// Improved bingo line drawing
 function drawBingoLine(cellIndices, lineType) {
   const grid = document.getElementById("bingoGrid");
   const line = document.createElement("div");
   line.className = "bingo-line";
 
-  // Add specific line type class
   if (lineType === "horizontal") {
     line.classList.add("horizontal");
     const row = Math.floor(cellIndices[0] / 5);
-    line.style.top = `${row * (130 + 8) + 65 - 3}px`; // 130px cell height + 8px gap
+    line.style.top = `${row * (130 + 8) + 65 - 3}px`;
   } else if (lineType === "vertical") {
     line.classList.add("vertical");
     const col = cellIndices[0] % 5;
-    line.style.left = `${col * (100 + 8) + 50 - 3}px`; // 100px cell width + 8px gap
+    line.style.left = `${col * (100 + 8) + 50 - 3}px`;
   } else if (lineType === "diagonal-main") {
     line.classList.add("diagonal", "diagonal-main");
   } else if (lineType === "diagonal-anti") {
@@ -1118,9 +716,7 @@ function drawBingoLine(cellIndices, lineType) {
   grid.appendChild(line);
 }
 
-// New function to show bingo messages
 function showBingoMessage(count) {
-  // Remove existing message
   const existingMessage = document.querySelector(".bingo-message");
   if (existingMessage) {
     existingMessage.remove();
@@ -1130,86 +726,53 @@ function showBingoMessage(count) {
   message.className = "bingo-message";
 
   if (count === 1) {
-    message.textContent = "🎉 BINGO! 🎉";
+    message.textContent = "脂 BINGO! 脂";
   } else {
-    message.textContent = `🎉 ${count} BINGOS! 🎉`;
+    message.textContent = `脂 ${count} BINGOS! 脂`;
   }
 
   document.body.appendChild(message);
 
-  // Remove message after animation
   setTimeout(() => {
     message.remove();
   }, 4000);
 }
 
-// Track the current number of bingos to prevent duplicate celebrations
 let currentBingoCount = 0;
 
-// Enhanced bingo checking with multiple line detection
 function checkForBingo() {
-  // Clear existing lines
   document.querySelectorAll(".bingo-line").forEach((el) => el.remove());
 
-  // Define all possible bingo lines with their types
   const lines = [
-    // Rows
-    { indices: [0, 1, 2, 3, 4], type: "horizontal" },
-    { indices: [5, 6, 7, 8, 9], type: "horizontal" },
-    { indices: [10, 11, 12, 13, 14], type: "horizontal" },
-    { indices: [15, 16, 17, 18, 19], type: "horizontal" },
-    { indices: [20, 21, 22, 23, 24], type: "horizontal" },
-    // Columns
-    { indices: [0, 5, 10, 15, 20], type: "vertical" },
-    { indices: [1, 6, 11, 16, 21], type: "vertical" },
-    { indices: [2, 7, 12, 17, 22], type: "vertical" },
-    { indices: [3, 8, 13, 18, 23], type: "vertical" },
-    { indices: [4, 9, 14, 19, 24], type: "vertical" },
-    // Diagonals
-    { indices: [0, 6, 12, 18, 24], type: "diagonal-main" },
-    { indices: [4, 8, 12, 16, 20], type: "diagonal-anti" },
+    { indices: [0, 1, 2, 3, 4], type: "horizontal" }, { indices: [5, 6, 7, 8, 9], type: "horizontal" },
+    { indices: [10, 11, 12, 13, 14], type: "horizontal" }, { indices: [15, 16, 17, 18, 19], type: "horizontal" },
+    { indices: [20, 21, 22, 23, 24], type: "horizontal" }, { indices: [0, 5, 10, 15, 20], type: "vertical" },
+    { indices: [1, 6, 11, 16, 21], type: "vertical" }, { indices: [2, 7, 12, 17, 22], type: "vertical" },
+    { indices: [3, 8, 13, 18, 23], type: "vertical" }, { indices: [4, 9, 14, 19, 24], type: "vertical" },
+    { indices: [0, 6, 12, 18, 24], type: "diagonal-main" }, { indices: [4, 8, 12, 16, 20], type: "diagonal-anti" },
   ];
 
   let bingoCount = 0;
-  const completedLines = [];
-
   lines.forEach((line) => {
     if (line.indices.every((index) => completedCells[index])) {
       bingoCount++;
-      completedLines.push(line);
       drawBingoLine(line.indices, line.type);
     }
   });
 
-  // Handle bingo celebrations
   if (bingoCount > currentBingoCount) {
     const grid = document.getElementById("bingoGrid");
-
-    // Add celebration class
     grid.classList.add("bingo-celebration");
     setTimeout(() => {
       grid.classList.remove("bingo-celebration");
     }, 3000);
-
-    // Show bingo message
     showBingoMessage(bingoCount);
-
-    console.log(
-      `BINGO! ${bingoCount} line${bingoCount > 1 ? "s" : ""} completed!`,
-    );
   }
-
-  // Update the current bingo count
   currentBingoCount = bingoCount;
-
-  return bingoCount;
 }
 
-/* Track completed cells
-let completedCells = Array(25).fill(false); // 5x5 grid
-completedCells[12] = true; // FREE space is always completed*/
+let completedCells = Array(25).fill(false);
 
-// Enhanced toggle function with better feedback
 async function toggleCellCompletion(index) {
   const cells = document.querySelectorAll(".bingo-cell");
   const cell = cells[index];
@@ -1226,7 +789,6 @@ async function toggleCellCompletion(index) {
 
   checkForBingo();
   
-  // --- NEW LOGIC: Create session on first interaction ---
   if (!currentSessionId) {
     const cardCode = document.getElementById("cardCode").value;
     if (cardCode) {
@@ -1235,12 +797,10 @@ async function toggleCellCompletion(index) {
         const sessionData = await initSession(cardCode);
         currentSessionId = sessionData.sessionId;
 
-        // Update URL with the new session ID
         const currentUrl = new URL(window.location);
         currentUrl.searchParams.set("session", currentSessionId);
         history.pushState(null, '', currentUrl.toString());
 
-        // Show save button now that we have a session to save
         const saveBtn = document.getElementById('saveSessionBtn');
         const token = localStorage.getItem('token');
         if (token) {
@@ -1261,208 +821,103 @@ async function toggleCellCompletion(index) {
       } catch (error) {
         console.error("Failed to create session on first click:", error);
         alert("Warning: Could not create a session. Your progress will not be saved.");
-        return; // Exit if we can't create a session
+        return;
       }
     }
   }
   
-  // Now that a session is guaranteed, save the progress
   if (currentSessionId) {
     updateSession(currentSessionId, completedCells);
   }
 }
 
-// Updated initialization of completed cells - FIXED: Don't pre-mark legendary cells
-let completedCells = Array(25).fill(false); // 5x5 grid
-// Note: We'll only mark the FREE space as completed after the card is rendered
-
-// Keep your existing export function
 document.getElementById("exportBtn").addEventListener("click", async () => {
   const card = document.getElementById("bingoCard");
-
-  if (!card) {
-    alert("No bingo card to export. Please generate a card first.");
-    return;
-  }
-
+  if (!card) return alert("No bingo card to export. Please generate a card first.");
   const exportBtn = document.getElementById("exportBtn");
-  const originalText = exportBtn.textContent;
   exportBtn.textContent = "Exporting...";
   exportBtn.disabled = true;
-
   try {
     const images = card.querySelectorAll("img");
     for (const img of images) {
       if (img.src && !img.src.startsWith("data:")) {
         try {
           const base64 = await imageToBase64(img);
-          if (base64) {
-            img.src = base64;
-          }
+          if (base64) img.src = base64;
         } catch (error) {
           console.warn("Failed to convert image to base64:", error);
         }
       }
     }
-
     await new Promise((resolve) => setTimeout(resolve, 300));
-
-    const originalCardStyle = {
-      margin: card.style.margin,
-      boxShadow: card.style.boxShadow,
-    };
-
-    card.style.margin = "0";
-    card.style.boxShadow = "none";
-
     const canvas = await html2canvas(card, {
-      useCORS: true,
-      allowTaint: true,
-      scale: 2,
-      backgroundColor: null,
-      logging: false,
-      width: card.scrollWidth,
-      height: card.scrollHeight,
-      onclone: (clonedDoc) => {
-        const clonedCard = clonedDoc.getElementById("bingoCard");
-        if (clonedCard) {
-          clonedCard.style.margin = "0";
-          clonedCard.style.boxShadow = "none";
-
-          const badges = clonedCard.querySelectorAll(".rarity-badge");
-          badges.forEach((badge) => {
-            badge.style.textRendering = "geometricPrecision";
-            badge.style.fontKerning = "normal";
-            badge.style.fontSmoothing = "antialiased";
-            badge.style.webkitFontSmoothing = "antialiased";
-          });
-        }
-      },
+      useCORS: true, allowTaint: true, scale: 2, backgroundColor: null, logging: false
     });
-
-    card.style.margin = originalCardStyle.margin;
-    card.style.boxShadow = originalCardStyle.boxShadow;
-
     const link = document.createElement("a");
     link.download = `cobblemon_bingo_card_${Date.now()}.png`;
     link.href = canvas.toDataURL("image/png", 1.0);
-    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
   } catch (error) {
     console.error("Error exporting card:", error);
     alert("Error exporting card. Please try again.");
   } finally {
-    exportBtn.textContent = originalText;
+    exportBtn.textContent = "Export Card as PNG";
     exportBtn.disabled = false;
   }
 });
 
-// Enhanced clear function
 function clearCompleted() {
-  // Reset local state
   completedCells = Array(25).fill(false);
   currentBingoCount = 0;
-
-  // Mark the regular FREE space as complete again
   const centerCell = document.querySelector(".bingo-cell:nth-child(13)");
   if (centerCell && centerCell.textContent === "FREE") {
     completedCells[12] = true;
   }
-  
-  // Update the UI
   document.querySelectorAll(".bingo-cell").forEach((cell, index) => {
     cell.classList.toggle("completed", completedCells[index]);
-    // Remove manual checkmarks
-    const existingCheckmark = cell.querySelector(".manual-checkmark");
-    if (existingCheckmark) existingCheckmark.remove();
   });
-
   document.querySelectorAll(".bingo-line").forEach((el) => el.remove());
-  
-  // --- Add this line to save the cleared state to the backend ---
   if (currentSessionId) {
     updateSession(currentSessionId, completedCells);
   }
 }
 
-// Add this function to properly initialize completed cells after card generation
-function initializeCompletedCells(isLoadingFromServer = false) {
+function initializeCompletedCells() {
   const centerCell = document.querySelector(".bingo-cell:nth-child(13)");
-
-  // --- START OF FIX ---
-  // This is the crucial new logic.
-  // We check if the center cell is a standard "FREE" space.
-  // If it is, we FORCE its state to be 'true' in our data array,
-  // overriding whatever the server might have sent for a new session.
   if (centerCell && centerCell.textContent === "FREE") {
     completedCells[12] = true;
   }
-  // --- END OF FIX ---
-
-  // Now, with the corrected data, we update the visuals for all cells.
   document.querySelectorAll('.bingo-cell').forEach((cell, index) => {
-    // We add 'completed' class if the corresponding entry in our array is true.
-    if (completedCells[index]) {
-      cell.classList.add('completed');
-    } else {
-      // It's also good practice to remove the class if it's not completed.
-      cell.classList.remove('completed');
-    }
+    cell.classList.toggle("completed", !!completedCells[index]);
   });
 }
 
-// UPDATED cleanup function - Replace your existing cleanupTooltips function
 function cleanupTooltips() {
-  // Remove the active tooltip
   removeActiveTooltip();
-
-  // Remove any orphaned tooltips
-  document
-    .querySelectorAll(".tooltip, .legendary-tooltip")
-    .forEach((tooltip) => {
-      tooltip.remove();
-    });
-
-  // Call cleanup on all cells that have it
+  document.querySelectorAll(".tooltip, .legendary-tooltip").forEach((tooltip) => {
+    tooltip.remove();
+  });
   document.querySelectorAll(".bingo-cell").forEach((cell) => {
-    if (cell.tooltipCleanup) {
-      cell.tooltipCleanup();
-    }
+    if (cell.tooltipCleanup) cell.tooltipCleanup();
   });
 }
 
-// Enhanced particle generator - add this to the end of script.js
 function createEnhancedParticles() {
     const particlesContainer = document.querySelector('.particles');
     if (!particlesContainer) return;
-
-    // Clear existing particlefs
     particlesContainer.innerHTML = '';
-
-    // Create 15 particles for better visibility
     for (let i = 0; i < 15; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
-
-        // Random horizontal position
         const leftPosition = Math.random() * 100;
         particle.style.left = leftPosition + '%';
-
-        // Random animation delay for staggered effect
         const delay = Math.random() * 6;
         particle.style.animationDelay = `-${delay}s`;
-
-        // Random animation duration for variety
-        const duration = 5 + Math.random() * 3; // 5-8 seconds
+        const duration = 5 + Math.random() * 3;
         particle.style.animationDuration = `${duration}s`;
-
         particlesContainer.appendChild(particle);
     }
 }
 
-// Initialize particles when page loads
 document.addEventListener('DOMContentLoaded', createEnhancedParticles);
-
-// Refresh particles every 30 seconds to keep them active
 setInterval(createEnhancedParticles, 30000);
