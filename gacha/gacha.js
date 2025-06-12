@@ -13,7 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmationMessage = document.getElementById('confirmation-message');
     const confirmBtn = document.getElementById('confirm-open-btn');
     const cancelBtn = document.getElementById('cancel-open-btn');
+    
+    // --- Pack Intro Animation Elements ---
     const packIntroOverlay = document.getElementById('pack-opening-intro-overlay');
+    const packContainer = packIntroOverlay.querySelector('.opening-pack-container');
     const packArt = packIntroOverlay.querySelector('.opening-pack-art');
     const packNameDisplay = document.getElementById('opening-pack-name');
 
@@ -128,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const packName = button.closest('.banner-content').querySelector('.banner-name').textContent;
 
         confirmationMessage.textContent = `Are you sure you want to open ${packName}?`;
-        // Store all necessary info for when the user confirms
         pendingPackOpen = { bannerId, button, packName };
         confirmationModal.style.display = 'flex';
     }
@@ -141,21 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = true;
         button.textContent = 'Opening...';
 
-        // --- NEW: Set up and trigger intro animation ---
+        // Set up and trigger intro animation
         packNameDisplay.textContent = packName;
-        // Reset styles
-        packArt.className = 'opening-pack-art'; 
-        packNameDisplay.className = '';
-        // Add new theme class
+        packArt.className = 'opening-pack-art'; // Reset styles
         packArt.classList.add(`pack-theme-${bannerId}`);
-        // Show overlay
         packIntroOverlay.style.display = 'flex';
-        // Trigger animations
-        packArt.classList.add('animate');
+        packContainer.classList.add('animate');
         packNameDisplay.classList.add('animate');
 
-
-        // Wait for the animation to finish (2.5 seconds)
+        // Wait for the animation to finish (total duration is around 2.5s)
         await new Promise(resolve => setTimeout(resolve, 2500));
         
         try {
@@ -164,8 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ bannerId })
             });
-
+            
             packIntroOverlay.style.display = 'none';
+            packContainer.classList.remove('animate');
+            packNameDisplay.classList.remove('animate');
 
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
@@ -190,6 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             alert(`Error: ${error.message}`);
             packIntroOverlay.style.display = 'none';
+            packContainer.classList.remove('animate');
+            packNameDisplay.classList.remove('animate');
             button.disabled = false;
             button.textContent = 'Open Pack';
         } finally {
