@@ -98,13 +98,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Stage 3: Setup UI now that assets are loaded
             userInventory = new Map(user.inventory.map(item => [item.itemId, item]));
             
-            hideLoadingScreen(); // Hide loading screen only after everything is ready
-            mainContent.style.display = 'block';
+            mainContent.style.display = 'block'; // Prepare content to be faded in
             accessGate.style.display = 'none';
 
             renderBanners();
             renderInventory();
             addConfirmationListeners();
+
+            // Hide loading screen only after everything is ready
+            hideLoadingScreen(); 
 
         } catch (error) {
             console.error("Initialization Error:", error);
@@ -302,11 +304,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- THIS FUNCTION IS NOW FIXED ---
     function hideLoadingScreen() {
         loadingScreen.classList.add("fade-out");
+        // Add the 'loaded' class to the body to trigger the fade-in of the main content
+        document.body.classList.add("loaded"); 
+        
         setTimeout(() => {
             loadingScreen.style.display = "none";
-        }, 800);
+        }, 800); // The timeout should match the CSS transition duration
+        
         document.body.classList.remove("loading");
     }
 
