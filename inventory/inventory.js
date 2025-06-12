@@ -40,13 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const pokeApiUrl = item.id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${item.id}.png` : '';
             const fallbackScript = item.id ? `this.onerror=null; this.src='${pokeApiUrl}';` : '';
 
-            // Updated structure with a new .item-info container
+            // Simplified the inner structure for better CSS control
             itemCard.innerHTML = `
                 <img src="${imageSrc}" alt="${item.itemName}" class="item-image" style="${imageStyle}" onerror="${fallbackScript}">
-                <div class="item-info">
-                    <div class="item-name">${item.itemName}</div>
-                    <div class="item-quantity">x${item.quantity}</div>
-                </div>
+                <div class="item-name">${item.itemName}</div>
+                <div class="item-quantity">x${item.quantity}</div>
                 <div class="item-popup-overlay">
                     <button class="use-item-btn" data-item-name="${item.itemName}">Use</button>
                 </div>
