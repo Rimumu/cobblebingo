@@ -630,7 +630,7 @@ body.loading {
     background: rgba(0,0,0,0.85);
     backdrop-filter: blur(10px);
     gap: 30px;
-    perspective: 1000px;
+    perspective: 1000px; /* Important for 3D transforms */
 }
 
 #opening-pack-name {
@@ -638,6 +638,7 @@ body.loading {
     color: #fff;
     text-shadow: 0 3px 15px rgba(0,0,0,0.5);
     opacity: 0;
+    transform: translateY(20px);
 }
 
 #opening-pack-name.animate {
@@ -652,7 +653,7 @@ body.loading {
 }
 
 .opening-pack-container.animate {
-    animation: shake-pack 1.5s ease-in-out;
+    animation: shake-pack 1.5s ease-in-out forwards;
 }
 
 .opening-pack-art {
@@ -660,55 +661,63 @@ body.loading {
     height: 100%;
     position: absolute;
     display: flex;
+    border-radius: 15px;
+    /* Move border here to prevent seam */
+    border: 2px solid grey; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.3);
+    overflow: hidden; /* Hide the seam between halves */
 }
 
 .pack-half {
     width: 50%;
     height: 100%;
-    background-size: 200% 100%; /* Make the background double wide */
+    background-size: 200% 100%;
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .pack-half.left {
-    border-radius: 15px 0 0 15px;
-    background-position: left;
+    background-position: left center;
 }
 .pack-half.right {
-    border-radius: 0 15px 15px 0;
-    background-position: right;
+    background-position: right center;
 }
 
 /* Pack Themes */
+.pack-theme-lamb_chop_pack {
+    border-color: #d2a679;
+}
 .pack-theme-lamb_chop_pack .pack-half {
     background-image: linear-gradient(145deg, #a56d39, #6f4e2b);
-    border: 2px solid #d2a679;
+}
+.pack-theme-a5_wagyu_pack {
+    border-color: #e57373;
 }
 .pack-theme-a5_wagyu_pack .pack-half {
     background-image: linear-gradient(145deg, #8c1c2f, #58121e);
-    border: 2px solid #e57373;
 }
 
 .pack-slash {
     position: absolute;
     top: -10%;
-    left: 50%;
+    left: -15%;
     width: 4px;
     height: 120%;
-    background: linear-gradient(to bottom, transparent, white, transparent);
-    transform: rotate(20deg) translateX(-50%);
-    opacity: 0;
-    filter: drop-shadow(0 0 10px white);
+    background: white;
+    transform: rotate(25deg);
+    filter: drop-shadow(0 0 8px white) drop-shadow(0 0 15px white);
+    transform-origin: center;
+    opacity: 0; /* Hidden by default */
 }
 
 .opening-pack-container.animate .pack-slash {
-    animation: slash-anim 0.5s ease-out 1.5s forwards;
+    animation: slash-anim 0.3s ease-out 1.5s forwards;
 }
 
 .opening-pack-container.animate .pack-half.left {
-    animation: split-left 0.8s ease-out 1.7s forwards;
+    animation: split-left 0.8s ease-out 1.6s forwards;
 }
 .opening-pack-container.animate .pack-half.right {
-    animation: split-right 0.8s ease-out 1.7s forwards;
+    animation: split-right 0.8s ease-out 1.6s forwards;
 }
 
 
@@ -726,14 +735,14 @@ body.loading {
 }
 
 @keyframes slash-anim {
-    0% { transform: rotate(20deg) scaleY(0); opacity: 0; }
-    50% { transform: rotate(20deg) scaleY(1); opacity: 1; }
-    100% { transform: rotate(20deg) scaleY(1); opacity: 0; }
+    0% { transform: rotate(25deg) scaleY(0); opacity: 0.5; }
+    50% { transform: rotate(25deg) scaleY(1); opacity: 1; }
+    100% { transform: rotate(25deg) scaleY(1); opacity: 0; }
 }
 
 @keyframes split-left {
-    to { transform: translateX(-150%) rotateZ(-20deg); opacity: 0; }
+    to { transform: translate(-100px, 40px) rotateZ(-25deg); opacity: 0; }
 }
 @keyframes split-right {
-    to { transform: translateX(150%) rotateZ(20deg); opacity: 0; }
+    to { transform: translate(100px, -40px) rotateZ(25deg); opacity: 0; }
 }
