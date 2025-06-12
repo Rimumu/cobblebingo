@@ -78,10 +78,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (data.success) {
                     alert(data.message);
-                    // Re-render the inventory with the updated data from the server
                     renderInventory(data.newInventory);
                 } else {
-                    throw new Error(data.error);
+                    // Check for our new specific error code
+                    if (data.errorCode === 'PLAYER_OFFLINE') {
+                        alert('Please login to the server to receive your item in-game!');
+                        // No inventory refresh is needed since the item was not used
+                        button.disabled = false;
+                        button.textContent = 'Use';
+                    } else {
+                        // Handle all other errors
+                        throw new Error(data.error);
+                    }
                 }
 
             } catch (error) {
