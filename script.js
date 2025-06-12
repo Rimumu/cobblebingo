@@ -736,7 +736,7 @@ async function generateBingo() {
 
   let cardData;
   let sessionData = null;
-  let difficultyToUse; // **FIX:** Use a variable to hold the definitive difficulty
+  let difficultyToUse;
 
   try {
     const urlParams = new URLSearchParams(window.location.search);
@@ -749,12 +749,10 @@ async function generateBingo() {
     }
 
     if (codeToUse) {
-      // --- LOADING AN EXISTING CARD ---
       cardData = await retrieveCard(codeToUse);
-      difficultyToUse = cardData.cardData.difficulty; // **FIX:** Get difficulty from loaded data
+      difficultyToUse = cardData.cardData.difficulty; 
       document.getElementById("cardCode").value = cardData.code;
-      document.getElementById("difficulty").value = difficultyToUse; // Update UI
-      // Sync the custom selector's text display
+      document.getElementById("difficulty").value = difficultyToUse;
       const customSelectTrigger = document.querySelector('.custom-select__trigger span');
       const selectedOption = document.querySelector(`.custom-option[data-value="${difficultyToUse}"]`);
       if (customSelectTrigger && selectedOption) {
@@ -766,8 +764,7 @@ async function generateBingo() {
       }
       
     } else {
-      // --- GENERATING A NEW CARD ---
-      difficultyToUse = document.getElementById("difficulty").value; // **FIX:** Get difficulty from dropdown
+      difficultyToUse = document.getElementById("difficulty").value;
       let pokemonForCard = selectPokemonByDifficulty(pokemonData, difficultyToUse);
       let selectedPokemon;
 
@@ -809,9 +806,8 @@ async function generateBingo() {
 
     document.getElementById('saveSessionBtn').style.display = 'none';
     
-    // **FIX:** Pass the correct difficulty to the rendering function
-    await renderBingoCard(cardData.cardData.pokemon, difficultyToUse); 
-    initializeCompletedCells(true);
+    await renderBingoCard(cardData.cardData.pokemon);
+    initializeCompletedCells();
     checkForBingo();
 
     const logoContainer = document.getElementById("logoContainer");
@@ -852,139 +848,99 @@ function generateNewCard() {
   generateBingo();
 }
 
-// **FIX:** Function now accepts 'difficulty' as a parameter
-async function renderBingoCard(selected, difficulty) {
+// --- THIS FUNCTION HAS BEEN REWRITTEN FOR RELIABILITY ---
+async function renderBingoCard(selectedPokemon) {
   const bingoCard = document.getElementById("bingoGrid");
+  const difficulty = document.getElementById("difficulty").value; // Still needed for non-center cells
+  bingoCard.innerHTML = ""; // Clear the card before rendering
+
   const imageLoadPromises = [];
 
-  selected.forEach((pokemon, index) => {
-    const name = pokemon.name;
+  selectedPokemon.forEach((pokemon, index) => {
     const cell = document.createElement("div");
     cell.className = "bingo-cell";
     const isLegendary = pokemon.rarity?.toLowerCase() === "legendary";
 
-    // **FIX:** This logic now uses the reliable 'difficulty' parameter
-    const isLegendaryCenter = (difficulty === "insane" && index === 12);
-    const isNightmareLegendary = (difficulty === "nightmare" && isLegendary);
+    // This function will render the shared HTML for any Pokémon cell
+    const renderPokemonCell = (isCenter) => {
+        if(isCenter) cell.classList.add("legendary-center");
+        cell.style.cursor = "pointer";
+        cell.addEventListener("click", (e) => {
+            if (e.target.closest('.pokemon-img-link')) {
+                 window.open(e.target.closest('.pokemon-img-link').href, "_blank");
+                 return;
+            }
+            toggleCellCompletion(index);
+        });
 
-    if (isLegendaryCenter || isNightmareLegendary) {
-      cell.classList.add("legendary-center");
-      cell.style.cursor = "pointer";
-      cell.addEventListener("click", (e) => {
-        if (e.target === cell || e.target.classList.contains("pokemon-name")) {
-          toggleCellCompletion(index);
-        } else {
-            window.open(
-              "https://modrinth.com/datapack/cobblemon-legendary-structures",
-              "_blank"
-            );
+        setupTooltipEvents(cell, `Biome: ${pokemon.biome}`, isCenter);
+        
+        const wrapper = document.createElement("a");
+        wrapper.className = "pokemon-img-link";
+        wrapper.href = `https://cobblemon.tools/pokedex/pokemon/${pokemon.name.toLowerCase().replace(/\s+/g, "_")}`;
+        wrapper.target = "_blank"; // Open in new tab
+        wrapper.onclick = (e) => e.stopPropagation(); // Prevent card click when image is clicked
+
+        const img = document.createElement("img");
+        img.alt = pokemon.name;
+        img.className = "pokemon-img";
+        img.crossOrigin = "anonymous";
+        
+        const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${pokemon.name.toLowerCase().replace(/\s+/g, "_")}.webp`;
+        img.src = cobblemonUrl;
+        img.onerror = () => {
+            if(pokemon.id) {
+                img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
+            } else {
+                img.src = "";
+                img.alt = `${pokemon.name} (Image not available)`;
+            }
+        };
+
+        wrapper.appendChild(img);
+        cell.appendChild(wrapper);
+
+        const label = document.createElement("div");
+        label.className = "pokemon-name";
+        label.textContent = pokemon.name;
+        cell.appendChild(label);
+
+        if (pokemon.rarity) {
+            const rarity = document.createElement("div");
+            const rarityClass = pokemon.rarity.toLowerCase().replace(/\s+/g, "-");
+            rarity.className = `rarity-badge ${rarityClass}`;
+            rarity.textContent = pokemon.rarity.charAt(0).toUpperCase() + pokemon.rarity.slice(1);
+            cell.appendChild(rarity);
         }
-      });
-      setupTooltipEvents(cell, `Legendary Pokémon | Biome: ${pokemon.biome}`, true);
-      const wrapper = document.createElement("div");
-      wrapper.className = "image-wrapper";
-      const img = document.createElement("img");
-      img.alt = name;
-      img.className = "pokemon-img";
-      img.crossOrigin = "anonymous";
-      const formattedName = name.toLowerCase().replace(/\s+/g, "_");
-      img.src = `https://cobbledex.b-cdn.net/mons/large/${formattedName}.webp`;
-      img.onerror = () => {
-        if(pokemon.id) {
-            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-        } else {
-            img.src = "";
-            img.alt = `${pokemon.name} (Image not available)`;
-        }
-      };
-      wrapper.appendChild(img);
-      cell.appendChild(wrapper);
-      const label = document.createElement("div");
-      label.className = "pokemon-name";
-      label.textContent = name;
-      cell.appendChild(label);
-      const rarity = document.createElement("div");
-      rarity.className = "rarity-badge legendary";
-      rarity.textContent = "Legendary";
-      cell.appendChild(rarity);
-    } else if (index === 12) {
-      // This is now the definitive "FREE" space logic
-      cell.textContent = "FREE";
-      cell.style.backgroundColor = "#ffd700";
-      cell.style.fontWeight = "bold";
-      cell.style.fontSize = "18px";
-      cell.style.color = "#000";
-      cell.classList.add("completed");
-    } else {
-      // This is for all other regular cells
-      cell.style.cursor = "pointer";
-      cell.addEventListener("click", (e) => {
-        if (e.target === cell || e.target.classList.contains("pokemon-name")) {
-          toggleCellCompletion(index);
-        } else {
-          openPokemonPage(pokemon.name);
-        }
-      });
-      setupTooltipEvents(cell, "Biome: " + pokemon.biome, false);
-      const wrapper = document.createElement("div");
-      wrapper.className = "image-wrapper";
-      const formattedName = name.toLowerCase().replace(/\s+/g, "_");
-      const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${formattedName}.webp`;
-      const img = document.createElement("img");
-      img.alt = name;
-      img.className = "pokemon-img";
-      img.crossOrigin = "anonymous";
-      wrapper.appendChild(img);
-      const loadPromise = new Promise(async (resolve) => {
-        // ... (image loading promise logic remains the same)
-        try {
-          const response = await fetch(cobblemonUrl);
-          if (!response.ok) throw new Error(`Cobbledex failed: ${response.status}`);
-          const blob = await response.blob();
-          const PLACEHOLDER_SIZE_MIN = 2160;
-          const PLACEHOLDER_SIZE_MAX = 2180;
-          if (blob.size >= PLACEHOLDER_SIZE_MIN && blob.size <= PLACEHOLDER_SIZE_MAX) {
-            throw new Error("Placeholder image detected");
-          }
-          const objectUrl = URL.createObjectURL(blob);
-          img.src = objectUrl;
-          await new Promise((imgResolve, imgReject) => {
-            img.onload = () => { URL.revokeObjectURL(objectUrl); imgResolve(); };
-            img.onerror = () => { URL.revokeObjectURL(objectUrl); imgReject(new Error("Image load failed")); };
-          });
-        } catch (error) {
-          console.warn(`Falling back to PokeAPI for ${pokemon.name}: ${error.message}`);
-          if (pokemon.id) {
-            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-            await new Promise((imgResolve) => {
-              img.onload = imgResolve;
-              img.onerror = () => { img.src = ""; img.alt = `${pokemon.name} (Image not available)`; imgResolve(); };
-            });
-          } else {
-            img.src = ""; img.alt = `${pokemon.name} (No ID available)`;
-          }
-        }
-        resolve();
-      });
-      imageLoadPromises.push(loadPromise);
-      cell.appendChild(wrapper);
-      const label = document.createElement("div");
-      label.className = "pokemon-name";
-      label.textContent = pokemon.name;
-      cell.appendChild(label);
-      if (pokemon.rarity) {
-        const rarity = document.createElement("div");
-        const rarityClass = pokemon.rarity.toLowerCase().replace(/\s+/g, "-");
-        rarity.className = `rarity-badge ${rarityClass}`;
-        rarity.textContent = pokemon.rarity.charAt(0).toUpperCase() + pokemon.rarity.slice(1);
-        cell.appendChild(rarity);
+    };
+    
+    // --- NEW ROBUST LOGIC ---
+    // First, check the center cell specifically by its data, not by difficulty
+    if (index === 12) {
+      if (isLegendary) {
+        renderPokemonCell(true); // true indicates it's the center legendary
+      } else {
+        cell.textContent = "FREE";
+        cell.style.backgroundColor = "#ffd700";
+        cell.style.fontWeight = "bold";
+        cell.style.fontSize = "18px";
+        cell.style.color = "#000";
+        // Free space is not clickable to toggle completion
       }
+    } 
+    // Then, handle other potential legendary cells (for Nightmare mode)
+    else if (difficulty === 'nightmare' && isLegendary) {
+      renderPokemonCell(false); // false indicates it's a non-center legendary
+    } 
+    // Finally, handle all other normal cells
+    else {
+      renderPokemonCell(false);
     }
+    
     bingoCard.appendChild(cell);
   });
-
-  await Promise.all(imageLoadPromises);
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  
+  // No need to await image promises here as onerror handles it
 }
 
 
@@ -1001,7 +957,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cardCodeInput) {
       cardCodeInput.value = code;
     }
-    // Automatically load card if code is in URL, session is optional
     generateBingo();
   }
 });
@@ -1091,7 +1046,6 @@ async function toggleCellCompletion(index) {
   const cells = document.querySelectorAll(".bingo-cell");
   const cell = cells[index];
 
-  // Prevent toggling the regular FREE space
   if (index === 12 && cell.textContent === "FREE") return;
 
   completedCells[index] = !completedCells[index];
@@ -1230,17 +1184,14 @@ function clearCompleted() {
   }
 }
 
-function initializeCompletedCells(isLoadingFromServer = false) {
+function initializeCompletedCells() {
   const centerCell = document.querySelector(".bingo-cell:nth-child(13)");
+  // Only auto-complete the FREE space if it's not a legendary cell
   if (centerCell && centerCell.textContent === "FREE") {
     completedCells[12] = true;
   }
   document.querySelectorAll('.bingo-cell').forEach((cell, index) => {
-    if (completedCells[index]) {
-      cell.classList.add('completed');
-    } else {
-      cell.classList.remove('completed');
-    }
+    cell.classList.toggle("completed", !!completedCells[index]);
   });
 }
 
