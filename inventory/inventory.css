@@ -6,31 +6,33 @@
 }
 
 .inventory-grid {
-    /* Using Flexbox for a more fluid layout */
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center; /* Center the group of items */
-    gap: 15px; /* Space between items */
+    /* This new method will center the rows of items */
+    text-align: center;
     margin-top: 30px;
 }
 
 .inventory-item-card {
+    /* --- Using inline-block for a robust horizontal layout --- */
+    display: inline-block;
+    vertical-align: top; /* Aligns items to the top of the line */
+
+    /* Using margin for spacing instead of gap */
+    margin: 8px;
+
+    /* Other styles for appearance */
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
     padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative; 
     overflow: hidden;
     
-    /* A fixed, more compact size */
+    /* A fixed, very compact size */
     width: 120px;
-    height: 160px; 
+    height: 165px; 
     box-sizing: border-box;
 }
 
@@ -42,31 +44,24 @@
 .item-image {
     width: 60px; 
     height: 60px;
-    margin-bottom: 5px; /* Tighter spacing */
+    margin-bottom: 8px; /* Space below image */
     object-fit: contain;
-    flex-shrink: 0;
-}
-
-.item-info {
-    /* This container groups the text together */
-    margin-top: auto; /* This pushes the text to the bottom of the card */
-    padding-bottom: 2px;
 }
 
 .item-name {
     font-weight: bold;
     font-size: 14px;
     line-height: 1.2;
-    margin: 0; /* Removed all extra spacing */
-    word-wrap: break-word; /* Helps with long names */
+    margin: 0; /* No extra margins */
+    word-wrap: break-word;
+    color: #fff;
 }
 
 .item-quantity {
     font-size: 1.1em;
     color: #4caf50;
     font-weight: bold;
-    line-height: 1.1;
-    margin-top: 2px; /* Minimal space between name and quantity */
+    margin-top: 4px; /* Tiny space between name and quantity */
 }
 
 /* --- Popup Styles --- */
@@ -85,6 +80,7 @@
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease-in-out;
+    border-radius: 11px; /* Match parent */
 }
 
 .inventory-item-card.active .item-popup-overlay {
