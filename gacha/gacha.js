@@ -13,10 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmationMessage = document.getElementById('confirmation-message');
     const confirmBtn = document.getElementById('confirm-open-btn');
     const cancelBtn = document.getElementById('cancel-open-btn');
-    
-    // --- NEW: Pack Intro Animation Elements ---
     const packIntroOverlay = document.getElementById('pack-opening-intro-overlay');
     const packArt = packIntroOverlay.querySelector('.opening-pack-art');
+    const packNameDisplay = document.getElementById('opening-pack-name');
+
 
     // --- API Configuration ---
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -128,21 +128,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const packName = button.closest('.banner-content').querySelector('.banner-name').textContent;
 
         confirmationMessage.textContent = `Are you sure you want to open ${packName}?`;
-        pendingPackOpen = { bannerId, button };
+        // Store all necessary info for when the user confirms
+        pendingPackOpen = { bannerId, button, packName };
         confirmationModal.style.display = 'flex';
     }
 
     async function proceedWithPackOpening() {
         if (!pendingPackOpen) return;
         
-        const { bannerId, button } = pendingPackOpen;
+        const { bannerId, button, packName } = pendingPackOpen;
         
         button.disabled = true;
         button.textContent = 'Opening...';
 
-        // --- NEW: Trigger intro animation ---
+        // --- NEW: Set up and trigger intro animation ---
+        packNameDisplay.textContent = packName;
+        // Reset styles
+        packArt.className = 'opening-pack-art'; 
+        packNameDisplay.className = '';
+        // Add new theme class
+        packArt.classList.add(`pack-theme-${bannerId}`);
+        // Show overlay
         packIntroOverlay.style.display = 'flex';
+        // Trigger animations
         packArt.classList.add('animate');
+        packNameDisplay.classList.add('animate');
+
 
         // Wait for the animation to finish (2.5 seconds)
         await new Promise(resolve => setTimeout(resolve, 2500));
@@ -154,8 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ bannerId })
             });
 
-            // Hide intro animation as soon as API call is done
-            packArt.classList.remove('animate');
             packIntroOverlay.style.display = 'none';
 
             const data = await response.json();
@@ -180,8 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderBanners();
         } catch (error) {
             alert(`Error: ${error.message}`);
-            // Reset UI in case of failure
-            packArt.classList.remove('animate');
             packIntroOverlay.style.display = 'none';
             button.disabled = false;
             button.textContent = 'Open Pack';
