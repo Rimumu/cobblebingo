@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const packNameDisplay = document.getElementById('opening-pack-name');
     const loadingProgressBar = document.getElementById('loading-progress-bar');
     const loadingText = document.getElementById('loading-text');
-    const pokeballLoader = document.querySelector('.pokeball-loader');
+    const summoningPortal = document.querySelector('.summoning-portal');
 
 
     // --- API Configuration ---
@@ -70,6 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
             displayGateMessage('You must be logged in to access the Gacha Realm.', '/login.html', 'Login Now');
             return;
         }
+        
+        const startTime = Date.now();
+        const minimumLoadTime = 4000; // 4 seconds minimum
+
         try {
             const [userResponse, bannersResponse] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -91,7 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadingProgressBar.style.width = `${progress}%`;
             });
 
-            // --- NEW: Final animation sequence ---
+            // Enforce minimum loading time
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, minimumLoadTime - elapsedTime);
+            await new Promise(resolve => setTimeout(resolve, remainingTime));
+
+            // --- Final animation sequence ---
             loadingScreen.classList.add('is-loaded');
 
             await new Promise(resolve => setTimeout(resolve, 1500));
