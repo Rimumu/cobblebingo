@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const packArt = packIntroOverlay.querySelector('.opening-pack-art');
     const packNameDisplay = document.getElementById('opening-pack-name');
 
+
     // --- API Configuration ---
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:8000'
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Main Initialization ---
     async function initializeGachaPage() {
         const startTime = Date.now();
-        const minimumLoadTime = 2500; // 2.5 seconds minimum
+        const minimumLoadTime = 2500; // A minimum time for the animation to feel substantial
 
         if (!token || token === 'undefined') {
             displayGateMessage('You must be logged in to access the Gacha Realm.', '/login.html', 'Login Now');
