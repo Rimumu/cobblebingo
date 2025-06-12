@@ -47,22 +47,22 @@ document.addEventListener('DOMContentLoaded', () => {
         urls.forEach(url => {
             const p = new Promise((resolve) => {
                 const img = new Image();
-                img.onload = () => {
-                    loadedCount++;
-                    onProgress((loadedCount / totalCount) * 100);
-                    resolve();
-                };
-                img.onerror = () => {
-                    loadedCount++;
-                    onProgress((loadedCount / totalCount) * 100);
-                    resolve(); 
-                };
+                img.onload = resolve;
+                img.onerror = resolve; // Always resolve even on error
                 img.src = url;
             });
             promises.push(p);
         });
 
-        return Promise.all(promises);
+        // Track progress for all images
+        const progressPromises = promises.map(p => 
+            p.then(() => {
+                loadedCount++;
+                onProgress((loadedCount / totalCount) * 100);
+            })
+        );
+        
+        return Promise.all(progressPromises);
     }
 
     // --- Main Initialization ---
@@ -87,19 +87,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            loadingText.textContent = 'Loading Assets...';
-            
             const imageUrls = banners.map(b => b.image);
             await preloadImages(imageUrls, (progress) => {
                 loadingProgressBar.style.width = `${progress}%`;
             });
 
             // --- NEW: Final animation sequence ---
-            loadingText.textContent = 'Welcome!';
-            pokeballLoader.classList.add('is-opening');
+            pokeballLoader.classList.add('is-loaded'); // Trigger the open/glow animation
 
             // Wait for the open/glow animation to finish
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             userInventory = new Map(user.inventory.map(item => [item.itemId, item]));
             
