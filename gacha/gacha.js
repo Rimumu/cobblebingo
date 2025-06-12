@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- DOM Elements ---
+    // --- DOM Elements v1---
     const mainContent = document.getElementById('mainContent');
     const accessGate = document.getElementById('access-gate-container');
     const loadingScreen = document.getElementById('loadingScreen');
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const p = new Promise((resolve) => {
                 const img = new Image();
                 img.onload = resolve;
-                img.onerror = resolve; // Always resolve even on error
+                img.onerror = resolve; 
                 img.src = url;
             });
             promises.push(p);
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Main Initialization ---
     async function initializeGachaPage() {
         const startTime = Date.now();
-        const minimumLoadTime = 2500; // A minimum time for the animation to feel substantial
+        const minimumLoadTime = 2500; 
 
         if (!token || token === 'undefined') {
             displayGateMessage('You must be logged in to access the Gacha Realm.', '/login.html', 'Login Now');
