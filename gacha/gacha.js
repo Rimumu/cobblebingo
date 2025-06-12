@@ -9,12 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsModal = document.getElementById('results-modal-overlay');
     const rewardDisplay = document.getElementById('reward-display');
     const closeResultsBtn = document.getElementById('close-results-btn');
-
-    // --- NEW: Confirmation Modal Elements ---
     const confirmationModal = document.getElementById('confirmation-modal-overlay');
     const confirmationMessage = document.getElementById('confirmation-message');
     const confirmBtn = document.getElementById('confirm-open-btn');
     const cancelBtn = document.getElementById('cancel-open-btn');
+    
+    // --- NEW: Pack Intro Animation Elements ---
+    const packIntroOverlay = document.getElementById('pack-opening-intro-overlay');
+    const packArt = packIntroOverlay.querySelector('.opening-pack-art');
 
     // --- API Configuration ---
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -25,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Global State ---
     let availableBanners = [];
     let userInventory = new Map();
-    let pendingPackOpen = null; // To store data for the pending action
+    let pendingPackOpen = null;
 
     // --- Main Initialization ---
     async function initializeGachaPage() {
@@ -57,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             renderBanners();
             renderInventory();
-            addConfirmationListeners(); // Set up listeners for the new modal
+            addConfirmationListeners();
 
         } catch (error) {
             console.error("Initialization Error:", error);
@@ -120,21 +122,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // --- NEW: This function now only shows the confirmation ---
     function handleOpenPackClick(e) {
         const button = e.target;
         const bannerId = button.getAttribute('data-banner-id');
         const packName = button.closest('.banner-content').querySelector('.banner-name').textContent;
 
         confirmationMessage.textContent = `Are you sure you want to open ${packName}?`;
-        
-        // Store the necessary info for when the user confirms
         pendingPackOpen = { bannerId, button };
-        
         confirmationModal.style.display = 'flex';
     }
 
-    // --- NEW: The actual pack opening logic ---
     async function proceedWithPackOpening() {
         if (!pendingPackOpen) return;
         
@@ -143,12 +140,23 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = true;
         button.textContent = 'Opening...';
 
+        // --- NEW: Trigger intro animation ---
+        packIntroOverlay.style.display = 'flex';
+        packArt.classList.add('animate');
+
+        // Wait for the animation to finish (2.5 seconds)
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        
         try {
             const response = await fetch(`${API_BASE_URL}/api/gacha/open-pack`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ bannerId })
             });
+
+            // Hide intro animation as soon as API call is done
+            packArt.classList.remove('animate');
+            packIntroOverlay.style.display = 'none';
 
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
@@ -172,18 +180,20 @@ document.addEventListener('DOMContentLoaded', () => {
             renderBanners();
         } catch (error) {
             alert(`Error: ${error.message}`);
+            // Reset UI in case of failure
+            packArt.classList.remove('animate');
+            packIntroOverlay.style.display = 'none';
             button.disabled = false;
             button.textContent = 'Open Pack';
         } finally {
-            pendingPackOpen = null; // Clear the pending action
+            pendingPackOpen = null;
         }
     }
 
-    // --- NEW: Add listeners for the confirmation buttons ---
     function addConfirmationListeners() {
         cancelBtn.addEventListener('click', () => {
             confirmationModal.style.display = 'none';
-            pendingPackOpen = null; // Clear the pending action
+            pendingPackOpen = null;
         });
 
         confirmBtn.addEventListener('click', () => {
@@ -192,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Animation & Utility Functions (Unchanged) ---
     function startOpeningAnimation(reelItems) {
         return new Promise(resolve => {
             if (!reelItems || reelItems.length === 0) {
