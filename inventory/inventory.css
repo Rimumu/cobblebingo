@@ -48,3 +48,29 @@
     color: #4caf50;
     font-weight: bold;
 }
+
+/* Add this to the end of inventory/inventory.css */
+
+.use-item-btn {
+    margin-top: 15px;
+    padding: 8px 16px;
+    width: 100%;
+    background: #4caf50;
+    border: none;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.use-item-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.use-item-btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+    transform: none;
+}
