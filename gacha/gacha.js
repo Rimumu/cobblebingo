@@ -10,6 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const rewardDisplay = document.getElementById('reward-display');
     const closeResultsBtn = document.getElementById('close-results-btn');
 
+    // --- NEW: Confirmation Modal Elements ---
+    const confirmationModal = document.getElementById('confirmation-modal-overlay');
+    const confirmationMessage = document.getElementById('confirmation-message');
+    const confirmBtn = document.getElementById('confirm-open-btn');
+    const cancelBtn = document.getElementById('cancel-open-btn');
+
     // --- API Configuration ---
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:8000'
@@ -18,7 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Global State ---
     let availableBanners = [];
-    let userInventory = new Map(); // Use a Map to store the full item object
+    let userInventory = new Map();
+    let pendingPackOpen = null; // To store data for the pending action
 
     // --- Main Initialization ---
     async function initializeGachaPage() {
@@ -42,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Store the full item object in the Map, keyed by itemId
             userInventory = new Map(user.inventory.map(item => [item.itemId, item]));
             
             hideLoadingScreen(true);
@@ -51,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             renderBanners();
             renderInventory();
+            addConfirmationListeners(); // Set up listeners for the new modal
 
         } catch (error) {
             console.error("Initialization Error:", error);
@@ -65,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
         bannerContainer.innerHTML = '';
 
         availableBanners.forEach(banner => {
-            // Check for the item in our new Map
             const hasItem = userInventory.has(banner.requiredItemId) && userInventory.get(banner.requiredItemId).quantity > 0;
             const bannerEl = document.createElement('div');
             bannerEl.className = 'banner-card';
@@ -73,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="${banner.image}" alt="${banner.name}" class="banner-image">
                 <div class="banner-overlay"></div>
                 <div class="banner-content">
-                    <h2>${banner.name}</h2>
+                    <h2 class="banner-name">${banner.name}</h2>
                     <p>${banner.description}</p>
                     <button class="open-pack-btn" data-banner-id="${banner.id}" ${!hasItem ? 'disabled' : ''}>Open Pack</button>
                 </div>`;
@@ -92,14 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
         for(const itemId of requiredItems) {
             const item = userInventory.get(itemId);
             const quantity = item ? item.quantity : 0;
-            // Use the image from the item data, with a fallback
             const imageSrc = item ? item.image : 'https://placehold.co/64x64/777777/FFFFFF?text=ITEM';
             const altText = item ? item.itemName : itemId;
             
             const itemEl = document.createElement('div');
             itemEl.className = 'inventory-item';
             
-            // Apply a CSS filter to the correct images to make them visible
             const imageStyle = imageSrc && imageSrc.includes('thenounproject') 
                 ? 'filter: invert(1) drop-shadow(0 2px 3px rgba(0,0,0,0.5));' 
                 : 'filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));';
@@ -109,17 +113,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Event Handling & Animation ---
+    // --- Event Handling & Logic ---
     function addBannerEventListeners() {
         document.querySelectorAll('.open-pack-btn').forEach(button => {
-            button.addEventListener('click', handleOpenPack);
+            button.addEventListener('click', handleOpenPackClick);
         });
     }
+    
+    // --- NEW: This function now only shows the confirmation ---
+    function handleOpenPackClick(e) {
+        const button = e.target;
+        const bannerId = button.getAttribute('data-banner-id');
+        const packName = button.closest('.banner-content').querySelector('.banner-name').textContent;
 
-    async function handleOpenPack(e) {
-        const bannerId = e.target.getAttribute('data-banner-id');
-        e.target.disabled = true;
-        e.target.textContent = 'Opening...';
+        confirmationMessage.textContent = `Are you sure you want to open ${packName}?`;
+        
+        // Store the necessary info for when the user confirms
+        pendingPackOpen = { bannerId, button };
+        
+        confirmationModal.style.display = 'flex';
+    }
+
+    // --- NEW: The actual pack opening logic ---
+    async function proceedWithPackOpening() {
+        if (!pendingPackOpen) return;
+        
+        const { bannerId, button } = pendingPackOpen;
+        
+        button.disabled = true;
+        button.textContent = 'Opening...';
+
         try {
             const response = await fetch(`${API_BASE_URL}/api/gacha/open-pack`, {
                 method: 'POST',
@@ -132,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             await startOpeningAnimation(data.animationReel);
             
-            // Repopulate inventory map with updated data from server
             userInventory = new Map(data.newInventory.map(item => [item.itemId, item]));
             
             const reward = data.reward;
@@ -150,12 +172,27 @@ document.addEventListener('DOMContentLoaded', () => {
             renderBanners();
         } catch (error) {
             alert(`Error: ${error.message}`);
-            e.target.disabled = false;
-            e.target.textContent = 'Open Pack';
+            button.disabled = false;
+            button.textContent = 'Open Pack';
+        } finally {
+            pendingPackOpen = null; // Clear the pending action
         }
     }
 
-    // --- FINAL, 100% SYNCHRONIZED CSS-BASED ANIMATION ---
+    // --- NEW: Add listeners for the confirmation buttons ---
+    function addConfirmationListeners() {
+        cancelBtn.addEventListener('click', () => {
+            confirmationModal.style.display = 'none';
+            pendingPackOpen = null; // Clear the pending action
+        });
+
+        confirmBtn.addEventListener('click', () => {
+            confirmationModal.style.display = 'none';
+            proceedWithPackOpening();
+        });
+    }
+
+    // --- Animation & Utility Functions (Unchanged) ---
     function startOpeningAnimation(reelItems) {
         return new Promise(resolve => {
             if (!reelItems || reelItems.length === 0) {
@@ -163,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return resolve();
             }
 
-            // 1. Duplicate content to create a visually infinite reel.
             const animationContent = [...reelItems, ...reelItems];
             reel.innerHTML = '';
             animationContent.forEach(item => {
@@ -180,34 +216,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 reel.appendChild(itemEl);
             });
 
-            // 2. Make the animation overlay visible FIRST.
             animationOverlay.style.display = 'flex';
             reel.style.transition = 'none';
             reel.style.transform = `translateX(0px)`;
             
-            // 3. CRITICAL FIX: Use requestAnimationFrame to wait for the browser
-            // to render the elements before we measure them. This guarantees
-            // the width calculation is accurate.
             requestAnimationFrame(() => {
-                // 4. Now that elements are visible, calculate the exact stopping point.
-                const winningIndex = 70; // The fixed winning position from the server.
+                const winningIndex = 70;
                 const itemWidth = 150;
                 const itemMargin = 10;
                 const totalItemWidth = itemWidth + itemMargin;
                 const containerWidth = reel.parentElement.offsetWidth;
-                
-                // This calculation is now 100% deterministic and accurate.
                 const targetPosition = (totalItemWidth * winningIndex) - (containerWidth / 2) + (totalItemWidth / 2);
 
-                // 5. Apply the smooth animation.
                 reel.style.transition = 'transform 7s cubic-bezier(0.1, 0.4, 0.2, 1)';
                 reel.style.transform = `translateX(-${targetPosition}px)`;
             
-                // 6. End the process after the animation finishes.
                 setTimeout(() => {
                     animationOverlay.style.display = 'none';
                     resolve();
-                }, 7100); // Must be slightly longer than the CSS transition.
+                }, 7100);
             });
         });
     }
@@ -218,7 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Utility Functions ---
     function hideLoadingScreen(showContent = false) {
         if (loadingScreen) {
             loadingScreen.classList.add("fade-out");
