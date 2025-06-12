@@ -13,12 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmationMessage = document.getElementById('confirmation-message');
     const confirmBtn = document.getElementById('confirm-open-btn');
     const cancelBtn = document.getElementById('cancel-open-btn');
-    
-    // --- Pack Intro Animation Elements ---
     const packIntroOverlay = document.getElementById('pack-opening-intro-overlay');
     const packContainer = packIntroOverlay.querySelector('.opening-pack-container');
     const packArt = packIntroOverlay.querySelector('.opening-pack-art');
     const packNameDisplay = document.getElementById('opening-pack-name');
+    const loadingProgressBar = document.getElementById('loading-progress-bar');
+    const loadingText = document.getElementById('loading-text');
 
 
     // --- API Configuration ---
@@ -32,6 +32,38 @@ document.addEventListener('DOMContentLoaded', () => {
     let userInventory = new Map();
     let pendingPackOpen = null;
 
+    // --- NEW: Image Preloading Function ---
+    function preloadImages(urls, onProgress) {
+        let loadedCount = 0;
+        const totalCount = urls.length;
+        const promises = [];
+
+        if (totalCount === 0) {
+            onProgress(100);
+            return Promise.resolve();
+        }
+
+        urls.forEach(url => {
+            const p = new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedCount++;
+                    onProgress((loadedCount / totalCount) * 100);
+                    resolve();
+                };
+                img.onerror = () => { // Count errors as "loaded" to not block the UI
+                    loadedCount++;
+                    onProgress((loadedCount / totalCount) * 100);
+                    resolve(); 
+                };
+                img.src = url;
+            });
+            promises.push(p);
+        });
+
+        return Promise.all(promises);
+    }
+
     // --- Main Initialization ---
     async function initializeGachaPage() {
         if (!token || token === 'undefined') {
@@ -39,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         try {
+            // Stage 1: Fetch data
             const [userResponse, bannersResponse] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch(`${API_BASE_URL}/api/gacha/banners`)
@@ -53,10 +86,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 displayGateMessage('You must link your Discord account to use the Gacha Realm.', `${API_BASE_URL}/api/auth/discord?token=${token}`, 'Link Discord Now');
                 return;
             }
+            
+            loadingText.textContent = 'Loading Assets...';
+            
+            // Stage 2: Preload all images from banners
+            const imageUrls = banners.map(b => b.image);
+            await preloadImages(imageUrls, (progress) => {
+                loadingProgressBar.style.width = `${progress}%`;
+            });
 
+            // Stage 3: Setup UI now that assets are loaded
             userInventory = new Map(user.inventory.map(item => [item.itemId, item]));
             
-            hideLoadingScreen(true);
+            hideLoadingScreen(); // Hide loading screen only after everything is ready
             mainContent.style.display = 'block';
             accessGate.style.display = 'none';
 
@@ -151,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
         packContainer.classList.add('animate');
         packNameDisplay.classList.add('animate');
 
-        // Wait for the animation to finish (total duration is around 2.5s)
         await new Promise(resolve => setTimeout(resolve, 2500));
         
         try {
@@ -261,13 +302,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function hideLoadingScreen(showContent = false) {
-        if (loadingScreen) {
-            loadingScreen.classList.add("fade-out");
-            setTimeout(() => loadingScreen.style.display = "none", 800);
-        }
+    function hideLoadingScreen() {
+        loadingScreen.classList.add("fade-out");
+        setTimeout(() => {
+            loadingScreen.style.display = "none";
+        }, 800);
         document.body.classList.remove("loading");
-        if (showContent) document.body.classList.add("loaded");
     }
 
     function displayGateMessage(message, linkUrl, linkText) {
@@ -278,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gateActions.innerHTML = `<a href="${linkUrl}" class="gate-button">${linkText}</a>`;
             accessGate.style.display = 'flex';
         }
-        hideLoadingScreen(false);
+        hideLoadingScreen();
     }
     
     initializeGachaPage();
