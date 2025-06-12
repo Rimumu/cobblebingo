@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         inventory.forEach(item => {
             const itemCard = document.createElement('div');
             itemCard.className = 'inventory-item-card';
-            // Add a dataset attribute to easily identify the card
             itemCard.dataset.itemId = item.itemId; 
             
             const imageSrc = item.image || 'https://placehold.co/100x100/2E3A4D/FFF?text=Item';
@@ -41,11 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const pokeApiUrl = item.id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${item.id}.png` : '';
             const fallbackScript = item.id ? `this.onerror=null; this.src='${pokeApiUrl}';` : '';
 
-            // Updated structure with the hidden popup overlay
+            // Updated structure with a new .item-info container
             itemCard.innerHTML = `
                 <img src="${imageSrc}" alt="${item.itemName}" class="item-image" style="${imageStyle}" onerror="${fallbackScript}">
-                <div class="item-name">${item.itemName}</div>
-                <div class="item-quantity">x${item.quantity}</div>
+                <div class="item-info">
+                    <div class="item-name">${item.itemName}</div>
+                    <div class="item-quantity">x${item.quantity}</div>
+                </div>
                 <div class="item-popup-overlay">
                     <button class="use-item-btn" data-item-name="${item.itemName}">Use</button>
                 </div>
@@ -54,14 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- New event listener for smart click handling ---
+    // Event listener for smart click handling
     inventoryGrid.addEventListener('click', async (e) => {
         const itemCard = e.target.closest('.inventory-item-card');
         if (!itemCard) return;
 
-        // If the click is on the "Use" button
         if (e.target.classList.contains('use-item-btn')) {
-            e.stopPropagation(); // Prevent the card click from re-triggering
+            e.stopPropagation(); 
             const button = e.target;
             const itemId = itemCard.dataset.itemId;
             const itemName = button.dataset.itemName;
@@ -96,14 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     button.textContent = 'Use';
                 }
             }
-        // If the click is on the card itself (but not the button)
         } else {
-            // Deactivate any other active cards first
             const currentlyActive = document.querySelector('.inventory-item-card.active');
             if (currentlyActive && currentlyActive !== itemCard) {
                 currentlyActive.classList.remove('active');
             }
-            // Toggle the active state on the clicked card
             itemCard.classList.toggle('active');
         }
     });
