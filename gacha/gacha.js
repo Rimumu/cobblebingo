@@ -18,10 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const packContainer = packIntroOverlay.querySelector('.opening-pack-container');
     const packArt = packIntroOverlay.querySelector('.opening-pack-art');
     const packNameDisplay = document.getElementById('opening-pack-name');
-    // START: New info modal elements
     const currencyInfoOverlay = document.getElementById('currency-info-overlay');
     const closeInfoBtn = document.getElementById('close-info-btn');
-    // END: New info modal elements
 
 
     // --- API Configuration ---
@@ -34,6 +32,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let availableBanners = [];
     let userInventory = new Map();
     let pendingPackOpen = null;
+
+    // --- START: New helper function to trigger announcement ---
+    function triggerAnnouncement(reward) {
+        // Fire-and-forget this request. We don't need to wait for it.
+        fetch(`${API_BASE_URL}/api/gacha/announce-pull`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ itemId: reward.itemId })
+        }).catch(err => console.error("Announcement failed:", err)); // Log error if it fails
+    }
+    // --- END: New helper function ---
+
 
     // --- Image Preloading Function ---
     function preloadImages(urls) {
@@ -93,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderBanners();
             renderInventory();
             addConfirmationListeners();
-            addInfoModalListeners(); // Call the new listener setup function
+            addInfoModalListeners();
 
             hideLoadingScreen(); 
 
@@ -113,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasItem = userInventory.has(banner.requiredItemId) && userInventory.get(banner.requiredItemId).quantity > 0;
             const bannerEl = document.createElement('div');
             bannerEl.className = 'banner-card';
-            bannerEl.classList.add(banner.id); // *** ADDED THIS LINE ***
+            bannerEl.classList.add(banner.id);
             bannerEl.innerHTML = `
                 <img src="${banner.image}" alt="${banner.name}" class="banner-image">
                 <div class="banner-overlay"></div>
@@ -214,6 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             resultsModal.style.display = 'flex';
             
+            // --- MODIFIED: Trigger announcement AFTER animation and results are shown ---
+            triggerAnnouncement(reward);
+            // ---
+            
             renderInventory();
             renderBanners();
         } catch (error) {
@@ -240,7 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // START: New function to handle the info modal
     function addInfoModalListeners() {
         if (inventoryDisplay && currencyInfoOverlay && closeInfoBtn) {
             inventoryDisplay.addEventListener('click', () => {
@@ -252,7 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-    // END: New function
 
     function startOpeningAnimation(reelItems) {
         return new Promise(resolve => {
