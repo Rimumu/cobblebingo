@@ -2,11 +2,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://cobblebingo-backend-production.up.railway.app';
     const token = localStorage.getItem('token');
     const inventoryGrid = document.getElementById('inventory-grid');
+    
+    // --- START: New DOM elements for confirmation modal ---
+    const confirmationOverlay = document.getElementById('item-confirmation-overlay');
+    const confirmationMessage = document.getElementById('item-confirmation-message');
+    const confirmBtn = document.getElementById('confirm-use-btn');
+    const cancelBtn = document.getElementById('cancel-use-btn');
+    // --- END: New DOM elements ---
 
     if (!token) {
         inventoryGrid.innerHTML = '<p>You must be <a href="/login.html">logged in</a> to view your inventory.</p>';
         return;
     }
+
+    // --- START: New function to show custom confirmation ---
+    function showConfirmation(itemName) {
+        return new Promise(resolve => {
+            confirmationMessage.textContent = `Are you sure you want to use one ${itemName}? This will send the item to you in-game.`;
+            confirmationOverlay.style.display = 'flex';
+
+            const onConfirm = () => {
+                confirmationOverlay.style.display = 'none';
+                cleanup();
+                resolve(true);
+            };
+
+            const onCancel = () => {
+                confirmationOverlay.style.display = 'none';
+                cleanup();
+                resolve(false);
+            };
+
+            const cleanup = () => {
+                confirmBtn.removeEventListener('click', onConfirm);
+                cancelBtn.removeEventListener('click', onCancel);
+            };
+
+            confirmBtn.addEventListener('click', onConfirm);
+            cancelBtn.addEventListener('click', onCancel);
+        });
+    }
+    // --- END: New function ---
 
     async function fetchInventory() {
         try {
@@ -40,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const pokeApiUrl = item.id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${item.id}.png` : '';
             const fallbackScript = item.id ? `this.onerror=null; this.src='${pokeApiUrl}';` : '';
 
-            // Simplified the inner structure for better CSS control
             itemCard.innerHTML = `
                 <img src="${imageSrc}" alt="${item.itemName}" class="item-image" style="${imageStyle}" onerror="${fallbackScript}">
                 <div class="item-name">${item.itemName}</div>
@@ -53,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Event listener for smart click handling
     inventoryGrid.addEventListener('click', async (e) => {
         const itemCard = e.target.closest('.inventory-item-card');
         if (!itemCard) return;
@@ -64,7 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemId = itemCard.dataset.itemId;
             const itemName = button.dataset.itemName;
             
-            if (confirm(`Are you sure you want to use one ${itemName}? This will send the item to you in-game.`)) {
+            // --- MODIFIED: Replaced confirm() with new custom modal ---
+            const userConfirmed = await showConfirmation(itemName);
+            if (userConfirmed) {
                 button.disabled = true;
                 button.textContent = 'Using...';
 
@@ -103,9 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Add a listener to close the popup when clicking outside
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.inventory-item-card')) {
+        if (!e.target.closest('.inventory-item-card') && !e.target.closest('.confirmation-overlay')) {
             const currentlyActive = document.querySelector('.inventory-item-card.active');
             if (currentlyActive) {
                 currentlyActive.classList.remove('active');
