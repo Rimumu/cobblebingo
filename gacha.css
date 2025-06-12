@@ -188,21 +188,14 @@ body.loaded #mainContent {
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    transition: opacity 0.8s ease, visibility 0.8s ease;
+    transition: opacity 0.8s ease 0.5s, visibility 0.8s ease 0.5s; /* Add delay to fade-out */
     opacity: 1;
     visibility: visible;
-}
-
-#loadingScreen.is-loaded {
-    /* When loading is complete, this class triggers the final animation */
-    background: #fff;
-    transition: background 0.3s ease-out 1s;
 }
 
 #loadingScreen.fade-out {
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.5s ease 0.5s, visibility 0.5s ease 0.5s;
 }
 
 .loading-content-wrapper {
@@ -210,19 +203,24 @@ body.loaded #mainContent {
     flex-direction: column;
     align-items: center;
     gap: 40px;
-    transition: opacity 0.5s;
+    transition: opacity 0.5s ease-in-out;
 }
 
 #loadingScreen.is-loaded .loading-content-wrapper {
     opacity: 0;
 }
 
-
 .summoning-portal {
     width: 150px;
     height: 150px;
     position: relative;
     animation: portal-pulse 4s ease-in-out infinite;
+    transition: transform 1s ease-in-out;
+}
+
+#loadingScreen.is-loaded .summoning-portal {
+    transform: scale(0); /* Implode the portal when loaded */
+    animation: none; /* Stop the pulsing */
 }
 
 .portal-ring {
@@ -233,6 +231,7 @@ body.loaded #mainContent {
     height: 100%;
     border-radius: 50%;
     border: 3px solid;
+    transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Add transition for smooth collapse */
 }
 
 .portal-ring.ring-1 {
@@ -243,18 +242,12 @@ body.loaded #mainContent {
 .portal-ring.ring-2 {
     border-color: #2196f3;
     box-shadow: 0 0 15px #2196f3, inset 0 0 15px #2196f3;
-    transform: scale(0.75);
     animation: spin-counter-clockwise 3s linear infinite;
 }
 .portal-ring.ring-3 {
     border-color: #fff;
     box-shadow: 0 0 5px #fff, inset 0 0 5px #fff;
-    transform: scale(0.5);
     animation: spin-clockwise 5s linear infinite;
-}
-
-#loadingScreen.is-loaded .summoning-portal {
-    animation: portal-flash 1s ease-out forwards;
 }
 
 .loading-text {
@@ -281,19 +274,16 @@ body.loaded #mainContent {
 }
 
 @keyframes spin-clockwise {
-    from { transform: rotate(0deg) scale(1); }
-    to { transform: rotate(360deg) scale(1); }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 @keyframes spin-counter-clockwise {
-    from { transform: rotate(0deg) scale(0.75); }
-    to { transform: rotate(-360deg) scale(0.75); }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(-360deg); }
 }
 @keyframes portal-pulse {
     0%, 100% { filter: brightness(1); }
     50% { filter: brightness(1.5); }
-}
-@keyframes portal-flash {
-    to { transform: scale(50); opacity: 0; }
 }
 
 .particles {
@@ -320,7 +310,7 @@ body.loaded #mainContent {
 }
 
 /* --- Access Gate Styles --- */
-
+/* (This section and below are unchanged from previous versions) */
 .access-gate {
     position: fixed;
     top: 0;
@@ -680,6 +670,7 @@ body.loaded #mainContent {
     height: 100%;
     background-size: 200% 100%;
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
     border: 2px solid grey; 
     box-sizing: border-box;
 }
