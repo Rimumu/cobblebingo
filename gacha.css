@@ -213,11 +213,16 @@ body.loading {
     animation: shake-pokeball 1.2s cubic-bezier(.36,.07,.19,.97) infinite;
 }
 
+.pokeball-loader.is-opening {
+    animation: none; /* Stop shaking when it opens */
+}
+
 .pokeball-top, .pokeball-bottom, .pokeball-middle {
     position: absolute;
     left: 0;
     width: 100px;
     height: 50px;
+    transition: transform 0.5s ease-out;
 }
 
 .pokeball-top {
@@ -227,11 +232,19 @@ body.loading {
     border-bottom: 4px solid #000;
 }
 
+.pokeball-loader.is-opening .pokeball-top {
+    animation: open-top 0.5s ease-out 0.2s forwards;
+}
+
 .pokeball-bottom {
     bottom: 0;
     background: #fff;
     border-radius: 0 0 50px 50px;
     border-top: 4px solid #000;
+}
+
+.pokeball-loader.is-opening .pokeball-bottom {
+    animation: open-bottom 0.5s ease-out 0.2s forwards;
 }
 
 .pokeball-middle {
@@ -251,6 +264,11 @@ body.loading {
     background: #fff;
     border-radius: 50%;
     border: 4px solid #000;
+    transition: opacity 0.2s ease;
+}
+
+.pokeball-loader.is-opening .pokeball-button {
+    opacity: 0;
 }
 
 .pokeball-light {
@@ -263,6 +281,10 @@ body.loading {
     background: #ddd;
     border-radius: 50%;
     animation: pokeball-light-glow 1.2s ease-in-out infinite;
+}
+
+.pokeball-loader.is-opening .pokeball-light {
+    animation: final-glow 1.5s ease-in-out forwards;
 }
 
 .loading-text {
@@ -278,6 +300,11 @@ body.loading {
     background: rgba(255,255,255,0.1);
     border-radius: 4px;
     overflow: hidden;
+    transition: opacity 0.5s;
+}
+
+.pokeball-loader.is-opening + .loading-text + .loading-progress-container {
+    opacity: 0;
 }
 
 .loading-progress-bar {
@@ -298,6 +325,18 @@ body.loading {
 @keyframes pokeball-light-glow {
   0%, 100% { box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.2); }
   50% { box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.5); }
+}
+
+@keyframes open-top {
+    to { transform: translateY(-20px) rotate(-10deg); }
+}
+@keyframes open-bottom {
+    to { transform: translateY(20px) rotate(10deg); }
+}
+@keyframes final-glow {
+    0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 10px 5px #fff; }
+    50% { transform: translate(-50%, -50%) scale(15); box-shadow: 0 0 30px 20px #fff; background-color: #fff;}
+    100% { transform: translate(-50%, -50%) scale(15); opacity: 0; }
 }
 
 /* --- Access Gate Styles --- */
@@ -664,6 +703,7 @@ body.loading {
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     border: 2px solid grey; 
     box-sizing: border-box;
+    /* Removed the individual shadow from the halves */
 }
 
 .pack-half.left {
