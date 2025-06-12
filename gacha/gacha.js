@@ -17,10 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const packContainer = packIntroOverlay.querySelector('.opening-pack-container');
     const packArt = packIntroOverlay.querySelector('.opening-pack-art');
     const packNameDisplay = document.getElementById('opening-pack-name');
-    const loadingProgressBar = document.getElementById('loading-progress-bar');
-    const loadingText = document.getElementById('loading-text');
-    const summoningPortal = document.querySelector('.summoning-portal');
-
+    const loadingTextElement = document.getElementById('loading-text');
 
     // --- API Configuration ---
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -33,17 +30,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let userInventory = new Map();
     let pendingPackOpen = null;
 
-    // --- Image Preloading Function ---
-    function preloadImages(urls, onProgress) {
-        let loadedCount = 0;
-        const totalCount = urls.length;
-        const promises = [];
+    // --- NEW: Function to create wave text ---
+    function createWaveText(text) {
+        loadingTextElement.innerHTML = text.split('').map((char, i) => 
+            `<span style="animation-delay: ${i * 50}ms">${char === ' ' ? '&nbsp;' : char}</span>`
+        ).join('');
+    }
 
-        if (totalCount === 0) {
-            onProgress(100);
+    // --- Image Preloading Function ---
+    function preloadImages(urls) {
+        const promises = [];
+        if (!urls || urls.length === 0) {
             return Promise.resolve();
         }
-
         urls.forEach(url => {
             const p = new Promise((resolve) => {
                 const img = new Image();
@@ -53,27 +52,19 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             promises.push(p);
         });
-
-        const progressPromises = promises.map(p => 
-            p.then(() => {
-                loadedCount++;
-                onProgress((loadedCount / totalCount) * 100);
-            })
-        );
-        
-        return Promise.all(progressPromises);
+        return Promise.all(promises);
     }
 
     // --- Main Initialization ---
     async function initializeGachaPage() {
+        createWaveText("Entering the gacha realm...");
+        const startTime = Date.now();
+        const minimumLoadTime = 4000; // 4 seconds minimum
+
         if (!token || token === 'undefined') {
             displayGateMessage('You must be logged in to access the Gacha Realm.', '/login.html', 'Login Now');
             return;
         }
-        
-        const startTime = Date.now();
-        const minimumLoadTime = 4000; // 4 seconds minimum
-
         try {
             const [userResponse, bannersResponse] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/user/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -91,18 +82,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const imageUrls = banners.map(b => b.image);
-            await preloadImages(imageUrls, (progress) => {
-                loadingProgressBar.style.width = `${progress}%`;
-            });
+            await preloadImages(imageUrls);
 
             // Enforce minimum loading time
             const elapsedTime = Date.now() - startTime;
             const remainingTime = Math.max(0, minimumLoadTime - elapsedTime);
             await new Promise(resolve => setTimeout(resolve, remainingTime));
 
-            // --- Final animation sequence ---
+            // Final animation sequence
             loadingScreen.classList.add('is-loaded');
-
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             userInventory = new Map(user.inventory.map(item => [item.itemId, item]));
@@ -317,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         setTimeout(() => {
             loadingScreen.style.display = "none";
-        }, 800);
+        }, 1300); // Increased timeout to match CSS transition
         
         document.body.classList.remove("loading");
     }
