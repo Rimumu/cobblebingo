@@ -539,7 +539,7 @@ async function generateBingo() {
 
     document.getElementById('saveSessionBtn').style.display = 'none';
     
-    // **FIX:** Pass the correct difficulty to the rendering function
+    // **FIX:** The correct difficulty is passed directly to the rendering function.
     await renderBingoCard(cardData.cardData.pokemon, difficultyToUse); 
     initializeCompletedCells();
     checkForBingo();
@@ -562,14 +562,13 @@ function generateNewCard() {
   generateBingo();
 }
 
-// --- THIS FUNCTION HAS BEEN REWRITTEN FOR RELIABILITY ---
 async function renderBingoCard(selectedPokemon, difficulty) {
     const bingoCard = document.getElementById("bingoGrid");
-    bingoCard.innerHTML = ""; // Clear the card before rendering
+    bingoCard.innerHTML = "";
 
     const imageLoadPromises = [];
 
-    // This is a helper function to avoid repeating the complex image loading code
+    // This is a helper function to avoid repeating rendering logic
     const createPokemonCell = (cell, pokemon, isLegendaryStyled) => {
         if (isLegendaryStyled) {
             cell.classList.add("legendary-center");
@@ -634,7 +633,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
                     img.alt = `${pokemon.name} (Image not available)`;
                 }
             }
-            // Use a separate resolver for load/error to ensure Promise.all continues
+            // Use event listeners to resolve the promise, ensuring it always completes
             const finalResolve = () => resolve();
             img.addEventListener('load', finalResolve, { once: true });
             img.addEventListener('error', finalResolve, { once: true });
@@ -660,7 +659,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
             }
         } else { // Logic for all other cells
             if (difficulty === 'nightmare' && isLegendary) {
-                createPokemonCell(cell, pokemon, true); // Style as legendary on Nightmare
+                createPokemonCell(cell, pokemon, true); // Style all legendaries on Nightmare
             } else {
                 createPokemonCell(cell, pokemon, false); // Style as normal
             }
