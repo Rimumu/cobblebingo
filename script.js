@@ -539,7 +539,6 @@ async function generateBingo() {
 
     document.getElementById('saveSessionBtn').style.display = 'none';
     
-    // **FIX:** Pass the correct difficulty to the rendering function
     await renderBingoCard(cardData.cardData.pokemon, difficultyToUse); 
     initializeCompletedCells();
     checkForBingo();
@@ -562,12 +561,15 @@ function generateNewCard() {
   generateBingo();
 }
 
-// --- THIS FUNCTION HAS BEEN REWRITTEN FOR RELIABILITY ---
 async function renderBingoCard(selectedPokemon, difficulty) {
     const bingoCard = document.getElementById("bingoGrid");
     bingoCard.innerHTML = ""; // Clear the card before rendering
 
     const imageLoadPromises = [];
+
+    // Count the number of legendary Pokémon to create a reliable styling rule,
+    // as the 'difficulty' string can be unreliable when loading saved cards.
+    const legendaryCount = selectedPokemon.filter(p => p.rarity?.toLowerCase() === 'legendary').length;
 
     // This is a helper function to avoid repeating rendering logic
     const createPokemonCell = (cell, pokemon, isLegendaryStyled) => {
@@ -610,7 +612,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
             cell.appendChild(rarity);
         }
 
-        // --- FULLY RESTORED: Robust Image Fallback Logic ---
+        // --- Robust Image Fallback Logic ---
         const loadPromise = new Promise(async (resolve) => {
             const cobblemonUrl = `https://cobbledex.b-cdn.net/mons/large/${pokemon.name.toLowerCase().replace(/\s+/g, "_")}.webp`;
             try {
@@ -648,17 +650,20 @@ async function renderBingoCard(selectedPokemon, difficulty) {
         cell.className = "bingo-cell";
         const isLegendary = pokemon.rarity?.toLowerCase() === 'legendary';
 
-        // Determine if the special legendary styling should be applied
+        // Determine if the special legendary styling should be applied based on the data itself.
         let styleAsLegendary = false;
         if (isLegendary) {
-            if (difficulty === 'nightmare') {
+            // If there are 5+ legendaries, it's a Nightmare-style card. Style all of them.
+            if (legendaryCount >= 5) {
                 styleAsLegendary = true;
-            } else if (difficulty === 'insane' && index === 12) {
+            } 
+            // If there's 1 legendary, it's an Insane-style card. Only style it if it's in the center.
+            else if (legendaryCount === 1 && index === 12) {
                 styleAsLegendary = true;
             }
         }
         
-        // Handle the center cell specifically if it's a "Free Space"
+        // Handle the "Free Space" cell separately
         if (index === 12 && pokemon.name === 'Free Space') {
             cell.textContent = "FREE";
             cell.style.backgroundColor = "#ffd700";
@@ -666,7 +671,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
             cell.style.fontSize = "18px";
             cell.style.color = "#000";
         } else {
-            // For all other cells (including legendary ones), use the helper
+            // For all Pokémon cells (including legendary ones), use the helper
             createPokemonCell(cell, pokemon, styleAsLegendary);
         }
         
