@@ -140,29 +140,36 @@ document.addEventListener('DOMContentLoaded', () => {
         addBannerEventListeners();
     }
     
+    // *** MODIFICATION START: Update renderInventory logic ***
     function renderInventory() {
         if (!inventoryDisplay) return;
         inventoryDisplay.innerHTML = '';
         
-        const requiredItems = new Set(availableBanners.map(b => b.requiredItemId));
+        // Get a unique list of required items from the banners
+        const requiredItemDetails = availableBanners.reduce((acc, banner) => {
+            if (!acc.some(item => item.itemId === banner.requiredItem.itemId)) {
+                acc.push(banner.requiredItem);
+            }
+            return acc;
+        }, []);
 
-        for(const itemId of requiredItems) {
-            const item = userInventory.get(itemId);
-            const quantity = item ? item.quantity : 0;
-            const imageSrc = item ? item.image : 'https://placehold.co/64x64/777777/FFFFFF?text=ITEM';
-            const altText = item ? item.itemName : itemId;
+        // Now render based on the master list of required items
+        requiredItemDetails.forEach(itemDetails => {
+            const userItem = userInventory.get(itemDetails.itemId);
+            const quantity = userItem ? userItem.quantity : 0;
             
             const itemEl = document.createElement('div');
             itemEl.className = 'inventory-item';
             
-            const imageStyle = imageSrc && imageSrc.includes('thenounproject') 
+            const imageStyle = itemDetails.image && itemDetails.image.includes('thenounproject') 
                 ? 'filter: invert(1) drop-shadow(0 2px 3px rgba(0,0,0,0.5));' 
                 : 'filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));';
 
-            itemEl.innerHTML = `<img src="${imageSrc}" alt="${altText}" style="width: 48px; height: 48px; object-fit: contain; ${imageStyle}"><span>x${quantity}</span>`;
+            itemEl.innerHTML = `<img src="${itemDetails.image}" alt="${itemDetails.itemName}" style="width: 48px; height: 48px; object-fit: contain; ${imageStyle}"><span>x${quantity}</span>`;
             inventoryDisplay.appendChild(itemEl);
-        }
+        });
     }
+    // *** MODIFICATION END ***
 
     // --- Event Handling & Logic ---
     function addBannerEventListeners() {
@@ -227,9 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             resultsModal.style.display = 'flex';
             
-            // --- MODIFIED: Trigger announcement AFTER animation and results are shown ---
             triggerAnnouncement(reward);
-            // ---
             
             renderInventory();
             renderBanners();
