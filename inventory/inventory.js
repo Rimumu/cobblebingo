@@ -3,25 +3,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
     const inventoryGrid = document.getElementById('inventory-grid');
     
-    // --- DOM elements for confirmation modal ---
     const confirmationOverlay = document.getElementById('item-confirmation-overlay');
     const confirmationMessage = document.getElementById('item-confirmation-message');
     const confirmBtn = document.getElementById('confirm-use-btn');
     const cancelBtn = document.getElementById('cancel-use-btn');
 
-    // --- START: New DOM elements for notice modal ---
     const noticeOverlay = document.getElementById('item-notice-overlay');
     const noticeTitle = document.getElementById('notice-title');
     const noticeMessage = document.getElementById('notice-message');
     const closeNoticeBtn = document.getElementById('close-notice-btn');
-    // --- END: New DOM elements ---
 
     if (!token) {
         inventoryGrid.innerHTML = '<p>You must be <a href="/login.html">logged in</a> to view your inventory.</p>';
         return;
     }
 
-    // --- Function to show custom confirmation ---
     function showConfirmation(itemName) {
         return new Promise(resolve => {
             confirmationMessage.textContent = `Are you sure you want to use one ${itemName}? This will send the item to you in-game.`;
@@ -49,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- START: New function to show notice/warning modal ---
     function showNotice(title, message) {
         return new Promise(resolve => {
             noticeTitle.textContent = title;
@@ -64,21 +59,23 @@ document.addEventListener('DOMContentLoaded', () => {
             closeNoticeBtn.addEventListener('click', onClose, { once: true });
         });
     }
-    // --- END: New function ---
 
+    // *** MODIFICATION START: Update fetchInventory to call the new sync endpoint ***
     async function fetchInventory() {
         try {
-            inventoryGrid.innerHTML = '<p>Loading your items...</p>';
-            const response = await fetch(`${API_BASE_URL}/api/user/me`, {
+            inventoryGrid.innerHTML = '<p>Loading and syncing your items...</p>';
+            const response = await fetch(`${API_BASE_URL}/api/user/sync-inventory`, {
+                method: 'POST', // Use POST for an action that modifies data
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
-            renderInventory(data.user.inventory);
+            renderInventory(data.inventory); // Render the synced inventory from the response
         } catch (error) {
             inventoryGrid.innerHTML = `<p>Error loading inventory: ${error.message}</p>`;
         }
     }
+    // *** MODIFICATION END ***
 
     function renderInventory(inventory) {
         if (!inventory || inventory.length === 0) {
@@ -119,6 +116,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const button = e.target;
             const itemId = itemCard.dataset.itemId;
             const itemName = button.dataset.itemName;
+
+            // *** MODIFICATION START: Add special handling for knives ***
+            if (itemId === 'kitchen_knife' || itemId === 'chef_knife') {
+                window.location.href = '/gacha/';
+                return; // Stop further execution
+            }
+            // *** MODIFICATION END ***
             
             const userConfirmed = await showConfirmation(itemName);
             if (userConfirmed) {
@@ -137,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         await showNotice('Success!', data.message);
                         renderInventory(data.newInventory);
                     } else {
-                        // --- MODIFIED: Replaced alert() with new notice modal ---
                         if (data.errorCode === 'PLAYER_OFFLINE') {
                             await showNotice('Player Offline', 'Please log in to the server to receive your item in-game!');
                         } else {
