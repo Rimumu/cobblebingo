@@ -10,21 +10,37 @@ function showNotice(title, message) {
         const closeBtn = document.getElementById('close-notice-btn');
 
         if (!overlay || !titleEl || !messageEl || !closeBtn) {
-            alert(message); // Fallback to alert if modal elements aren't on the page
+            alert(message);
             return resolve();
         }
 
         titleEl.textContent = title;
         messageEl.textContent = message;
         overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('visible'), 10);
 
-        const closeHandler = () => {
-            overlay.style.display = 'none';
+        const removeListeners = () => {
             closeBtn.removeEventListener('click', closeHandler);
-            resolve();
+            document.removeEventListener('keydown', keydownHandler);
         };
 
-        closeBtn.addEventListener('click', closeHandler, { once: true });
+        const closeHandler = () => {
+            overlay.classList.remove('visible');
+            removeListeners();
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                resolve();
+            }, 300); // Match CSS transition time
+        };
+        
+        const keydownHandler = (e) => {
+            if (e.key === 'Enter' || e.key === 'Escape') {
+                closeHandler();
+            }
+        };
+
+        closeBtn.addEventListener('click', closeHandler);
+        document.addEventListener('keydown', keydownHandler);
     });
 }
 
@@ -42,29 +58,38 @@ function promptForSessionName() {
         }
 
         overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('visible'), 10);
+        
         input.value = `My Bingo Card - ${new Date().toLocaleDateString()}`;
         input.focus();
+        input.select();
 
-        const cleanup = () => {
-            overlay.style.display = 'none';
+        const removeListeners = () => {
             confirmBtn.removeEventListener('click', confirmHandler);
             cancelBtn.removeEventListener('click', cancelHandler);
             document.removeEventListener('keydown', keydownHandler);
         };
 
+        const cleanup = () => {
+            overlay.classList.remove('visible');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+        };
+
         const confirmHandler = () => {
             const sessionName = input.value.trim();
             if (sessionName) {
+                removeListeners();
                 cleanup();
                 resolve(sessionName);
-            } else {
-                input.focus();
             }
         };
 
         const cancelHandler = () => {
+            removeListeners();
             cleanup();
-            reject(); // Reject the promise if the user cancels
+            reject(); // Reject without an error for clean cancellation
         };
 
         const keydownHandler = (e) => {
@@ -75,12 +100,13 @@ function promptForSessionName() {
                 cancelHandler();
             }
         };
-
+        
         confirmBtn.addEventListener('click', confirmHandler);
         cancelBtn.addEventListener('click', cancelHandler);
         document.addEventListener('keydown', keydownHandler);
     });
 }
+
 
 function createTooltip(content, isLegendary = false) {
   // Remove any existing tooltip first
@@ -895,9 +921,10 @@ async function toggleCellCompletion(index) {
                   if (error && error.message) {
                     // This handles actual errors from the saveSession call
                     await showNotice('Error', `Could not save session: ${error.message}`);
+                  } else {
+                    // If 'error' is undefined, it means the user just canceled the prompt, so we do nothing.
+                    console.log("Save session cancelled.");
                   }
-                  // If 'error' is undefined, it means the user just canceled the prompt, so we do nothing.
-                  console.log("Save session cancelled or failed.");
               }
           };
         }
