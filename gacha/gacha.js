@@ -128,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
             bannerEl.className = 'banner-card';
             bannerEl.classList.add(banner.id);
 
-            // *** MODIFICATION START: Create the "Featuring" HTML block ***
             const featuringHtml = banner.featuring && banner.featuring.length > 0
               ? `<div class="featuring-container">
                    <h3>Featuring</h3>
@@ -137,17 +136,17 @@ document.addEventListener('DOMContentLoaded', () => {
                    </ul>
                  </div>`
               : '';
-            // *** MODIFICATION END ***
 
+            // *** MODIFICATION START: Removed the h2 element ***
             bannerEl.innerHTML = `
-                <img src="${banner.image}" alt="${banner.name}" class="banner-image">
+                <img src="${banner.image}" alt="${banner.id}" class="banner-image">
                 <div class="banner-overlay"></div>
                 ${featuringHtml} 
                 <div class="banner-content">
-                    <h2 class="banner-name">${banner.name}</h2>
                     <p>${banner.description}</p>
                     <button class="open-pack-btn" data-banner-id="${banner.id}" ${!hasItem ? 'disabled' : ''}>Open Pack</button>
                 </div>`;
+            // *** MODIFICATION END ***
             bannerContainer.appendChild(bannerEl);
         });
         addBannerEventListeners();
@@ -190,7 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleOpenPackClick(e) {
         const button = e.target;
         const bannerId = button.getAttribute('data-banner-id');
-        const packName = button.closest('.banner-content').querySelector('.banner-name').textContent;
+        const banner = availableBanners.find(b => b.id === bannerId);
+        const packName = banner ? banner.name : "this pack"; // Fallback name
 
         confirmationMessage.textContent = `Are you sure you want to open ${packName}?`;
         pendingPackOpen = { bannerId, button, packName };
