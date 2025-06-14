@@ -264,6 +264,16 @@
     align-items: center;
     z-index: 3001;
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* This makes the modal visible when the script adds the display:flex property */
+.daily-reward-overlay[style*="display: flex;"] {
+    opacity: 1;
+    visibility: visible;
 }
 
 .daily-reward-window {
@@ -275,7 +285,14 @@
     max-width: 400px;
     text-align: center;
     color: #fff;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
 }
+
+.daily-reward-overlay[style*="display: flex;"] .daily-reward-window {
+    transform: scale(1);
+}
+
 
 .daily-reward-window.success {
     border: 1px solid rgba(76, 175, 80, 0.4);
@@ -334,4 +351,9 @@
     background: linear-gradient(135deg, #ffc107, #ffb300);
     color: #1a1a1a;
     box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.daily-reward-window button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
 }
