@@ -60,17 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // *** MODIFICATION START: Update fetchInventory to call the new sync endpoint ***
+    // *** MODIFICATION START: Reverted to call the correct /api/user/me endpoint ***
     async function fetchInventory() {
         try {
-            inventoryGrid.innerHTML = '<p>Loading and syncing your items...</p>';
-            const response = await fetch(`${API_BASE_URL}/api/user/sync-inventory`, {
-                method: 'POST', // Use POST for an action that modifies data
+            inventoryGrid.innerHTML = '<p>Loading your items...</p>';
+            const response = await fetch(`${API_BASE_URL}/api/user/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
-            renderInventory(data.inventory); // Render the synced inventory from the response
+            // The /me route returns the full user object which now includes the synced inventory
+            renderInventory(data.user.inventory);
         } catch (error) {
             inventoryGrid.innerHTML = `<p>Error loading inventory: ${error.message}</p>`;
         }
