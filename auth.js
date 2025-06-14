@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!data.success) throw new Error(data.error);
             
             alert("Discord account unlinked successfully.");
-            updateAccountWidget();
+            updateAccountWidget(); // Refresh the dropdown to show the "Link" button again
         } catch (error) {
             alert(`Error: ${error.message}`);
         }
@@ -172,42 +172,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showRewardSuccessModal = (reward) => {
         const overlay = document.getElementById('daily-reward-success-overlay');
-        const img = document.getElementById('daily-reward-image');
-        const text = document.getElementById('daily-reward-text');
-        
-        img.src = reward.image;
-        text.textContent = `You received 1x ${reward.itemName}!`;
-        overlay.style.display = 'flex';
+        // *** FIX: Check if the modal elements exist before trying to use them ***
+        if (overlay) {
+            const img = document.getElementById('daily-reward-image');
+            const text = document.getElementById('daily-reward-text');
+            
+            if (img) img.src = reward.image;
+            if (text) text.textContent = `You received 1x ${reward.itemName}!`;
+            overlay.style.display = 'flex';
+        } else {
+            // Fallback for pages without the modal HTML
+            alert(`Daily Reward Claimed!\nYou received 1x ${reward.itemName}!`);
+            window.location.reload(); // Still reload to update inventory if needed
+        }
     };
     
     let countdownInterval;
     const showRewardCooldownModal = (nextAvailable) => {
         const overlay = document.getElementById('daily-reward-cooldown-overlay');
-        const timerText = document.getElementById('daily-reward-timer');
-        
-        const updateTimer = () => {
-            const now = new Date();
-            const next = new Date(nextAvailable);
-            const diff = next - now;
-
-            if (diff <= 0) {
-                clearInterval(countdownInterval);
-                timerText.textContent = "You can claim your reward now!";
-                return;
-            }
-
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        // *** FIX: Check if the modal elements exist before trying to use them ***
+        if (overlay) {
+            const timerText = document.getElementById('daily-reward-timer');
             
-            timerText.textContent = `Time remaining: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        };
-        
-        clearInterval(countdownInterval); // Clear any existing timer
-        updateTimer();
-        countdownInterval = setInterval(updateTimer, 1000);
-        
-        overlay.style.display = 'flex';
+            const updateTimer = () => {
+                const now = new Date();
+                const next = new Date(nextAvailable);
+                const diff = next - now;
+
+                if (diff <= 0) {
+                    clearInterval(countdownInterval);
+                    if(timerText) timerText.textContent = "You can claim your reward now!";
+                    return;
+                }
+
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                if(timerText) timerText.textContent = `Time remaining: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            };
+            
+            clearInterval(countdownInterval); // Clear any existing timer
+            updateTimer();
+            countdownInterval = setInterval(updateTimer, 1000);
+            
+            overlay.style.display = 'flex';
+        } else {
+            // Fallback for pages without the modal HTML
+             alert("You have already claimed your daily reward. Please check back later.");
+        }
     };
 
     const setupRewardModals = () => {
@@ -216,14 +229,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const successCloseBtn = document.getElementById('close-reward-success-btn');
         const cooldownCloseBtn = document.getElementById('close-reward-cooldown-btn');
 
-        if(successOverlay) {
+        if(successOverlay && successCloseBtn) {
              successCloseBtn.addEventListener('click', () => {
                 successOverlay.style.display = 'none';
-                window.location.reload(); // Refresh to update inventory display
+                if(window.location.pathname.includes('/gacha/')) {
+                   window.location.reload(); // Refresh to update inventory display on gacha page
+                }
              });
         }
        
-        if(cooldownOverlay) {
+        if(cooldownOverlay && cooldownCloseBtn) {
             cooldownCloseBtn.addEventListener('click', () => {
                 clearInterval(countdownInterval);
                 cooldownOverlay.style.display = 'none';
