@@ -99,7 +99,6 @@
         </div>
     </div>
 
-    <!-- START: New Currency Info Modal -->
     <div id="currency-info-overlay" class="info-overlay" style="display: none;">
         <div class="info-window">
             <h2>How to Get Packs</h2>
@@ -107,7 +106,25 @@
             <button id="close-info-btn" class="info-btn">Got it!</button>
         </div>
     </div>
-    <!-- END: New Currency Info Modal -->
+    
+    <!-- START: New Daily Reward Modals -->
+    <div id="daily-reward-success-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window success">
+            <h2>Daily Reward Claimed!</h2>
+            <img id="daily-reward-image" src="" alt="Daily Reward">
+            <p id="daily-reward-text">You received 1x Kitchen Knife!</p>
+            <button id="close-reward-success-btn">Awesome!</button>
+        </div>
+    </div>
+    <div id="daily-reward-cooldown-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window cooldown">
+            <h2>Reward Already Claimed</h2>
+            <p>You can claim your next daily reward in:</p>
+            <p id="daily-reward-timer">23:59:59</p>
+            <button id="close-reward-cooldown-btn">OK</button>
+        </div>
+    </div>
+    <!-- END: New Daily Reward Modals -->
 
     <script src="../auth.js"></script>
     <script src="gacha.js"></script>
