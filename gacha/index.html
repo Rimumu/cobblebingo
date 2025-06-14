@@ -3,16 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cobblemon Gacha - Coming Soon</title>
+    <title>Cobblemon Gacha</title>
+    <link rel="stylesheet" href="../style.css"> 
     <link rel="stylesheet" href="../gacha.css">
+    <link rel="stylesheet" href="../auth.css">
     <link rel="icon" href="https://mmcreviews.com/wp-content/uploads/638110963447535353.png" type="image/png">
 </head>
-<body>
-    <div class="container">
-        <h1>Gacha Game</h1>
-        <h2>Coming Soon!</h2>
-        <p>This page is under construction. Stay tuned for the exciting Cobblemon pack opening experience!</p>
-        <a href="/" class="back-link">Back to Home</a>
+<body class="loading">
+
+    <div id="loadingScreen">
+        <div class="particles"></div>
+        <div class="loading-container">
+            <div class="logo-container">
+                <img class="loading-logo" src="../cobblemonnisa.png" alt="Cobblemon Gacha Logo">
+            </div>
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <div class="loading-text">
+                Entering the gacha realm...
+                <div class="loading-dots">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            </div>
+        </div>
     </div>
+
+
+    <div id="access-gate-container" class="access-gate" style="display: none;">
+        <div class="prompt-window">
+            <h2 id="gate-title">Access Denied</h2>
+            <p id="gate-message">Checking your credentials...</p>
+            <div id="gate-actions">
+                </div>
+        </div>
+    </div>
+    
+    <div id="pack-opening-intro-overlay" style="display: none;">
+        <h2 id="opening-pack-name"></h2>
+        <div class="opening-pack-container">
+            <div class="opening-pack-art">
+                <div class="pack-half left"></div>
+                <div class="pack-half right"></div>
+            </div>
+            <div class="pack-slash"></div>
+        </div>
+    </div>
+
+
+    <div id="mainContent" style="display: none;">
+        <div id="account-widget" class="account-widget"></div>
+        
+        <div id="inventory-display" class="inventory-display" title="How to get packs?">
+            </div>
+        <header class="gacha-header">
+            <h1>Featured Packs</h1>
+        </header>
+
+        <main id="banner-container" class="banner-container"></main>
+    </div>
+    <div id="animation-overlay" style="display: none;">
+        <div class="reel-marker"></div>
+        <div class="reel-container">
+            <div id="reel" class="reel">
+                </div>
+        </div>
+    </div>
+        <div id="results-modal-overlay" class="results-overlay" style="display: none;">
+        <div class="results-window">
+            <h2>You received:</h2>
+            <div id="reward-display">
+                </div>
+            <button id="close-results-btn" class="gate-button">Awesome!</button>
+        </div>
+    </div>
+
+    <div id="confirmation-modal-overlay" class="confirmation-overlay" style="display: none;">
+        <div class="confirmation-window">
+            <h2 id="confirmation-title">Confirm Action</h2>
+            <p id="confirmation-message">Are you sure?</p>
+            <div class="confirmation-actions">
+                <button id="cancel-open-btn" class="confirmation-btn cancel">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <span>Cancel</span>
+                </button>
+                <button id="confirm-open-btn" class="confirmation-btn confirm">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Confirm</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="currency-info-overlay" class="info-overlay" style="display: none;">
+        <div class="info-window">
+            <h2>How to Get Packs</h2>
+            <p>To get these pull currencies, you can redeem codes. You can get these codes by the daily check-in, winning tournaments or bingo events. Additionally, five codes will be scattered randomly within 1000 blocks of spawn every day. You can also get a code by gifting 1 sub on Nisa's Twitch channel!</p>
+            <button id="close-info-btn" class="info-btn">Got it!</button>
+        </div>
+    </div>
+    
+    <!-- START: New Daily Reward Modals -->
+    <div id="daily-reward-success-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window success">
+            <h2>Daily Reward Claimed!</h2>
+            <img id="daily-reward-image" src="" alt="Daily Reward">
+            <p id="daily-reward-text">You received 1x Kitchen Knife!</p>
+            <button id="close-reward-success-btn">Awesome!</button>
+        </div>
+    </div>
+    <div id="daily-reward-cooldown-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window cooldown">
+            <h2>Reward Already Claimed</h2>
+            <p>You can claim your next daily reward in:</p>
+            <p id="daily-reward-timer">23:59:59</p>
+            <button id="close-reward-cooldown-btn">OK</button>
+        </div>
+    </div>
+    <!-- END: New Daily Reward Modals -->
+
+    <script src="../auth.js"></script>
+    <script src="gacha.js"></script>
 </body>
 </html>

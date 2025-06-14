@@ -2,6 +2,111 @@
 let currentSessionId = null;
 let activeTooltip = null;
 
+function showNotice(title, message) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('notice-overlay');
+        const titleEl = document.getElementById('notice-title');
+        const messageEl = document.getElementById('notice-message');
+        const closeBtn = document.getElementById('close-notice-btn');
+
+        if (!overlay || !titleEl || !messageEl || !closeBtn) {
+            alert(message);
+            return resolve();
+        }
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('visible'), 10);
+
+        const removeListeners = () => {
+            closeBtn.removeEventListener('click', closeHandler);
+            document.removeEventListener('keydown', keydownHandler);
+        };
+
+        const closeHandler = () => {
+            overlay.classList.remove('visible');
+            removeListeners();
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                resolve();
+            }, 300); // Match CSS transition time
+        };
+        
+        const keydownHandler = (e) => {
+            if (e.key === 'Enter' || e.key === 'Escape') {
+                closeHandler();
+            }
+        };
+
+        closeBtn.addEventListener('click', closeHandler);
+        document.addEventListener('keydown', keydownHandler);
+    });
+}
+
+function promptForSessionName() {
+    return new Promise((resolve, reject) => {
+        const overlay = document.getElementById('save-session-overlay');
+        const input = document.getElementById('session-name-input');
+        const confirmBtn = document.getElementById('confirm-save-session-btn');
+        const cancelBtn = document.getElementById('cancel-save-session-btn');
+        
+        if (!overlay || !input || !confirmBtn || !cancelBtn) {
+            const name = prompt("Enter a name for this session:", "My Bingo Card");
+            if (name) { resolve(name); } else { reject(); }
+            return;
+        }
+
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('visible'), 10);
+        
+        input.value = `My Bingo Card - ${new Date().toLocaleDateString()}`;
+        input.focus();
+        input.select();
+
+        const removeListeners = () => {
+            confirmBtn.removeEventListener('click', confirmHandler);
+            cancelBtn.removeEventListener('click', cancelHandler);
+            document.removeEventListener('keydown', keydownHandler);
+        };
+
+        const cleanup = () => {
+            overlay.classList.remove('visible');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+        };
+
+        const confirmHandler = () => {
+            const sessionName = input.value.trim();
+            if (sessionName) {
+                removeListeners();
+                cleanup();
+                resolve(sessionName);
+            }
+        };
+
+        const cancelHandler = () => {
+            removeListeners();
+            cleanup();
+            reject(); // Reject without an error for clean cancellation
+        };
+
+        const keydownHandler = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                confirmHandler();
+            } else if (e.key === 'Escape') {
+                cancelHandler();
+            }
+        };
+        
+        confirmBtn.addEventListener('click', confirmHandler);
+        cancelBtn.addEventListener('click', cancelHandler);
+        document.addEventListener('keydown', keydownHandler);
+    });
+}
+
 
 function createTooltip(content, isLegendary = false) {
   // Remove any existing tooltip first
@@ -382,7 +487,6 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
     let selected = [];
 
     const selectFromCategory = (category, count) => shuffle(byRarity[category]).slice(0, count);
-
     const compositions = {
         easy: { common: 15, uncommon: 9 },
         normal: { common: 2, uncommon: 8, rare: 8, "ultra-rare": 6 },
@@ -574,7 +678,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
     // This is a helper function to avoid repeating rendering logic
     const createPokemonCell = (cell, pokemon, isLegendaryStyled) => {
         if (isLegendaryStyled) {
-            cell.classList.add("legendary-center");
+            cell.classList.add("legendary-styled");
         }
         
         cell.style.cursor = "pointer";
@@ -669,7 +773,8 @@ async function renderBingoCard(selectedPokemon, difficulty) {
             cell.style.backgroundColor = "#ffd700";
             cell.style.fontWeight = "bold";
             cell.style.fontSize = "18px";
-            cell.style.color = "#000";
+            cell.style.color = "#FFF";
+
         } else {
             // For all Pokémon cells (including legendary ones), use the helper
             createPokemonCell(cell, pokemon, styleAsLegendary);
@@ -806,13 +911,19 @@ async function toggleCellCompletion(index) {
         if (token) {
           saveBtn.style.display = 'inline-block';
           saveBtn.onclick = async () => {
-              const sessionName = prompt("Enter a name for this session:", `My Bingo Card`);
-              if (sessionName) {
-                  try {
-                      await saveSession(currentSessionId, sessionName, token);
-                      alert(`Session saved as "${sessionName}"!`);
-                  } catch (e) {
-                      alert(`Error: ${e.message}`);
+              try {
+                  const sessionName = await promptForSessionName();
+                  // This part only runs if the user clicks "Save"
+                  await saveSession(currentSessionId, sessionName, token);
+                  await showNotice('Session Saved!', `Your bingo session has been successfully saved as "${sessionName}".`);
+              } catch (error) {
+                  // This block runs if the user clicks "Cancel" or an error occurs
+                  if (error && error.message) {
+                    // This handles actual errors from the saveSession call
+                    await showNotice('Error', `Could not save session: ${error.message}`);
+                  } else {
+                    // If 'error' is undefined, it means the user just canceled the prompt, so we do nothing.
+                    console.log("Save session cancelled.");
                   }
               }
           };

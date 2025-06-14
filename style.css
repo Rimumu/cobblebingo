@@ -712,7 +712,7 @@ body {
 }
 
 /* Legendary FREE space - keep gold styling */
-.bingo-cell:nth-child(13).legendary-center {
+.bingo-cell:nth-child(13).legendary-styled {
     background: linear-gradient(135deg, #ffd700, #ffb300) !important;
     border-color: #ff8f00 !important;
     color: #333 !important;
@@ -1108,15 +1108,18 @@ body {
     }
 }
 
-/* Improved cell completion styling */
-.bingo-cell.completed {
+/* --- Cell Completion Styling --- */
+/* Style for REGULAR completed cells */
+.bingo-cell.completed:not(.legendary-styled) {
     filter: grayscale(60%) brightness(0.6);
     opacity: 0.7;
     position: relative;
     background: rgba(76, 175, 80, 0.2) !important;
+    /* Greenish overlay */
+    animation: completeCell 0.3s ease-out;
 }
 
-.bingo-cell.completed::after {
+.bingo-cell.completed:not(.legendary-styled)::after {
     content: "✓";
     position: absolute;
     top: 5px;
@@ -1133,10 +1136,47 @@ body {
     font-weight: bold;
     z-index: 10;
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
+    animation: checkmarkAppear 0.3s ease-out;
 }
 
-.bingo-cell:nth-child(13).completed::after {
-    display: none;
+/* Style for LEGENDARY completed cells */
+.bingo-cell.legendary-styled.completed {
+    filter: brightness(0.7);
+    /* Darken the cell more significantly */
+    opacity: 0.8;
+    /* Add opacity for consistency */
+    animation: completeCell 0.3s ease-out;
+}
+
+.bingo-cell.legendary-styled.completed::after {
+    content: "✓";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 215, 0, 0.9);
+    /* Gold background */
+    color: #1a1a1a;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    animation: checkmarkAppear 0.3s ease-out;
+}
+
+/* General completed styles */
+.bingo-cell.completed .pokemon-img {
+    filter: brightness(0.8) saturate(0.7);
+}
+
+.bingo-cell.legendary-styled.completed .pokemon-img {
+    filter: none;
+    /* Legendary images should not be dimmed */
 }
 
 /* Bingo message */
@@ -1220,8 +1260,8 @@ body {
   }
 }
 
-/* Enhanced legendary center cell styling */
-.bingo-cell.legendary-center {
+/* Enhanced legendary styled cell styling */
+.bingo-cell.legendary-styled {
   background: linear-gradient(135deg, #b8860b, #daa520, #ffd700, #ffed4e);
   background-size: 200% 200%;
   border: 3px solid #ffd700 !important;
@@ -1238,7 +1278,7 @@ body {
   transform: scale(1.05);
 }
 
-.bingo-cell.legendary-center::before {
+.bingo-cell.legendary-styled::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -1290,7 +1330,7 @@ body {
   }
 }
 
-.bingo-cell.legendary-center .pokemon-name {
+.bingo-cell.legendary-styled .pokemon-name {
   color: #1a1a1a !important;
   text-shadow: 0 2px 4px rgba(255, 255, 255, 0.6);
   font-weight: bold;
@@ -1299,7 +1339,7 @@ body {
   font-size: 12px;
 }
 
-.bingo-cell.legendary-center .pokemon-img {
+.bingo-cell.legendary-styled .pokemon-img {
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
   position: relative;
   z-index: 2;
@@ -1307,7 +1347,7 @@ body {
   height: 55px !important;
 }
 
-.bingo-cell.legendary-center:hover {
+.bingo-cell.legendary-styled:hover {
   border-color: #ffed4e !important;
   transform: translateY(-3px) scale(1.08);
   box-shadow: 
@@ -1351,19 +1391,9 @@ body {
 }
 
 /* Show legendary tooltip on hover */
-.legendary-center .image-wrapper:hover .legendary-tooltip {
+.legendary-styled .image-wrapper:hover .legendary-tooltip {
   visibility: visible;
   opacity: 1;
-}
-
-/* Special styling for completed legendary cells */
-.bingo-cell.legendary-center.completed {
-  background-color: rgba(255, 215, 0, 0.3);
-  border: 2px solid #FFD700;
-}
-
-.bingo-cell.legendary-center.completed::after {
-  display: none;
 }
 
 /* Manual checkmark styles */
@@ -1387,10 +1417,6 @@ body {
 }
 
 /* Animation for when cell gets completed */
-.bingo-cell.completed {
-  animation: completeCell 0.3s ease-out;
-}
-
 @keyframes completeCell {
   0% {
     transform: scale(1);
@@ -1409,58 +1435,44 @@ body {
   z-index: 1;
 }
 
-.bingo-cell.completed .pokemon-img {
-  filter: brightness(0.8) saturate(0.7);
-}
-
-/* FREE space completed styling */
-.bingo-cell.completed[style*="background-color: rgb(255, 215, 0)"] {
-  background-color: #4CAF50 !important;
-  color: white !important;
-}
-
-.bingo-cell.completed[style*="background-color: rgb(255, 215, 0)"]::after {
-  display: none; /* Hide checkmark for FREE space since the whole cell changes color */
-}
-
 /* Theme-specific hover effects */
-.theme-white .bingo-cell:hover {
+.theme-white .bingo-cell:not(.legendary-styled):hover {
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4);
     border-color: rgba(255, 255, 255, 0.6);
     background: rgba(255, 255, 255, 0.2);
 }
 
-.theme-black .bingo-cell:hover {
+.theme-black .bingo-cell:not(.legendary-styled):hover {
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.4);
     background: rgba(255, 255, 255, 0.1);
 }
 
-.theme-blue .bingo-cell:hover {
+.theme-blue .bingo-cell:not(.legendary-styled):hover {
     box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
     border-color: #2196f3;
     background: rgba(33, 150, 243, 0.2);
 }
 
-.theme-pink .bingo-cell:hover {
+.theme-pink .bingo-cell:not(.legendary-styled):hover {
     box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
     border-color: #e91e63;
     background: rgba(233, 30, 99, 0.2);
 }
 
-.theme-purple .bingo-cell:hover {
+.theme-purple .bingo-cell:not(.legendary-styled):hover {
     box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4);
     border-color: #9c27b0;
     background: rgba(156, 39, 176, 0.2);
 }
 
-.theme-red .bingo-cell:hover {
+.theme-red .bingo-cell:not(.legendary-styled):hover {
     box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
     border-color: #f44336;
     background: rgba(244, 67, 54, 0.2);
 }
 
-.theme-yellow .bingo-cell:hover {
+.theme-yellow .bingo-cell:not(.legendary-styled):hover {
     box-shadow: 0 8px 25px rgba(255, 235, 59, 0.4);
     border-color: #ffeb3b;
     background: rgba(255, 235, 59, 0.2);
@@ -1484,54 +1496,6 @@ body {
     background: linear-gradient(135deg, #7b1fa2, #6a1b9a);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
-}
-
-/* 1. Change this rule */
-.bingo-cell.completed:not(.legendary-center) {
-    filter: grayscale(60%) brightness(0.6);
-    opacity: 0.7;
-    position: relative;
-    background: rgba(76, 175, 80, 0.2) !important;
-}
-
-/* 2. And change this rule */
-.bingo-cell.completed:not(.legendary-center)::after {
-    content: "✓";
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(76, 175, 80, 0.9);
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: bold;
-    z-index: 10;
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
-}
-
-/* 3. Add this new rule for the legendary checkmark */
-.bingo-cell.legendary-center.completed::after {
-    content: "✓";
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(255, 215, 0, 0.9); /* Gold background */
-    color: #1a1a1a;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: bold;
-    z-index: 10;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 /* --- Custom Select Dropdown Styles --- */
@@ -1616,4 +1580,83 @@ body {
 .custom-option.selected {
     background-color: rgba(76, 175, 80, 0.5);
     font-weight: bold;
+}
+
+/* --- Session Save & Notice Modal Styles --- */
+
+/* These styles will make the new modals match the theme of other prompts */
+.prompt-window .input-group {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.prompt-window input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.prompt-window input[type="text"]::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.prompt-window input[type="text"]:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+}
+
+.prompt-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.prompt-btn {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.2s ease-in-out;
+}
+
+.prompt-btn:hover {
+    transform: translateY(-2px);
+}
+
+.prompt-btn.confirm {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: white;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+.prompt-btn.confirm:hover {
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.prompt-btn.cancel {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+.prompt-btn.cancel:hover {
+     box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+/* For the single OK button in the notice modal */
+#notice-overlay .prompt-btn {
+    background: linear-gradient(135deg, #2196f3, #1976d2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+#notice-overlay .prompt-btn:hover {
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
 }

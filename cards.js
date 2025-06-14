@@ -12,6 +12,117 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    // --- Custom Modal Functions ---
+
+    function showCardNotice(title, message) {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('card-notice-overlay');
+            if (!overlay) { alert(message); return resolve(); }
+
+            overlay.querySelector('#card-notice-title').textContent = title;
+            overlay.querySelector('#card-notice-message').textContent = message;
+            const closeBtn = overlay.querySelector('#close-card-notice-btn');
+
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('visible'), 10);
+
+            const closeHandler = () => {
+                overlay.classList.remove('visible');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    resolve();
+                }, 300);
+            };
+            closeBtn.addEventListener('click', closeHandler, { once: true });
+        });
+    }
+
+    function promptForNewName(currentName) {
+        return new Promise((resolve, reject) => {
+            const overlay = document.getElementById('rename-card-overlay');
+            if (!overlay) {
+                const name = prompt("Enter a new name for the session:", currentName);
+                if (name && name.trim()) { resolve(name.trim()); } else { reject(); }
+                return;
+            }
+
+            const input = overlay.querySelector('#rename-card-input');
+            const confirmBtn = overlay.querySelector('#confirm-rename-card-btn');
+            const cancelBtn = overlay.querySelector('#cancel-rename-card-btn');
+
+            input.value = currentName;
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                overlay.classList.add('visible');
+                input.focus();
+                input.select();
+            }, 10);
+
+            const removeListeners = () => {
+                confirmBtn.removeEventListener('click', confirmHandler);
+                cancelBtn.removeEventListener('click', cancelHandler);
+                document.removeEventListener('keydown', keydownHandler);
+            };
+
+            const cleanup = () => {
+                overlay.classList.remove('visible');
+                setTimeout(() => overlay.style.display = 'none', 300);
+            };
+
+            const confirmHandler = () => {
+                const newName = input.value.trim();
+                if (newName) {
+                    removeListeners();
+                    cleanup();
+                    resolve(newName);
+                }
+            };
+
+            const cancelHandler = () => {
+                removeListeners();
+                cleanup();
+                reject();
+            };
+            
+            const keydownHandler = (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); confirmHandler(); }
+                else if (e.key === 'Escape') { cancelHandler(); }
+            };
+
+            confirmBtn.addEventListener('click', confirmHandler);
+            cancelBtn.addEventListener('click', cancelHandler);
+            document.addEventListener('keydown', keydownHandler);
+        });
+    }
+
+    function showConfirm(message) {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('delete-confirm-overlay');
+            if(!overlay) { return resolve(confirm(message)); }
+
+            overlay.querySelector('#delete-confirm-message').textContent = message;
+            const confirmBtn = overlay.querySelector('#confirm-delete-btn');
+            const cancelBtn = overlay.querySelector('#cancel-delete-btn');
+            
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('visible'), 10);
+
+            const close = (result) => {
+                overlay.classList.remove('visible');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    resolve(result);
+                }, 300)
+            };
+
+            confirmBtn.onclick = () => close(true);
+            cancelBtn.onclick = () => close(false);
+        });
+    }
+
+
+    // --- Core Logic ---
+
     const getAuthHeaders = () => ({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -62,10 +173,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const renameSession = async (sessionId) => {
-        const newName = prompt("Enter a new name for the session:");
-        if (!newName) return;
-
+        const sessionCard = document.querySelector(`#session-${sessionId}`);
+        const currentName = sessionCard.querySelector('.session-name').textContent;
         try {
+            const newName = await promptForNewName(currentName);
             const response = await fetch(`${API_BASE_URL}/api/session/${sessionId}/rename`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
@@ -74,16 +185,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
 
-            // Update UI
-            document.querySelector(`#session-${sessionId} .session-name`).textContent = newName;
-            alert('Session renamed!');
+            sessionCard.querySelector('.session-name').textContent = newName;
+            await showCardNotice('Success!', 'Session renamed successfully!');
         } catch (error) {
-            alert(`Error: ${error.message}`);
+            if (error && error.message) {
+                await showCardNotice('Error', `Could not rename session: ${error.message}`);
+            }
+            console.log("Rename cancelled or failed.");
         }
     };
 
     const deleteSession = async (sessionId) => {
-        if (!confirm("Are you sure you want to delete this session? This cannot be undone.")) return;
+        const confirmed = await showConfirm("Are you sure you want to delete this session? This cannot be undone.");
+        if (!confirmed) return;
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/session/${sessionId}`, {
@@ -93,11 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
 
-            // Update UI
             document.getElementById(`session-${sessionId}`).remove();
-            alert('Session deleted!');
+            await showCardNotice('Success!', 'Session deleted!');
         } catch (error) {
-            alert(`Error: ${error.message}`);
+            await showCardNotice('Error', `Could not delete session: ${error.message}`);
         }
     };
 

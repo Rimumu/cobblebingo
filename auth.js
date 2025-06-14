@@ -1,20 +1,17 @@
-// auth.js - Final Version with Link/Unlink Logic
+// auth.js - Final Version with Daily Check-In
 
 const handleSignupPrompt = () => {
     const overlay = document.getElementById('signup-prompt-overlay');
     const closeBtn = document.getElementById('close-prompt-btn');
     
-    // This check ensures the code only runs on the signup page
     if (!overlay || !closeBtn) {
         return; 
     }
 
-    // Show the prompt shortly after the page loads for a smooth animation
     setTimeout(() => {
         overlay.classList.add('visible');
     }, 100);
 
-    // Add listener to the button to hide the prompt
     closeBtn.addEventListener('click', () => {
         overlay.classList.remove('visible');
     });
@@ -22,7 +19,7 @@ const handleSignupPrompt = () => {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const updateAccountWidget = async () => { // Make this function async
+    const updateAccountWidget = async () => {
         const token = localStorage.getItem('token');
         const accountWidget = document.getElementById('account-widget');
         
@@ -32,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (token && token !== 'undefined') {
             try {
-                // Fetch user data from the new '/api/user/me' endpoint
                 const userResponse = await fetch(`${getApiBaseUrl()}/api/user/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -41,10 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const { user } = await userResponse.json();
 
-                // Build the Discord link/unlink part of the dropdown
                 let discordLinkHtml = '';
                 if (user.discordId) {
-                    // User IS linked: Show their Discord name and an unlink button
                     discordLinkHtml = `
                         <div class="discord-info">
                             Linked as: <strong>${user.discordUsername}</strong>
@@ -52,27 +46,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         <a id="unlink-discord-btn">Unlink Discord</a>
                     `;
                 } else {
-                    // User IS NOT linked: Show the link button
                     const linkDiscordUrl = `${getApiBaseUrl()}/api/auth/discord?token=${token}`;
                     discordLinkHtml = `<a href="${linkDiscordUrl}">Link Discord</a>`;
                 }
 
-                // Construct the final dropdown HTML
                 accountWidget.innerHTML = `
                     <button class="account-button">
                         <span>${user.username}</span> &#9662;
                     </button>
                     <div class="account-dropdown">
+                        <a href="/">Home</a>
                         <a href="/cards/">My Cards</a>
                         <a href="/inventory/">Inventory</a>
                         <a href="/redeem/">Redeem</a>
+                        <a id="check-in-btn">Check-In</a>
                         ${discordLinkHtml}
                         <a id="logout-btn">Logout</a>
                     </div>
                 `;
                 
-                // Add event listeners for the new buttons
                 document.getElementById('logout-btn').addEventListener('click', handleLogout);
+                document.getElementById('check-in-btn').addEventListener('click', handleDailyCheckIn);
                 const unlinkBtn = document.getElementById('unlink-discord-btn');
                 if (unlinkBtn) {
                     unlinkBtn.addEventListener('click', handleUnlinkDiscord);
@@ -80,13 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (e) {
                 console.error("Error updating account widget:", e);
-                handleLogout(); // If anything fails, log the user out
+                handleLogout();
             }
         } else {
             // User is logged out
             accountWidget.innerHTML = `
                 <button class="account-button">Account &#9662;</button>
                 <div class="account-dropdown">
+                    <a href="/">Home</a>
                     <a href="/signup.html">Signup</a>
                     <a href="/login.html">Login</a>
                 </div>
@@ -105,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/'; 
     };
     
-    // --- NEW FUNCTION TO HANDLE UNLINKING ---
     const handleUnlinkDiscord = async () => {
         if (!confirm("Are you sure you want to unlink your Discord account?")) return;
         
@@ -151,6 +145,109 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- START: New Daily Check-In Logic ---
+    const handleDailyCheckIn = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${getApiBaseUrl()}/api/user/claim-daily`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showRewardSuccessModal(data.reward);
+            } else {
+                if(data.cooldown) {
+                    showRewardCooldownModal(data.nextAvailable);
+                } else {
+                     alert(data.error);
+                }
+            }
+        } catch (error) {
+            console.error('Error claiming daily reward:', error);
+            alert('An unexpected error occurred. Please try again later.');
+        }
+    };
+
+    const showRewardSuccessModal = (reward) => {
+        const overlay = document.getElementById('daily-reward-success-overlay');
+        // *** FIX: Check if the modal elements exist before trying to use them ***
+        if (overlay) {
+            const img = document.getElementById('daily-reward-image');
+            const text = document.getElementById('daily-reward-text');
+            
+            if (img) img.src = reward.image;
+            if (text) text.textContent = `You received 1x ${reward.itemName}!`;
+            overlay.style.display = 'flex';
+        } else {
+            // Fallback for pages without the modal HTML
+            alert(`Daily Reward Claimed!\nYou received 1x ${reward.itemName}!`);
+            window.location.reload(); // Still reload to update inventory if needed
+        }
+    };
+    
+    let countdownInterval;
+    const showRewardCooldownModal = (nextAvailable) => {
+        const overlay = document.getElementById('daily-reward-cooldown-overlay');
+        // *** FIX: Check if the modal elements exist before trying to use them ***
+        if (overlay) {
+            const timerText = document.getElementById('daily-reward-timer');
+            
+            const updateTimer = () => {
+                const now = new Date();
+                const next = new Date(nextAvailable);
+                const diff = next - now;
+
+                if (diff <= 0) {
+                    clearInterval(countdownInterval);
+                    if(timerText) timerText.textContent = "You can claim your reward now!";
+                    return;
+                }
+
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                if(timerText) timerText.textContent = `Time remaining: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            };
+            
+            clearInterval(countdownInterval); // Clear any existing timer
+            updateTimer();
+            countdownInterval = setInterval(updateTimer, 1000);
+            
+            overlay.style.display = 'flex';
+        } else {
+            // Fallback for pages without the modal HTML
+             alert("You have already claimed your daily reward. Please check back later.");
+        }
+    };
+
+    const setupRewardModals = () => {
+        const successOverlay = document.getElementById('daily-reward-success-overlay');
+        const cooldownOverlay = document.getElementById('daily-reward-cooldown-overlay');
+        const successCloseBtn = document.getElementById('close-reward-success-btn');
+        const cooldownCloseBtn = document.getElementById('close-reward-cooldown-btn');
+
+        if(successOverlay && successCloseBtn) {
+             successCloseBtn.addEventListener('click', () => {
+                successOverlay.style.display = 'none';
+                if(window.location.pathname.includes('/gacha/')) {
+                   window.location.reload(); // Refresh to update inventory display on gacha page
+                }
+             });
+        }
+       
+        if(cooldownOverlay && cooldownCloseBtn) {
+            cooldownCloseBtn.addEventListener('click', () => {
+                clearInterval(countdownInterval);
+                cooldownOverlay.style.display = 'none';
+            });
+        }
+    };
+    // --- END: New Daily Check-In Logic ---
+
+
     // --- Attach Event Listeners ---
     const loginForm = document.getElementById('login-form');
     if (loginForm) loginForm.addEventListener('submit', (e) => handleAuthForm(e, 'login'));
@@ -170,6 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial UI Setup
-    handleSignupPrompt(); // Call the new function
+    handleSignupPrompt();
     updateAccountWidget();
+    setupRewardModals(); // Set up close buttons for new modals
 });

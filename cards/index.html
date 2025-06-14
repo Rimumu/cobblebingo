@@ -4,7 +4,10 @@
     <title>My Cards</title>
     <link rel="stylesheet" href="../landing.css">
     <link rel="stylesheet" href="../auth.css">
-    <link rel="stylesheet" href="../cards.css"> </head>
+    <link rel="stylesheet" href="../cards.css">
+    <link rel="stylesheet" href="../style.css"> 
+    <link rel="icon" href="https://mmcreviews.com/wp-content/uploads/638110963447535353.png" type="image/png">
+</head>
 <body>
     <div id="account-widget" class="account-widget"></div>
 
@@ -15,6 +18,58 @@
         </div>
     </div>
     
+    <div id="daily-reward-success-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window success">
+            <h2>Daily Reward Claimed!</h2>
+            <img id="daily-reward-image" src="" alt="Daily Reward">
+            <p id="daily-reward-text">You received 1x Kitchen Knife!</p>
+            <button id="close-reward-success-btn">Awesome!</button>
+        </div>
+    </div>
+    <div id="daily-reward-cooldown-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window cooldown">
+            <h2>Reward Already Claimed</h2>
+            <p>You can claim your next daily reward in:</p>
+            <p id="daily-reward-timer">23:59:59</p>
+            <button id="close-reward-cooldown-btn">OK</button>
+        </div>
+    </div>
+    
+    <div id="rename-card-overlay" class="prompt-overlay" style="display: none;">
+        <div class="prompt-window">
+            <h2>Rename Bingo Card</h2>
+            <p>Enter a new name for this saved card.</p>
+            <div class="input-group">
+                <input type="text" id="rename-card-input" placeholder="My Best Card" maxlength="50">
+            </div>
+            <div class="prompt-actions">
+                <button id="cancel-rename-card-btn" class="prompt-btn cancel">Cancel</button>
+                <button id="confirm-rename-card-btn" class="prompt-btn confirm">Rename</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="card-notice-overlay" class="prompt-overlay" style="display: none;">
+        <div class="prompt-window">
+            <h2 id="card-notice-title">Success!</h2>
+            <p id="card-notice-message">The card has been renamed.</p>
+            <div class="prompt-actions">
+                <button id="close-card-notice-btn" class="prompt-btn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-confirm-overlay" class="confirmation-overlay" style="display: none;">
+        <div class="confirmation-window">
+            <h2>Confirm Deletion</h2>
+            <p id="delete-confirm-message">Are you sure you want to delete this session? This cannot be undone.</p>
+            <div class="confirmation-actions">
+                <button id="cancel-delete-btn" class="confirmation-btn cancel">Cancel</button>
+                <button id="confirm-delete-btn" class="confirmation-btn confirm">Delete</button>
+            </div>
+        </div>
+    </div>
     <script src="../auth.js"></script>
-    <script src="../cards.js"></script> </body>
+    <script src="../cards.js"></script> 
+</body>
 </html>

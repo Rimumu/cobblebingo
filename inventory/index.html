@@ -4,14 +4,62 @@
     <title>My Inventory</title>
     <link rel="stylesheet" href="../landing.css">
     <link rel="stylesheet" href="../auth.css">
+    <link rel="stylesheet" href="inventory.css">
+    <link rel="icon" href="https://mmcreviews.com/wp-content/uploads/638110963447535353.png" type="image/png">
 </head>
 <body>
     <div id="account-widget" class="account-widget"></div>
-    <div class="auth-container">
+
+    <div class="inventory-container">
         <h1>My Inventory</h1>
-        <p>This is your inventory. Coming soon!</p>
-        <p class="auth-switch-link"><a href="/">Back to Home</a></p>
+        <div id="inventory-grid">
+            <p>Loading your items...</p>
+        </div>
+    </div>
+    
+    <div id="item-confirmation-overlay" class="confirmation-overlay" style="display: none;">
+        <div class="confirmation-window">
+            <h2>Confirm Use</h2>
+            <p id="item-confirmation-message">Are you sure you want to use this item?</p>
+            <div class="confirmation-actions">
+                <button id="cancel-use-btn" class="confirmation-btn cancel">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <span>Cancel</span>
+                </button>
+                <button id="confirm-use-btn" class="confirmation-btn confirm">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Confirm</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="item-notice-overlay" class="notice-overlay" style="display: none;">
+        <div class="notice-window">
+            <h2 id="notice-title">Warning</h2>
+            <p id="notice-message">This is a warning message.</p>
+            <div class="notice-actions">
+                <button id="close-notice-btn" class="notice-btn">I understand</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="daily-reward-success-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window success">
+            <h2>Daily Reward Claimed!</h2>
+            <img id="daily-reward-image" src="" alt="Daily Reward">
+            <p id="daily-reward-text">You received 1x Kitchen Knife!</p>
+            <button id="close-reward-success-btn">Awesome!</button>
+        </div>
+    </div>
+    <div id="daily-reward-cooldown-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window cooldown">
+            <h2>Reward Already Claimed</h2>
+            <p>You can claim your next daily reward in:</p>
+            <p id="daily-reward-timer">23:59:59</p>
+            <button id="close-reward-cooldown-btn">OK</button>
+        </div>
     </div>
     <script src="../auth.js"></script>
+    <script src="inventory.js"></script> 
 </body>
 </html>

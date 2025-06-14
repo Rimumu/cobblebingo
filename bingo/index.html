@@ -116,8 +116,49 @@
         </div>
       </div>
     </div> 
+
+    <div id="daily-reward-success-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window success">
+            <h2>Daily Reward Claimed!</h2>
+            <img id="daily-reward-image" src="" alt="Daily Reward">
+            <p id="daily-reward-text">You received 1x Kitchen Knife!</p>
+            <button id="close-reward-success-btn">Awesome!</button>
+        </div>
+    </div>
+    <div id="daily-reward-cooldown-overlay" class="daily-reward-overlay" style="display: none;">
+        <div class="daily-reward-window cooldown">
+            <h2>Reward Already Claimed</h2>
+            <p>You can claim your next daily reward in:</p>
+            <p id="daily-reward-timer">23:59:59</p>
+            <button id="close-reward-cooldown-btn">OK</button>
+        </div>
+    </div>
     <script src="../auth.js"></script>
     <script src="../script.js"></script>
-</body>
+
+    <div id="save-session-overlay" class="prompt-overlay" style="display: none;">
+        <div class="prompt-window">
+            <h2>Save Bingo Session</h2>
+            <p>Enter a name for this session to save your progress to your account.</p>
+            <div class="input-group">
+                <input type="text" id="session-name-input" placeholder="My Awesome Bingo Card" maxlength="50">
+            </div>
+            <div class="prompt-actions">
+                <button id="cancel-save-session-btn" class="prompt-btn cancel">Cancel</button>
+                <button id="confirm-save-session-btn" class="prompt-btn confirm">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notice-overlay" class="prompt-overlay" style="display: none;">
+        <div class="prompt-window">
+            <h2 id="notice-title">Success!</h2>
+            <p id="notice-message">Your session has been saved.</p>
+            <div class="prompt-actions">
+                <button id="close-notice-btn" class="prompt-btn">OK</button>
+            </div>
+        </div>
+    </div>
+    </body>
 
 </html>
