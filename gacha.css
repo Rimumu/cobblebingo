@@ -157,12 +157,16 @@ body.loaded #mainContent {
     text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 }
 
+/* *** MODIFICATION START: Improved description text styling *** */
 .banner-content p {
     font-size: 1.1em;
     margin: 0 0 20px 0;
-    max-width: 80%;
     color: #ccc;
+    line-height: 1.5; /* Added for better readability */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7); /* Enhanced shadow for contrast */
+    /* The max-width property has been removed to allow full width alignment */
 }
+/* *** MODIFICATION END *** */
 
 .open-pack-btn {
     padding: 12px 25px;
