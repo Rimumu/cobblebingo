@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const accessDenied = document.getElementById('access-denied');
     const generateForm = document.getElementById('generate-code-form');
     
+    // >>>>> NEW: Get the new form element
+    const resetRewardForm = document.getElementById('reset-reward-form');
+
     async function verifyAdminAccess() {
         if (!token) {
             showAccessDenied();
@@ -165,6 +168,40 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('generate-result').textContent = `Error: ${error.message}`;
         }
     });
+
+    // >>>>> NEW: Event listener for the reset reward form
+    resetRewardForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('reset-username').value.trim();
+        const resultDiv = document.getElementById('reset-result');
+
+        if (!username) {
+            resultDiv.textContent = 'Please enter a username.';
+            resultDiv.style.color = '#ffc107';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/reset-daily-reward`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ username })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                resultDiv.textContent = data.message;
+                resultDiv.style.color = '#4caf50';
+                resetRewardForm.reset();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            resultDiv.textContent = `Error: ${error.message}`;
+            resultDiv.style.color = '#f44336';
+        }
+    });
+
 
     async function loadExistingCodes() {
         try {
