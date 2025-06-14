@@ -2,6 +2,85 @@
 let currentSessionId = null;
 let activeTooltip = null;
 
+function showNotice(title, message) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('notice-overlay');
+        const titleEl = document.getElementById('notice-title');
+        const messageEl = document.getElementById('notice-message');
+        const closeBtn = document.getElementById('close-notice-btn');
+
+        if (!overlay || !titleEl || !messageEl || !closeBtn) {
+            alert(message); // Fallback to alert if modal elements aren't on the page
+            return resolve();
+        }
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        overlay.style.display = 'flex';
+
+        const closeHandler = () => {
+            overlay.style.display = 'none';
+            closeBtn.removeEventListener('click', closeHandler);
+            resolve();
+        };
+
+        closeBtn.addEventListener('click', closeHandler, { once: true });
+    });
+}
+
+function promptForSessionName() {
+    return new Promise((resolve, reject) => {
+        const overlay = document.getElementById('save-session-overlay');
+        const input = document.getElementById('session-name-input');
+        const confirmBtn = document.getElementById('confirm-save-session-btn');
+        const cancelBtn = document.getElementById('cancel-save-session-btn');
+        
+        if (!overlay || !input || !confirmBtn || !cancelBtn) {
+            const name = prompt("Enter a name for this session:", "My Bingo Card");
+            if (name) { resolve(name); } else { reject(); }
+            return;
+        }
+
+        overlay.style.display = 'flex';
+        input.value = `My Bingo Card - ${new Date().toLocaleDateString()}`;
+        input.focus();
+
+        const cleanup = () => {
+            overlay.style.display = 'none';
+            confirmBtn.removeEventListener('click', confirmHandler);
+            cancelBtn.removeEventListener('click', cancelHandler);
+            document.removeEventListener('keydown', keydownHandler);
+        };
+
+        const confirmHandler = () => {
+            const sessionName = input.value.trim();
+            if (sessionName) {
+                cleanup();
+                resolve(sessionName);
+            } else {
+                input.focus();
+            }
+        };
+
+        const cancelHandler = () => {
+            cleanup();
+            reject(); // Reject the promise if the user cancels
+        };
+
+        const keydownHandler = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                confirmHandler();
+            } else if (e.key === 'Escape') {
+                cancelHandler();
+            }
+        };
+
+        confirmBtn.addEventListener('click', confirmHandler);
+        cancelBtn.addEventListener('click', cancelHandler);
+        document.addEventListener('keydown', keydownHandler);
+    });
+}
 
 function createTooltip(content, isLegendary = false) {
   // Remove any existing tooltip first
@@ -806,14 +885,19 @@ async function toggleCellCompletion(index) {
         if (token) {
           saveBtn.style.display = 'inline-block';
           saveBtn.onclick = async () => {
-              const sessionName = prompt("Enter a name for this session:", `My Bingo Card`);
-              if (sessionName) {
-                  try {
-                      await saveSession(currentSessionId, sessionName, token);
-                      alert(`Session saved as "${sessionName}"!`);
-                  } catch (e) {
-                      alert(`Error: ${e.message}`);
+              try {
+                  const sessionName = await promptForSessionName();
+                  // This part only runs if the user clicks "Save"
+                  await saveSession(currentSessionId, sessionName, token);
+                  await showNotice('Session Saved!', `Your bingo session has been successfully saved as "${sessionName}".`);
+              } catch (error) {
+                  // This block runs if the user clicks "Cancel" or an error occurs
+                  if (error && error.message) {
+                    // This handles actual errors from the saveSession call
+                    await showNotice('Error', `Could not save session: ${error.message}`);
                   }
+                  // If 'error' is undefined, it means the user just canceled the prompt, so we do nothing.
+                  console.log("Save session cancelled or failed.");
               }
           };
         }
