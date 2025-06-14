@@ -774,7 +774,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
             cell.style.backgroundColor = "#ffd700";
             cell.style.fontWeight = "bold";
             cell.style.fontSize = "18px";
-            cell.style.color = "#000";
+            cell.style.color = "#FFF";
         } else {
             // For all Pokémon cells (including legendary ones), use the helper
             createPokemonCell(cell, pokemon, styleAsLegendary);
