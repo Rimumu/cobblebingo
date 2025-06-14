@@ -1581,3 +1581,82 @@ body {
     background-color: rgba(76, 175, 80, 0.5);
     font-weight: bold;
 }
+
+/* --- Session Save & Notice Modal Styles --- */
+
+/* These styles will make the new modals match the theme of other prompts */
+.prompt-window .input-group {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.prompt-window input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.prompt-window input[type="text"]::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.prompt-window input[type="text"]:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+}
+
+.prompt-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.prompt-btn {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.2s ease-in-out;
+}
+
+.prompt-btn:hover {
+    transform: translateY(-2px);
+}
+
+.prompt-btn.confirm {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: white;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+.prompt-btn.confirm:hover {
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.prompt-btn.cancel {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+.prompt-btn.cancel:hover {
+     box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+/* For the single OK button in the notice modal */
+#notice-overlay .prompt-btn {
+    background: linear-gradient(135deg, #2196f3, #1976d2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+#notice-overlay .prompt-btn:hover {
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+}
