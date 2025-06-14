@@ -487,7 +487,6 @@ function selectPokemonByDifficulty(pokemonList, difficulty) {
     let selected = [];
 
     const selectFromCategory = (category, count) => shuffle(byRarity[category]).slice(0, count);
-
     const compositions = {
         easy: { common: 15, uncommon: 9 },
         normal: { common: 2, uncommon: 8, rare: 8, "ultra-rare": 6 },
@@ -775,6 +774,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
             cell.style.fontWeight = "bold";
             cell.style.fontSize = "18px";
             cell.style.color = "#FFF";
+
         } else {
             // For all Pokémon cells (including legendary ones), use the helper
             createPokemonCell(cell, pokemon, styleAsLegendary);
@@ -831,9 +831,9 @@ function showBingoMessage(count) {
   message.className = "bingo-message";
 
   if (count === 1) {
-    message.textContent = "🎉 BINGO! 🎉";
+    message.textContent = "脂 BINGO! 脂";
   } else {
-    message.textContent = `🎉 ${count} BINGOS! 🎉`;
+    message.textContent = `脂 ${count} BINGOS! 脂`;
   }
 
   document.body.appendChild(message);
