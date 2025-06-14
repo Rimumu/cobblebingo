@@ -831,7 +831,7 @@ function showBingoMessage(count) {
   message.className = "bingo-message";
 
   if (count === 1) {
-    message.textContent = "🎉 BINGO! 🎉;
+    message.textContent = "🎉 BINGO! 🎉";
   } else {
     message.textContent = `🎉 ${count} BINGOS! 🎉`;
   }
