@@ -1141,8 +1141,10 @@ body {
 
 /* Style for LEGENDARY completed cells */
 .bingo-cell.legendary-styled.completed {
-    filter: brightness(0.9) saturate(1.2);
-    /* Keep it vibrant but indicate completion */
+    filter: brightness(0.7);
+    /* Darken the cell more significantly */
+    opacity: 0.8;
+    /* Add opacity for consistency */
     animation: completeCell 0.3s ease-out;
 }
 
@@ -1175,11 +1177,6 @@ body {
 .bingo-cell.legendary-styled.completed .pokemon-img {
     filter: none;
     /* Legendary images should not be dimmed */
-}
-
-/* Hide checkmark for the FREE space, since the whole cell changes color */
-.bingo-cell:nth-child(13).completed::after {
-    display: none;
 }
 
 /* Bingo message */
