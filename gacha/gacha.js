@@ -127,9 +127,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const bannerEl = document.createElement('div');
             bannerEl.className = 'banner-card';
             bannerEl.classList.add(banner.id);
+
+            // *** MODIFICATION START: Create the "Featuring" HTML block ***
+            const featuringHtml = banner.featuring && banner.featuring.length > 0
+              ? `<div class="featuring-container">
+                   <h3>Featuring</h3>
+                   <ul class="featuring-list">
+                     ${banner.featuring.map(item => `<li>${item}</li>`).join('')}
+                   </ul>
+                 </div>`
+              : '';
+            // *** MODIFICATION END ***
+
             bannerEl.innerHTML = `
                 <img src="${banner.image}" alt="${banner.name}" class="banner-image">
                 <div class="banner-overlay"></div>
+                ${featuringHtml} 
                 <div class="banner-content">
                     <h2 class="banner-name">${banner.name}</h2>
                     <p>${banner.description}</p>
@@ -140,12 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
         addBannerEventListeners();
     }
     
-    // *** MODIFICATION START: Update renderInventory logic ***
     function renderInventory() {
         if (!inventoryDisplay) return;
         inventoryDisplay.innerHTML = '';
         
-        // Get a unique list of required items from the banners
         const requiredItemDetails = availableBanners.reduce((acc, banner) => {
             if (!acc.some(item => item.itemId === banner.requiredItem.itemId)) {
                 acc.push(banner.requiredItem);
@@ -153,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return acc;
         }, []);
 
-        // Now render based on the master list of required items
         requiredItemDetails.forEach(itemDetails => {
             const userItem = userInventory.get(itemDetails.itemId);
             const quantity = userItem ? userItem.quantity : 0;
@@ -169,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
             inventoryDisplay.appendChild(itemEl);
         });
     }
-    // *** MODIFICATION END ***
 
     // --- Event Handling & Logic ---
     function addBannerEventListeners() {
