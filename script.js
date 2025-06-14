@@ -574,7 +574,7 @@ async function renderBingoCard(selectedPokemon, difficulty) {
     // This is a helper function to avoid repeating rendering logic
     const createPokemonCell = (cell, pokemon, isLegendaryStyled) => {
         if (isLegendaryStyled) {
-            cell.classList.add("legendary-center");
+            cell.classList.add("legendary-styled");
         }
         
         cell.style.cursor = "pointer";
