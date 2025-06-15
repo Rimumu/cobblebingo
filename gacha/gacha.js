@@ -95,12 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!user.isInSteakHouse) {
-                displayGateMessage("You are not in the STEAK HOUSE Discord Server!", '#', 'Join Server');
+                displayGateMessage("You are not in the STEAK HOUSE Discord Server!", 'redirect_home', 'OK');
                 return;
             }
     
             if (!user.hasCobblemonRole) {
-                displayGateMessage("You do not have the cobblemon role!", '#', 'OK');
+                displayGateMessage("You do not have the cobblemon role!", 'redirect_home', 'OK');
                 return;
             }
             
@@ -370,14 +370,18 @@ document.addEventListener('DOMContentLoaded', () => {
             gateMessage.textContent = message;
             
             const button = document.createElement('a');
-            button.href = linkUrl;
             button.className = 'gate-button';
             button.textContent = linkText;
             
-            if (linkUrl === '#') {
-                button.addEventListener('click', (e) => e.preventDefault());
-                button.style.cursor = 'default';
-                button.style.background = '#555';
+            if (linkUrl === 'redirect_home') {
+                button.href = '#';
+                button.classList.add('info'); // Add a class for blue styling
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/'; // Redirect to landing page
+                });
+            } else {
+                button.href = linkUrl;
             }
     
             gateActions.innerHTML = '';
