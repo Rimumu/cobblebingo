@@ -739,4 +739,14 @@ body.loaded #mainContent {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
 }
+
+/* Style for informational gate buttons (like the 'OK' button) */
+.gate-button.info {
+    background: linear-gradient(135deg, #2196f3, #1976d2);
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.gate-button.info:hover {
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+}
 /* --- END: New Info Modal Styles --- */
