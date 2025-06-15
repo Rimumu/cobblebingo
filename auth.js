@@ -1,4 +1,4 @@
-// auth.js - Final Version with Daily Check-In
+// auth.js - Final Version with Daily Check-In (No Refresh Button)
 
 const handleSignupPrompt = () => {
     const overlay = document.getElementById('signup-prompt-overlay');
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const handleUnlinkDiscord = async () => {
-        if (!confirm("Are you sure you want to unlink your Discord account?")) return;
+        if (!confirm("Are you sure you want to unlink your Discord account? This action cannot be undone.")) return;
         
         try {
             const token = localStorage.getItem('token');
@@ -110,12 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
-            if (!data.success) throw new Error(data.error);
+            if (!response.ok) throw new Error(data.error);
             
             alert("Discord account unlinked successfully.");
-            updateAccountWidget(); // Refresh the dropdown to show the "Link" button again
+            window.location.reload();
         } catch (error) {
-            alert(`Error: ${error.message}`);
+            alert(`An error occurred while unlinking: ${error.message}`);
         }
     };
 
@@ -145,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- START: New Daily Check-In Logic ---
     const handleDailyCheckIn = async () => {
         const token = localStorage.getItem('token');
         try {
@@ -172,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showRewardSuccessModal = (reward) => {
         const overlay = document.getElementById('daily-reward-success-overlay');
-        // *** FIX: Check if the modal elements exist before trying to use them ***
         if (overlay) {
             const img = document.getElementById('daily-reward-image');
             const text = document.getElementById('daily-reward-text');
@@ -181,16 +179,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (text) text.textContent = `You received 1x ${reward.itemName}!`;
             overlay.style.display = 'flex';
         } else {
-            // Fallback for pages without the modal HTML
             alert(`Daily Reward Claimed!\nYou received 1x ${reward.itemName}!`);
-            window.location.reload(); // Still reload to update inventory if needed
+            window.location.reload();
         }
     };
     
     let countdownInterval;
     const showRewardCooldownModal = (nextAvailable) => {
         const overlay = document.getElementById('daily-reward-cooldown-overlay');
-        // *** FIX: Check if the modal elements exist before trying to use them ***
         if (overlay) {
             const timerText = document.getElementById('daily-reward-timer');
             
@@ -212,13 +208,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(timerText) timerText.textContent = `Time remaining: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             };
             
-            clearInterval(countdownInterval); // Clear any existing timer
+            clearInterval(countdownInterval);
             updateTimer();
             countdownInterval = setInterval(updateTimer, 1000);
             
             overlay.style.display = 'flex';
         } else {
-            // Fallback for pages without the modal HTML
              alert("You have already claimed your daily reward. Please check back later.");
         }
     };
@@ -233,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
              successCloseBtn.addEventListener('click', () => {
                 successOverlay.style.display = 'none';
                 if(window.location.pathname.includes('/gacha/')) {
-                   window.location.reload(); // Refresh to update inventory display on gacha page
+                   window.location.reload();
                 }
              });
         }
@@ -245,10 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     };
-    // --- END: New Daily Check-In Logic ---
 
-
-    // --- Attach Event Listeners ---
     const loginForm = document.getElementById('login-form');
     if (loginForm) loginForm.addEventListener('submit', (e) => handleAuthForm(e, 'login'));
     const signupForm = document.getElementById('signup-form');
@@ -266,8 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Initial UI Setup
     handleSignupPrompt();
     updateAccountWidget();
-    setupRewardModals(); // Set up close buttons for new modals
+    setupRewardModals();
 });
