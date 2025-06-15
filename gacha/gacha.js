@@ -81,13 +81,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch(`${API_BASE_URL}/api/gacha/banners`)
             ]);
 
-            if (!userResponse.ok) throw new Error('Your session is invalid. Please log in again.');
+            if (!userResponse.ok) {
+                const errorData = await userResponse.json();
+                throw new Error(errorData.error || 'Your session is invalid. Please log in again.');
+            }
             const { user } = await userResponse.json();
             const { banners } = await bannersResponse.json();
             availableBanners = banners;
 
             if (!user.discordId) {
                 displayGateMessage('You must link your Discord account to use the Gacha Realm.', `${API_BASE_URL}/api/auth/discord?token=${token}`, 'Link Discord Now');
+                return;
+            }
+
+            if (!user.isInSteakHouse) {
+                displayGateMessage("You are not in the STEAK HOUSE Discord Server!", '#', 'Join Server');
+                return;
+            }
+    
+            if (!user.hasCobblemonRole) {
+                displayGateMessage("You do not have the cobblemon role!", '#', 'OK');
                 return;
             }
             
@@ -350,9 +363,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayGateMessage(message, linkUrl, linkText) {
         const gateMessage = document.getElementById('gate-message');
         const gateActions = document.getElementById('gate-actions');
-        if (gateMessage && gateActions) {
+        const gateTitle = document.getElementById('gate-title');
+    
+        if (gateMessage && gateActions && gateTitle) {
+            gateTitle.textContent = "Access Denied";
             gateMessage.textContent = message;
-            gateActions.innerHTML = `<a href="${linkUrl}" class="gate-button">${linkText}</a>`;
+            
+            const button = document.createElement('a');
+            button.href = linkUrl;
+            button.className = 'gate-button';
+            button.textContent = linkText;
+            
+            if (linkUrl === '#') {
+                button.addEventListener('click', (e) => e.preventDefault());
+                button.style.cursor = 'default';
+                button.style.background = '#555';
+            }
+    
+            gateActions.innerHTML = '';
+            gateActions.appendChild(button);
+    
             accessGate.style.display = 'flex';
         }
         hideLoadingScreen();
